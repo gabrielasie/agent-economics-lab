@@ -1,0 +1,118 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "aelab"
+version = "0.1.0"
+description = "Sealed-bid second-price reverse-auction simulator for invoice early-payment, with LLM bidding agents and an adversarial red-team harness."
+requires-python = ">=3.11"
+dependencies = [
+    "anthropic",
+    "matplotlib",
+    "typer",
+]
+
+[project.scripts]
+aelab = "aelab.cli:app"
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "hypothesis",
+    "ruff",
+    "mypy",
+    "pytest-cov",
+    "import-linter",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/aelab"]
+
+# ---------------------------------------------------------------------------
+# Lint / format
+# ---------------------------------------------------------------------------
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]  # pyflakes, pycodestyle, isort, pyupgrade, bugbear
+
+# ---------------------------------------------------------------------------
+# Types
+# ---------------------------------------------------------------------------
+[tool.mypy]
+strict = true
+files = ["src/aelab"]
+
+[[tool.mypy.overrides]]
+module = ["anthropic.*", "matplotlib.*"]
+ignore_missing_imports = true
+
+# ---------------------------------------------------------------------------
+# Tests
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+addopts = "-q --strict-markers"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["aelab"]
+branch = true
+
+# ---------------------------------------------------------------------------
+# Architecture enforcement: the core may not depend on the edge.
+# A violation fails `lint-imports` and therefore fails the /verify gate.
+# ---------------------------------------------------------------------------
+[tool.importlinter]
+root_package = "aelab"
+
+[[tool.importlinter.contracts]]
+name = "Core stays pure (no LLM, no edge, no plotting)"
+type = "forbidden"
+source_modules = [
+    "aelab.economics",
+    "aelab.models",
+    "aelab.auction",
+    "aelab.metrics",
+    "aelab.populations",
+]
+forbidden_modules = [
+    "anthropic",
+    "matplotlib",
+    "aelab.agents",
+    "aelab.attacks",
+    "aelab.engine",
+    "aelab.harness",
+    "aelab.report",
+]
+
+[[tool.importlinter.contracts]]
+name = "Only report renders"
+type = "forbidden"
+source_modules = [
+    "aelab.economics",
+    "aelab.models",
+    "aelab.auction",
+    "aelab.metrics",
+    "aelab.populations",
+    "aelab.config",
+    "aelab.agents",
+    "aelab.attacks",
+    "aelab.engine",
+    "aelab.harness",
+]
+forbidden_modules = ["matplotlib"]
+
+[[tool.importlinter.contracts]]
+name = "Nondeterminism is isolated behind the cache"
+type = "forbidden"
+source_modules = [
+    "aelab.agents.base",
+    "aelab.agents.deterministic",
+    "aelab.attacks",
+    "aelab.engine",
+    "aelab.harness",
+]
+forbidden_modules = ["anthropic"]

@@ -1,0 +1,16 @@
+# python
+__pycache__/
+*.py[cod]
+.venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# project
+.cache/            # LLM response cache: commit a curated sample, ignore the rest
+results/*.json
+*.png
+.env
