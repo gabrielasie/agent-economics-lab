@@ -55,15 +55,18 @@ Proposed layout:
 ```
 agent-economics-lab/
   src/aelab/
+    config.py         # run configuration: seeds and scenario parameters
     economics.py      # APR/discount math, surplus, first-best. Heaviest test coverage.
-    models.py         # Invoice, Party, Bid, AuctionResult, PricingPolicy (versioned + hashed)
+    models.py         # Invoice, Funder (+ FunderKind), Supplier, Bid, AuctionResult, PricingPolicy (versioned + hashed)
     auction.py        # sealed-bid second-price reverse auction with reserve
     populations.py    # synthetic supplier / buyer / financier generators
     metrics.py        # efficiency loss vs first-best, surplus split, supplier share
+    engine.py         # runs auctions over populations and collects results
     harness.py        # red-team harness: runs attacks, diffs against baseline, reports
+    report.py         # presentation layer: efficiency + supplier-share plots (only matplotlib importer)
     agents/
-      base.py         # the bid() contract
-      truthful.py     # deterministic truthful + policy-driven (house) agents
+      base.py         # the BiddingAgent protocol and AuctionContext seam
+      deterministic.py  # deterministic truthful + policy-driven (house) agents
       llm_agent.py    # Claude bidding agent (lazy client; rest of lab runs without a key)
     attacks/
       house_extraction.py   # centerpiece: venue conflict + fair-rate-index defense

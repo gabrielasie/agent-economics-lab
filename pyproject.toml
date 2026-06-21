@@ -67,6 +67,9 @@ branch = true
 # ---------------------------------------------------------------------------
 [tool.importlinter]
 root_package = "aelab"
+# Required so the contracts that forbid external packages (anthropic, matplotlib)
+# can actually be evaluated against the import graph.
+include_external_packages = true
 
 [[tool.importlinter.contracts]]
 name = "Core stays pure (no LLM, no edge, no plotting)"
