@@ -1,0 +1,41 @@
+# Default scenario. seed 11 keeps the truthfulness probe reproducible against the saved
+# results/truthfulness_raw.json (financier seed 11, 6 funders, cost band 0.08-0.15).
+name = "default"
+seed = 11
+
+[supplier]
+# Bimodal reservations: comfortable bank-line suppliers and cash-strapped factoring suppliers.
+comfortable_fraction = 0.4
+comfortable_apr = [0.05, 0.12]
+strapped_apr = [0.25, 0.60]
+
+[financier]
+cost_apr = [0.08, 0.15]
+
+[invoice]
+face_value = [10000.0, 500000.0]
+days_early = [15, 90]
+
+[counts]
+suppliers = 50
+invoices = 50
+financiers = 5
+
+[buyer]
+include = true
+cost_apr = 0.07
+
+[house]
+cost_apr = 0.09
+
+[policy]
+min_apr = 0.0
+max_apr = 1.0
+
+[efficiency]
+financier_counts = [1, 2, 3, 4, 6, 8, 12]
+
+[truthfulness]
+n_funders = 6
+n_invoices = 20
+epsilon = 0.005
