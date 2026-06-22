@@ -15,13 +15,14 @@ from aelab.agents.llm import (
     DEFAULT_MODEL,
     SYSTEM_PROMPT,
     LLMAgent,
+    ValidatedLLMAgent,
     batch_bids,
     build_batch_requests,
     decode_custom_id,
     encode_custom_id,
     parse_bid_apr,
 )
-from aelab.models import Bid, Funder, Invoice
+from aelab.models import Bid, Funder, Invoice, PricingPolicy
 
 CUSTOM_ID_PATTERN = re.compile(r"^[a-zA-Z0-9_-]{1,64}$")
 
@@ -157,3 +158,21 @@ def test_batch_missing_result_falls_back_to_truthful() -> None:
     inv = Invoice("INV-7", 50_000.0, 30)
     bids = batch_bids([(Funder("F0", 0.10), inv)], FakeBatchClient({}))
     assert bids[("F0", "INV-7")].apr == 0.10  # truthful fallback
+
+
+# --- ValidatedLLMAgent (output-validation defense) ----------------------------
+
+
+def test_validated_agent_passes_in_policy_bid_through() -> None:
+    agent = ValidatedLLMAgent(
+        Funder("F", 0.10), FakeCompletionClient('{"apr": 0.12}'), PricingPolicy("v1", 0.05, 0.30)
+    )
+    assert agent.bid(_ctx()).apr == 0.12  # within bounds: unchanged
+
+
+def test_validated_agent_clamps_out_of_policy_bid() -> None:
+    policy = PricingPolicy("v1", 0.05, 0.30)
+    low = ValidatedLLMAgent(Funder("F", 0.10), FakeCompletionClient('{"apr": 0.0001}'), policy)
+    assert low.bid(_ctx()).apr == 0.05  # injected near-zero bid rejected; floor used
+    high = ValidatedLLMAgent(Funder("F", 0.10), FakeCompletionClient('{"apr": 0.99}'), policy)
+    assert high.bid(_ctx()).apr == 0.30  # ceiling

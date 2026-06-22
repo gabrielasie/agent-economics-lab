@@ -20,7 +20,7 @@ from typing import Any
 
 from aelab.agents.base import AuctionContext
 from aelab.agents.cache import BatchClient, BatchRequest, CompletionClient
-from aelab.models import Bid, Funder, Invoice
+from aelab.models import Bid, Funder, Invoice, PricingPolicy
 
 logger = logging.getLogger(__name__)
 
@@ -151,6 +151,25 @@ class LLMAgent:
             )
             apr = self.party.true_cost_apr
         return Bid(bidder_id=self.party.party_id, apr=apr)
+
+
+@dataclass(frozen=True)
+class ValidatedLLMAgent:
+    """LLMAgent with the output-validation defense: the bid is clamped to the signed policy.
+
+    Even a fully compromised reasoning step cannot submit a bid outside [min_apr, max_apr];
+    an injected out-of-policy bid is rejected and the policy floor used. The guarantee holds
+    regardless of the model, so a tighter policy bounds how far any injection can move a bid.
+    """
+
+    party: Funder
+    client: CompletionClient
+    policy: PricingPolicy
+    model: str = DEFAULT_MODEL
+
+    def bid(self, ctx: AuctionContext) -> Bid:
+        raw = LLMAgent(self.party, self.client, self.model).bid(ctx)
+        return Bid(bidder_id=self.party.party_id, apr=self.policy.clamp(raw.apr))
 
 
 def batch_bids(
