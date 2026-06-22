@@ -1,9 +1,10 @@
 """Streamlit UI for the Agent Economics Lab.
 
 A thin presentation edge over the aelab package. It runs the deterministic experiments live
-(efficiency, house extraction) and replays the LLM experiments from saved bids, so it needs
-no API key. It imports only the public aelab orchestration; the pure core is untouched, and
-because this file lives outside the aelab package the import contracts still hold.
+(efficiency, house extraction, the interactive auction, the plain-English terms calculator) and
+replays the LLM experiments from saved bids, so it needs no API key. It imports only the public
+aelab orchestration; the pure core is untouched, and because this file lives outside the aelab
+package the import contracts still hold.
 
 Run locally:  uv sync --extra ui && uv run streamlit run app.py
 """
@@ -19,10 +20,13 @@ import pandas as pd
 import streamlit as st
 
 from aelab.agents.llm import build_counterfactual_requests, counterfactual_deviations
+from aelab.auction import clear_auction, clear_first_price
 from aelab.cli import attack_population, compute_deviations, compute_efficiency
 from aelab.config import load_scenario
+from aelab.economics import apr_to_discount, financing_cost, surplus_split
 from aelab.harness import run_harness
 from aelab.metrics import deviation_stats
+from aelab.models import Bid
 from aelab.populations import generate_financiers, generate_invoices
 
 st.set_page_config(page_title="Agent Economics Lab", page_icon="📈", layout="wide")
@@ -31,6 +35,7 @@ SCENARIOS_DIR = Path("scenarios")
 DATA_DIR = Path("data")
 RESULTS_DIR = Path("results")
 PROBE_SCENARIO = "default"  # the scenario the saved truthfulness/first-price bids were generated under
+ACCENT = "#4f46e5"
 
 
 def scenario_names() -> list[str]:
@@ -75,32 +80,148 @@ def harness_frame(scenario_name: str) -> pd.DataFrame:
     ).set_index("regime")
 
 
+# --- header -------------------------------------------------------------------
+
 st.title("Agent Economics Lab")
-st.caption(
-    "A sealed-bid second-price reverse auction for invoice early-payment, with LLM bidding "
-    "agents and an adversarial red-team harness. Second-price clearing buys truthfulness from "
-    "funders and from no one else; every panel here probes that gap."
+st.markdown(
+    "An MVP of agent-to-agent invoice early-payment: when a buyer approves an invoice, the "
+    "supplier's agent and competing underwriters enter a **sealed-bid, second-price reverse "
+    "auction** that clears in seconds. The mechanism's job is to make truthful behaviour the "
+    "smart play for every party. This lab calibrates it, prices the house's risk policy, and "
+    "tries to break the incentives before they ship."
 )
 
-names = scenario_names()
-scenario_name = st.sidebar.selectbox(
-    "Scenario (efficiency and extraction panels)",
-    names,
-    index=names.index("default") if "default" in names else 0,
-)
-st.sidebar.caption(
-    "The truthfulness and first-price panels are pinned to the `default` scenario, the "
-    "population the saved bids were generated under."
-)
-st.sidebar.divider()
-st.sidebar.caption(
-    "Deterministic and reproducible. The LLM panels replay committed bids, so this app uses "
-    "no API key."
+cards = [
+    (
+        "Mechanism",
+        "Sealed-bid second-price reverse auction. Truthful bidding is the dominant strategy "
+        "for funders, proven numerically.",
+    ),
+    (
+        "Incentive integrity",
+        "A fair-rate index, benchmarked against an honest separated house, catches the venue "
+        "extracting from suppliers.",
+    ),
+    (
+        "Agentic AI",
+        "LLM funders (Claude) bid through a typed seam. A first-price counterfactual tests "
+        "real reasoning against prompt-following.",
+    ),
+    (
+        "Adversarial",
+        "Information leakage, financier collusion, and prompt injection, each measured "
+        "against a defense.",
+    ),
+]
+card_cols = st.columns(4)
+for col, (heading, body) in zip(card_cols, cards, strict=True):
+    with col.container(border=True):
+        st.markdown(f"**{heading}**")
+        st.caption(body)
+
+st.divider()
+
+with st.sidebar:
+    st.header("Controls")
+    names = scenario_names()
+    scenario_name = st.selectbox(
+        "Scenario (efficiency and extraction panels)",
+        names,
+        index=names.index("default") if "default" in names else 0,
+    )
+    st.caption(
+        "The truthfulness and first-price panels are pinned to the `default` scenario, the "
+        "population the saved bids were generated under."
+    )
+    st.divider()
+    st.caption(
+        "Deterministic and reproducible. The LLM panels replay committed bids, so this app uses "
+        "no API key."
+    )
+
+tab_play, tab_eff, tab_house, tab_truth, tab_first, tab_terms = st.tabs(
+    [
+        "Try the auction",
+        "Efficiency",
+        "Incentive integrity",
+        "Truthfulness",
+        "First-price",
+        "Plain-English terms",
+    ]
 )
 
-tab_eff, tab_attack, tab_truth, tab_first = st.tabs(
-    ["Efficiency", "House extraction", "Truthfulness (non-result)", "First-price counterfactual"]
-)
+# --- interactive auction ------------------------------------------------------
+
+with tab_play:
+    st.subheader("Clear one auction, live")
+    st.write(
+        "Set each funder's cost of capital and the supplier's reserve. Funders bid truthfully "
+        "(the dominant strategy), and the auction clears. See who wins, what they are paid under "
+        "the second-price rule, and how the surplus splits between the supplier and the winner."
+    )
+    controls, outcome = st.columns([2, 3])
+    with controls:
+        cost_a = st.slider("Funder A cost (APR %)", 1.0, 40.0, 8.0, 0.5)
+        cost_b = st.slider("Funder B cost (APR %)", 1.0, 40.0, 11.0, 0.5)
+        cost_c = st.slider("Funder C cost (APR %)", 1.0, 40.0, 16.0, 0.5)
+        reserve_pct = st.slider("Supplier reserve (APR %)", 1.0, 60.0, 30.0, 0.5)
+        face = st.number_input("Invoice face value (EUR)", 1_000, 5_000_000, 100_000, 1_000)
+        days = st.slider("Days paid early", 7, 180, 60, 1)
+
+    costs = {"A": cost_a / 100, "B": cost_b / 100, "C": cost_c / 100}
+    reserve = reserve_pct / 100
+    bids = [Bid(name, apr) for name, apr in costs.items()]
+    second = clear_auction(bids, reserve, random.Random(0))
+    first = clear_first_price(bids, reserve, random.Random(0))
+
+    with outcome:
+        if not second.traded:
+            st.error("No trade: every funder's cost is above the supplier's reserve.")
+        else:
+            assert second.clearing_apr is not None and second.winning_bid_apr is not None
+            split = surplus_split(face, reserve, second.clearing_apr, second.winning_bid_apr, days)
+            m = st.columns(3)
+            m[0].metric("Winner", f"Funder {second.winner_id}")
+            m[1].metric("Clearing APR (paid)", f"{second.clearing_apr:.1%}")
+            m[2].metric("Winner's own bid", f"{second.winning_bid_apr:.1%}")
+            m2 = st.columns(2)
+            m2[0].metric("Supplier surplus", f"EUR {split.supplier_surplus:,.0f}")
+            m2[1].metric("Winner rent", f"EUR {split.winner_rent:,.0f}")
+            assert first.clearing_apr is not None
+            st.caption(
+                f"Under a first-price rule the winner would instead be paid its own bid "
+                f"({first.clearing_apr:.1%}), so truthful bidding would stop being optimal and "
+                f"funders would shade up. That is what the First-price panel tests."
+            )
+
+    df = pd.DataFrame(
+        {
+            "funder": list(costs),
+            "bid": list(costs.values()),
+            "eligible": [c <= reserve for c in costs.values()],
+        }
+    )
+    bars = (
+        alt.Chart(df)
+        .mark_bar()
+        .encode(
+            x=alt.X("funder:N", title="funder"),
+            y=alt.Y("bid:Q", title="bid (APR)", axis=alt.Axis(format="%")),
+            color=alt.Color(
+                "eligible:N",
+                scale=alt.Scale(domain=[True, False], range=[ACCENT, "#c7c9d9"]),
+                legend=alt.Legend(title="at or below reserve"),
+            ),
+        )
+    )
+    rule = (
+        alt.Chart(pd.DataFrame({"reserve": [reserve]}))
+        .mark_rule(color="#dc2626", strokeDash=[6, 4])
+        .encode(y="reserve:Q")
+    )
+    st.altair_chart((bars + rule).properties(height=300), width="stretch")
+
+# --- efficiency ---------------------------------------------------------------
 
 with tab_eff:
     st.subheader("Efficiency and the supplier-share curve")
@@ -111,37 +232,51 @@ with tab_eff:
         "share tells you who ate it."
     )
     frame = efficiency_frame(scenario_name)
-    st.line_chart(frame, height=360)
-    left, right = st.columns(2)
-    left.metric("Allocative efficiency", f"{frame['allocative efficiency'].mean():.3f}")
-    right.metric(
+    chart_col, stat_col = st.columns([3, 1])
+    chart_col.line_chart(frame, height=360)
+    stat_col.metric("Allocative efficiency", f"{frame['allocative efficiency'].mean():.3f}")
+    stat_col.metric(
         "Supplier share (range)",
-        f"{frame['supplier share'].min():.3f} to {frame['supplier share'].max():.3f}",
+        f"{frame['supplier share'].min():.3f}",
+        delta=f"to {frame['supplier share'].max():.3f}",
     )
+    stat_col.caption("More financiers, more competition, a bigger slice for the supplier.")
     st.dataframe(frame.style.format("{:.3f}"), width="stretch")
 
-with tab_attack:
-    st.subheader("House extraction, and a fair-rate index that catches it")
+# --- incentive integrity (house extraction) -----------------------------------
+
+with tab_house:
+    st.subheader("Incentive integrity: can the venue extract, and would a supplier see it?")
     st.write(
         "A house that runs the venue can extract by withholding: it peeks at sealed bids and, "
         "when it cannot win, bids just under the reserve to lift the clearing. The extraction is "
         "on price, not allocation, so efficiency stays 1.000 and a no-house baseline cannot see "
-        "it. The fair-rate index, benchmarked against the honest separated house, flags it. It is "
-        "only measurable where the house is the pivotal funder: pick the `extraction` scenario "
-        "for the attack, and `default` for the market where competition disciplines it."
+        "it. The fair-rate index, benchmarked against the honest separated house, flags it. "
+        "Switch the sidebar to `extraction` for the attack and `default` for the market where a "
+        "competitive buyer disciplines it."
     )
     frame = harness_frame(scenario_name)
+    by = frame.to_dict("index")
+    cards2 = st.columns(4)
+    for col, regime in zip(cards2, ["baseline", "separated", "informed", "collusion"], strict=False):
+        if regime in by:
+            with col.container(border=True):
+                st.markdown(f"**{regime}**")
+                st.metric("supplier share", f"{by[regime]['supplier share']:.3f}")
+                st.caption(f"index flags: {int(by[regime]['index flags'])}")
+    left, right = st.columns(2)
+    left.caption("Supplier share by regime")
+    left.bar_chart(frame[["supplier share"]], height=280)
+    right.caption("Fair-rate-index flags by regime")
+    right.bar_chart(frame[["index flags"]], height=280)
     st.dataframe(
         frame.style.format(
             {"efficiency": "{:.3f}", "supplier share": "{:.3f}", "index flags": "{:d}"}
         ),
         width="stretch",
     )
-    left, right = st.columns(2)
-    left.caption("Supplier share by regime")
-    left.bar_chart(frame[["supplier share"]], height=300)
-    right.caption("Fair-rate-index flags by regime")
-    right.bar_chart(frame[["index flags"]], height=300)
+
+# --- truthfulness -------------------------------------------------------------
 
 with tab_truth:
     st.subheader("Do LLM agents bid the dominant strategy?")
@@ -170,7 +305,7 @@ with tab_truth:
             df = pd.DataFrame({"deviation": deviations})
             chart = (
                 alt.Chart(df)
-                .mark_bar()
+                .mark_bar(color=ACCENT)
                 .encode(
                     alt.X("deviation:Q", bin=alt.Bin(maxbins=40), title="bid APR minus true cost"),
                     alt.Y("count()", title="bids"),
@@ -179,6 +314,8 @@ with tab_truth:
             )
             st.altair_chart(chart, width="stretch")
         st.caption(f"Parsed {stats.n} bids with {failures} parse failures, from {raw}.")
+
+# --- first-price counterfactual -----------------------------------------------
 
 with tab_first:
     st.subheader("First-price counterfactual: reasoning or coaching?")
@@ -205,9 +342,9 @@ with tab_first:
         pairs = [(funder, invoice) for funder in funders for invoice in invoices]
         _, index_map = build_counterfactual_requests(pairs)
         texts = json.loads(raw.read_text(encoding="utf-8"))
-        second, first = counterfactual_deviations(texts, index_map)
-        s_stats = deviation_stats(second, scenario.epsilon)
-        f_stats = deviation_stats(first, scenario.epsilon)
+        second_dev, first_dev = counterfactual_deviations(texts, index_map)
+        s_stats = deviation_stats(second_dev, scenario.epsilon)
+        f_stats = deviation_stats(first_dev, scenario.epsilon)
         cols = st.columns(2)
         cols[0].metric("Second price: mean signed", f"{s_stats.mean_signed:+.5f}")
         cols[1].metric(
@@ -215,8 +352,54 @@ with tab_first:
             f"{f_stats.mean_signed:+.5f}",
             delta=f"{f_stats.mean_signed - s_stats.mean_signed:+.5f} vs second",
         )
-        reasons = f_stats.mean_signed > s_stats.mean_signed + scenario.epsilon
-        if reasons:
+        if f_stats.mean_signed > s_stats.mean_signed + scenario.epsilon:
             st.success("Shading up under first price: the agents reason about the rule.")
         else:
             st.warning("Near-zero under both: the agents followed the prompt, not the incentive.")
+
+# --- plain-English terms (the SMB translation) --------------------------------
+
+with tab_terms:
+    st.subheader("What a cleared APR means to the supplier")
+    st.write(
+        "A cleared APR is meaningless to an SMB owner. This translates it into the terms they "
+        "act on: cash today versus cash later, the cost of getting paid early, and whether it "
+        "beats their outside funding. This is the supplier-facing expression layer the protocol "
+        "still needs."
+    )
+    left, right = st.columns([2, 3])
+    with left:
+        face_t = st.number_input(
+            "Invoice face value (EUR)", 1_000, 5_000_000, 100_000, 1_000, key="terms_face"
+        )
+        days_t = st.slider("Days paid early", 7, 180, 60, 1, key="terms_days")
+        cleared_pct = st.slider("Cleared APR (%)", 1.0, 60.0, 11.0, 0.5)
+        outside_pct = st.slider("Supplier's outside funding APR (%)", 1.0, 60.0, 18.0, 0.5)
+
+    cleared = cleared_pct / 100
+    outside = outside_pct / 100
+    discount = apr_to_discount(cleared, days_t)
+    cost = financing_cost(face_t, cleared, days_t)
+    receive = face_t - cost
+    outside_cost = financing_cost(face_t, outside, days_t)
+    savings = outside_cost - cost
+
+    with right:
+        m = st.columns(2)
+        m[0].metric("You receive today", f"EUR {receive:,.0f}")
+        m[1].metric("Cost of early payment", f"EUR {cost:,.0f}", delta=f"{discount:.2%} of face")
+        st.markdown(
+            f"You get **EUR {receive:,.0f}** now instead of **EUR {face_t:,.0f}** in "
+            f"**{days_t} days**. Paying early costs **EUR {cost:,.0f}**, a **{discount:.2%}** "
+            f"discount on the invoice, which is **{cleared:.1%} APR** annualised."
+        )
+        if savings > 0:
+            st.success(
+                f"Cheaper than the supplier's outside option by **EUR {savings:,.0f}** "
+                f"({outside:.1%} APR would cost EUR {outside_cost:,.0f})."
+            )
+        else:
+            st.warning(
+                f"The supplier's own funding at {outside:.1%} APR is cheaper here, by "
+                f"EUR {-savings:,.0f}. They would decline."
+            )
