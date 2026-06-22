@@ -4,7 +4,9 @@ LLMAgent asks Claude (via the cached client) to bid, parsing a JSON {apr, ration
 On any parse failure it falls back to the truthful bid (the funder's true cost) and logs
 the failure, so a malformed completion can never crash a run or produce an out-of-range
 bid. The batch path bids one (funder, invoice) pair per Message Batch entry and joins the
-results back by custom_id. Nondeterminism stays behind the cache: this module imports the
+results back by custom_id. Custom ids are index-based (b0, b1, ...) so they always satisfy
+the Anthropic constraint ^[a-zA-Z0-9_-]{1,64}$ regardless of what characters appear in
+funder or invoice ids. Nondeterminism stays behind the cache: this module imports the
 cache's seam, never anthropic.
 """
 
@@ -32,15 +34,18 @@ SYSTEM_PROMPT = (
 )
 
 
-def encode_custom_id(funder_id: str, invoice_id: str) -> str:
-    """Encode a (funder, invoice) pair as a batch custom_id."""
-    return f"{funder_id}::{invoice_id}"
+def encode_custom_id(index: int) -> str:
+    """Batch custom_id for the index-th request.
+
+    Index-based, so it always matches the Anthropic constraint ^[a-zA-Z0-9_-]{1,64}$
+    regardless of what characters appear in funder or invoice ids.
+    """
+    return f"b{index}"
 
 
-def decode_custom_id(custom_id: str) -> tuple[str, str]:
-    """Recover the (funder_id, invoice_id) pair from a custom_id."""
-    funder_id, invoice_id = custom_id.split("::", 1)
-    return funder_id, invoice_id
+def decode_custom_id(custom_id: str) -> int:
+    """Recover the request index from a custom_id produced by encode_custom_id."""
+    return int(custom_id[1:])
 
 
 def build_user_prompt(invoice: Invoice, true_cost_apr: float) -> str:
@@ -62,6 +67,29 @@ def parse_bid_apr(text: str) -> float | None:
     except (json.JSONDecodeError, KeyError, TypeError, ValueError):
         return None
     return apr if apr >= 0 else None
+
+
+def build_batch_requests(
+    pairs: Sequence[tuple[Funder, Invoice]], model: str = DEFAULT_MODEL
+) -> tuple[list[BatchRequest], dict[int, tuple[Funder, Invoice]]]:
+    """Build batch requests with index-based custom_ids, plus the index -> pair map.
+
+    The map lets callers join results back to the originating (funder, invoice) by parsing
+    the index out of each returned custom_id with decode_custom_id.
+    """
+    requests: list[BatchRequest] = []
+    index_map: dict[int, tuple[Funder, Invoice]] = {}
+    for index, (funder, invoice) in enumerate(pairs):
+        index_map[index] = (funder, invoice)
+        requests.append(
+            BatchRequest(
+                custom_id=encode_custom_id(index),
+                model=model,
+                system=SYSTEM_PROMPT,
+                user=build_user_prompt(invoice, funder.true_cost_apr),
+            )
+        )
+    return requests, index_map
 
 
 @dataclass(frozen=True)
@@ -93,22 +121,22 @@ def batch_bids(
     Returns a mapping (funder_id, invoice_id) -> Bid. A funder's true cost is the fallback
     when its completion is missing or unparseable.
     """
-    requests = [
-        BatchRequest(
-            custom_id=encode_custom_id(funder.party_id, invoice.invoice_id),
-            model=model,
-            system=SYSTEM_PROMPT,
-            user=build_user_prompt(invoice, funder.true_cost_apr),
-        )
-        for funder, invoice in pairs
-    ]
+    requests, index_map = build_batch_requests(pairs, model)
     texts = client.run(requests)
+    bid_apr: dict[int, float] = {}
+    for custom_id, text in texts.items():
+        apr = parse_bid_apr(text)
+        if apr is not None:
+            bid_apr[decode_custom_id(custom_id)] = apr
     bids: dict[tuple[str, str], Bid] = {}
-    for funder, invoice in pairs:
-        custom_id = encode_custom_id(funder.party_id, invoice.invoice_id)
-        apr = parse_bid_apr(texts.get(custom_id, ""))
+    for index, (funder, invoice) in index_map.items():
+        apr = bid_apr.get(index)
         if apr is None:
-            logger.warning("batch bid parse failed for %s; falling back to truthful bid", custom_id)
+            logger.warning(
+                "batch bid parse failed for (%s, %s); falling back to truthful bid",
+                funder.party_id,
+                invoice.invoice_id,
+            )
             apr = funder.true_cost_apr
         bids[(funder.party_id, invoice.invoice_id)] = Bid(bidder_id=funder.party_id, apr=apr)
     return bids

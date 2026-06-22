@@ -9,8 +9,9 @@ histogram.
 
 The probe parses the raw completions and counts parse failures separately; it does NOT
 use batch_bids' truthful fallback, which would record a malformed bid as a perfect zero
-deviation and overstate truthfulness. Runs live against Haiku once, then caches the raw
-results to results/ so re-runs are instant and reproducible.
+deviation and overstate truthfulness. Custom ids are index-based, joined back to funders
+through the index map. Runs live against Haiku once, then caches the raw results to
+results/ so re-runs are instant and reproducible.
 
 Run: uv run python scripts/run_truthfulness_probe.py
 """
@@ -22,14 +23,7 @@ import random
 from pathlib import Path
 
 from aelab.agents.cache import AnthropicBatchClient, BatchRequest
-from aelab.agents.llm import (
-    DEFAULT_MODEL,
-    SYSTEM_PROMPT,
-    build_user_prompt,
-    decode_custom_id,
-    encode_custom_id,
-    parse_bid_apr,
-)
+from aelab.agents.llm import DEFAULT_MODEL, build_batch_requests, decode_custom_id, parse_bid_apr
 from aelab.metrics import deviation_stats
 from aelab.populations import (
     FinancierConfig,
@@ -70,39 +64,30 @@ def main() -> None:
         N_INVOICES,
         random.Random(INVOICE_SEED),
     )
-    true_cost = {f.party_id: f.true_cost_apr for f in funders}
-    requests = [
-        BatchRequest(
-            custom_id=encode_custom_id(funder.party_id, invoice.invoice_id),
-            model=DEFAULT_MODEL,
-            system=SYSTEM_PROMPT,
-            user=build_user_prompt(invoice, funder.true_cost_apr),
-        )
-        for funder in funders
-        for invoice in invoices
-    ]
+    pairs = [(funder, invoice) for funder in funders for invoice in invoices]
+    requests, index_map = build_batch_requests(pairs)
 
     texts = _bid_texts(requests)
 
     deviations: list[float] = []
     failures = 0
     for custom_id, text in texts.items():
-        funder_id, _ = decode_custom_id(custom_id)
+        funder, _invoice = index_map[decode_custom_id(custom_id)]
         apr = parse_bid_apr(text)
         if apr is None:
             failures += 1
             continue
-        deviations.append(apr - true_cost[funder_id])
+        deviations.append(apr - funder.true_cost_apr)
     missing = len(requests) - len(texts)
 
     stats = deviation_stats(deviations, EPSILON)
     print()
-    print(f"bids parsed:            {stats.n}")
-    print(f"parse failures:         {failures}")
-    print(f"missing from batch:     {missing}")
-    print(f"mean signed deviation:  {stats.mean_signed:+.5f} APR")
+    print(f"bids parsed:             {stats.n}")
+    print(f"parse failures:          {failures}")
+    print(f"missing from batch:      {missing}")
+    print(f"mean signed deviation:   {stats.mean_signed:+.5f} APR")
     print(f"mean absolute deviation: {stats.mean_absolute:.5f} APR")
-    print(f"within {EPSILON:.3f} of truthful: {stats.fraction_within:.1%}")
+    print(f"within {EPSILON:.3f} of truthful:  {stats.fraction_within:.1%}")
 
     if deviations:
         PLOT_PATH.parent.mkdir(parents=True, exist_ok=True)
