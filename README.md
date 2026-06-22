@@ -19,6 +19,7 @@ uv run aelab efficiency                   # efficiency and supplier-share curve 
 uv run aelab attacks --scenario extraction  # the house-extraction harness (a table)
 uv run aelab attacks                      # the default market, where competition disciplines extraction
 uv run aelab truthfulness --from-raw results/truthfulness_raw.json
+uv run aelab counterfactual               # first vs second price under neutral prompts (needs a key)
 ```
 
 `demo.ipynb` runs all three results in sequence with context. Open it with Jupyter, or
@@ -49,14 +50,16 @@ scenario). Efficiency is necessary but not sufficient: a market can be fully eff
 still split the pie against the supplier, so supplier share is a first-class metric. The
 chart is `results/efficiency.png`.
 
-**2. Do LLM agents bid the dominant strategy?** Human subjects famously overbid in Vickrey
-experiments. Given a known private cost, a Claude Haiku agent bids it: across 120 bids the
-mean signed deviation is about zero and 100% land within 50 bps of truthful. No systematic
-shading (the chart is `results/truthfulness.png`). The tiny residual is the prompt's
-four-decimal rounding of the cost, not model error. One caveat the artifact is honest about:
-the probe's prompt states that truthful bidding is optimal, so this may be prompt-following,
-not reasoning. The first-price counterfactual is the test that would tell them apart, and it
-is not yet built or run.
+**2. Do LLM agents bid the dominant strategy? (not yet a result)** Given a known private
+cost, a Claude Haiku agent does not overbid the way humans do in Vickrey experiments: across
+120 bids the mean signed deviation is about zero and 100% land within 50 bps of truthful (the
+chart is `results/truthfulness.png`). This is deliberately not presented as a finding. The
+probe's prompt states that truthful bidding is optimal, so the near-zero deviation measures
+instruction-following, not reasoning: it is the number you would get from a model that echoed
+the cost back. The test that separates the two is the first-price counterfactual (`aelab
+counterfactual`): the same agent under a first-price auction with a neutral prompt, where
+truthful is no longer optimal and a reasoner shades its bid up. That experiment is now built
+and awaits one live run; until then the honest claim is only "the agent does not overbid."
 
 **3. House extraction, and a fair-rate index that catches it.** Extraction is only
 measurable where the house is the pivotal funder, so this runs on the `extraction` scenario:
