@@ -56,7 +56,11 @@ def run_collusion(
         bids = [
             Bid(
                 bidder_id=funder.party_id,
-                apr=max(0.0, reserve - EPSILON) if funder.party_id in parked else funder.true_cost_apr,
+                # Park toward the reserve, but never below cost: a colluder withholds its
+                # low bid to lift the price, it does not bid below cost and win at a loss.
+                apr=max(reserve - EPSILON, funder.true_cost_apr)
+                if funder.party_id in parked
+                else funder.true_cost_apr,
             )
             for funder in population.funders
         ]

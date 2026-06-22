@@ -44,3 +44,16 @@ def test_index_flags_collusion_not_singleton_ring() -> None:
 def test_collusion_stays_efficient() -> None:
     points = sweep_ring_sizes(_population(), random.Random(0))
     assert all(p.efficiency == pytest.approx(1.0) for p in points)  # extraction is on price
+
+
+def test_collusion_stays_efficient_with_low_reservation_invoices() -> None:
+    # Mix a strapped invoice with one whose reservation is below every funder's cost.
+    # The ring must not park below cost and win that one at a loss (which would drag
+    # realized surplus negative and efficiency below 1).
+    population = Population(
+        suppliers=(Supplier("S_strapped", 0.40), Supplier("S_cheap", 0.065)),
+        funders=(Funder("F0", 0.08), Funder("F1", 0.10), Funder("F2", 0.12)),
+        invoices=(Invoice("INV0", 100_000.0, 60), Invoice("INV1", 100_000.0, 60)),
+    )
+    points = sweep_ring_sizes(population, random.Random(0))
+    assert all(p.efficiency == pytest.approx(1.0) for p in points)
