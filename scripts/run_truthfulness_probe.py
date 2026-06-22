@@ -18,6 +18,7 @@ Run: uv run python scripts/run_truthfulness_probe.py
 
 from __future__ import annotations
 
+import argparse
 import json
 import random
 from pathlib import Path
@@ -56,6 +57,15 @@ def _bid_texts(requests: list[BatchRequest]) -> dict[str, str]:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description="LLM truthfulness probe.")
+    parser.add_argument(
+        "--from-raw",
+        type=Path,
+        default=None,
+        help="Parse stats from a saved raw-results JSON instead of running a live batch.",
+    )
+    args = parser.parse_args()
+
     funders = generate_financiers(
         FinancierConfig(cost_apr=(0.08, 0.15)), N_FUNDERS, random.Random(FINANCIER_SEED)
     )
@@ -67,7 +77,11 @@ def main() -> None:
     pairs = [(funder, invoice) for funder in funders for invoice in invoices]
     requests, index_map = build_batch_requests(pairs)
 
-    texts = _bid_texts(requests)
+    if args.from_raw is not None:
+        print(f"Parsing saved raw results from {args.from_raw} (no live batch)")
+        texts = json.loads(args.from_raw.read_text(encoding="utf-8"))
+    else:
+        texts = _bid_texts(requests)
 
     deviations: list[float] = []
     failures = 0

@@ -16,6 +16,7 @@ import json
 import logging
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import Any
 
 from aelab.agents.base import AuctionContext
 from aelab.agents.cache import BatchClient, BatchRequest, CompletionClient
@@ -59,12 +60,53 @@ def build_user_prompt(invoice: Invoice, true_cost_apr: float) -> str:
     )
 
 
+def _first_json_object(text: str) -> Any:
+    """Return the first balanced {...} JSON object in text, or None.
+
+    Tolerant of what models actually return: a JSON object wrapped in a ```json fence or
+    surrounded by prose. Scans for the first balanced object, respecting string quoting.
+    """
+    start = text.find("{")
+    if start == -1:
+        return None
+    depth = 0
+    in_string = False
+    escaped = False
+    for index in range(start, len(text)):
+        ch = text[index]
+        if in_string:
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == '"':
+                in_string = False
+            continue
+        if ch == '"':
+            in_string = True
+        elif ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                try:
+                    return json.loads(text[start : index + 1])
+                except json.JSONDecodeError:
+                    return None
+    return None
+
+
 def parse_bid_apr(text: str) -> float | None:
-    """Parse {apr, rationale} and return the apr, or None if anything is wrong."""
+    """Parse {apr, rationale} and return the apr, or None if anything is wrong.
+
+    Accepts a bare JSON object, one wrapped in a markdown fence, or one embedded in prose.
+    """
+    obj = _first_json_object(text)
+    if not isinstance(obj, dict):
+        return None
     try:
-        data = json.loads(text)
-        apr = float(data["apr"])
-    except (json.JSONDecodeError, KeyError, TypeError, ValueError):
+        apr = float(obj["apr"])
+    except (KeyError, TypeError, ValueError):
         return None
     return apr if apr >= 0 else None
 

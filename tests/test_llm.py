@@ -96,6 +96,31 @@ def test_parse_bid_apr() -> None:
     assert parse_bid_apr("{}") is None
 
 
+# A real Haiku return from results/truthfulness_raw.json: valid JSON wrapped in a fence.
+REAL_FENCED_RETURN = (
+    "```json\n"
+    '{"apr": 0.1192, "rationale": "Bidding my true cost of capital of 11.92% APR is '
+    "optimal in a sealed-bid second-price reverse auction, as the winner pays the "
+    "second-lowest bid rather than their own bid. This eliminates incentive to shade "
+    'bids and makes truthful bidding the dominant strategy."}\n'
+    "```"
+)
+
+
+def test_parse_bid_apr_tolerates_markdown_fences() -> None:
+    assert parse_bid_apr(REAL_FENCED_RETURN) == 0.1192
+
+
+def test_parse_bid_apr_tolerates_surrounding_prose() -> None:
+    assert parse_bid_apr('Here is my bid: {"apr": 0.1, "rationale": "x"} -- thanks!') == 0.1
+
+
+def test_agent_parses_fenced_json_instead_of_falling_back() -> None:
+    # The model fences its JSON; the agent must parse it, not fall back to truthful.
+    bid = LLMAgent(Funder("F1", 0.09), FakeCompletionClient(REAL_FENCED_RETURN)).bid(_ctx())
+    assert bid.apr == 0.1192
+
+
 # --- batch path ---------------------------------------------------------------
 
 
@@ -120,7 +145,7 @@ def test_batch_joins_results_by_custom_id() -> None:
     f0, f1 = Funder("F0", 0.10), Funder("F1", 0.20)
     inv = Invoice("INV-7", 50_000.0, 30)
     responses = {
-        encode_custom_id(0): '{"apr": 0.11, "rationale": "a"}',
+        encode_custom_id(0): '```json\n{"apr": 0.11, "rationale": "a"}\n```',  # fenced, like reality
         encode_custom_id(1): '{"apr": 0.22, "rationale": "b"}',
     }
     bids = batch_bids([(f0, inv), (f1, inv)], FakeBatchClient(responses))
