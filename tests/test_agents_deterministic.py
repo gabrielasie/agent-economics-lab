@@ -11,8 +11,8 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from aelab.agents.base import AuctionContext, AuctionRules, BiddingAgent, LeakedInfo
-from aelab.agents.deterministic import TruthfulAgent
-from aelab.models import Bid, Funder, Invoice
+from aelab.agents.deterministic import PolicyAgent, TruthfulAgent
+from aelab.models import Bid, Funder, Invoice, PricingPolicy
 
 
 def _ctx(
@@ -62,3 +62,35 @@ def test_truthful_agent_frozen() -> None:
     agent = TruthfulAgent(Funder(party_id="F1", true_cost_apr=0.10))
     with pytest.raises(dataclasses.FrozenInstanceError):
         agent.party = Funder(party_id="F2", true_cost_apr=0.20)  # type: ignore[misc]
+
+
+# --- PolicyAgent --------------------------------------------------------------
+
+
+def _policy() -> PricingPolicy:
+    return PricingPolicy(version="v1", min_apr=0.05, max_apr=0.30)
+
+
+def test_policy_agent_bids_clamped_true_cost() -> None:
+    within = PolicyAgent(Funder("H", 0.12), _policy())
+    assert within.bid(_ctx()).apr == 0.12  # within bounds: bids true cost
+    below = PolicyAgent(Funder("H", 0.01), _policy())
+    assert below.bid(_ctx()).apr == 0.05  # below floor -> clamped up
+    above = PolicyAgent(Funder("H", 0.90), _policy())
+    assert above.bid(_ctx()).apr == 0.30  # above ceiling -> clamped down
+
+
+def test_policy_agent_satisfies_protocol() -> None:
+    assert isinstance(PolicyAgent(Funder("H", 0.12), _policy()), BiddingAgent)
+
+
+def test_policy_agent_ignores_leaked() -> None:
+    agent = PolicyAgent(Funder("H", 0.12), _policy())
+    leaked = _ctx(leaked=LeakedInfo(competitor_bids=(Bid("rival", 0.04),)))
+    assert agent.bid(_ctx()) == agent.bid(leaked)
+
+
+def test_policy_agent_frozen() -> None:
+    agent = PolicyAgent(Funder("H", 0.12), _policy())
+    with pytest.raises(dataclasses.FrozenInstanceError):
+        agent.party = Funder("H2", 0.2)  # type: ignore[misc]

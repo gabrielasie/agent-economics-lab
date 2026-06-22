@@ -46,8 +46,13 @@ class AuctionContext:
 
 @runtime_checkable
 class BiddingAgent(Protocol):
-    """The one seam: an agent exposes its party and bids given a context."""
+    """The one seam: an agent exposes its party and bids given a context.
 
-    party: Funder
+    party is a read-only member so frozen-dataclass agents satisfy the protocol; the
+    mechanism only reads an agent's party, never reassigns it.
+    """
+
+    @property
+    def party(self) -> Funder: ...
 
     def bid(self, ctx: AuctionContext) -> Bid: ...
