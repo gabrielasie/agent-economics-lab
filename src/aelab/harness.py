@@ -18,7 +18,8 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from aelab.agents.deterministic import TruthfulAgent
-from aelab.attacks.house_extraction import run_regimes
+from aelab.attacks.collusion import run_collusion
+from aelab.attacks.house_extraction import fair_rate_index, run_regimes
 from aelab.engine import run
 from aelab.metrics import summarize
 from aelab.models import FunderKind, PricingPolicy
@@ -46,9 +47,18 @@ def _without_house(population: Population) -> Population:
 def run_harness(
     population: Population, policy: PricingPolicy, rng: random.Random
 ) -> list[HarnessRow]:
-    """Run the truthful no-house baseline and both house regimes over the population."""
-    baseline = summarize(run(_without_house(population), TruthfulAgent, rng))
+    """Run the no-house baseline, both house regimes, and the financier ring."""
+    no_house = _without_house(population)
+    baseline_outcomes = run(no_house, TruthfulAgent, rng)
+    baseline = summarize(baseline_outcomes)
     regimes = run_regimes(population, policy, rng)
+
+    # Collusion is a financier-ring threat: run it on the no-house funders (the full ring),
+    # indexed against the same all-truthful baseline that is its honest counterfactual.
+    n_financiers = sum(1 for f in no_house.funders if f.kind is FunderKind.FINANCIER)
+    collusion_outcomes = run_collusion(no_house, n_financiers, rng)
+    collusion = summarize(collusion_outcomes)
+
     return [
         HarnessRow("baseline", baseline.allocative_efficiency, baseline.supplier_share, 0),
         HarnessRow(
@@ -62,6 +72,12 @@ def run_harness(
             regimes["informed"].efficiency,
             regimes["informed"].supplier_share,
             regimes["informed"].fair_rate_index_flags,
+        ),
+        HarnessRow(
+            "collusion",
+            collusion.allocative_efficiency,
+            collusion.supplier_share,
+            fair_rate_index(collusion_outcomes, baseline_outcomes),
         ),
     ]
 

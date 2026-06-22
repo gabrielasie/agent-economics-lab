@@ -28,7 +28,7 @@ def test_baseline_efficiency_is_one() -> None:
 
 def test_rows_are_comparable() -> None:
     rows = run_harness(_population(), POLICY, random.Random(0))
-    assert [r.regime for r in rows] == ["baseline", "separated", "informed"]
+    assert [r.regime for r in rows] == ["baseline", "separated", "informed", "collusion"]
     assert all(r.efficiency == pytest.approx(1.0) for r in rows)  # extraction is on price
     by = {r.regime: r for r in rows}
     # informed extracts relative to the honest house, and the index flags it
@@ -36,12 +36,15 @@ def test_rows_are_comparable() -> None:
     assert by["informed"].fair_rate_index_flags > 0
     # the honest house only helps the supplier; it never raises the rate above no-house
     assert by["separated"].supplier_share >= by["baseline"].supplier_share
+    # the ring collapses supplier share and the index flags it too
+    assert by["collusion"].supplier_share < by["baseline"].supplier_share
+    assert by["collusion"].fair_rate_index_flags > 0
 
 
 def test_format_table() -> None:
     rows = run_harness(_population(), POLICY, random.Random(0))
     table = format_table(rows)
     assert "regime" in table
-    for regime in ("baseline", "separated", "informed"):
+    for regime in ("baseline", "separated", "informed", "collusion"):
         assert regime in table
     assert len(table.splitlines()) == 1 + len(rows)  # header plus one line per row
