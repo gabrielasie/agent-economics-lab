@@ -107,3 +107,26 @@ def test_zip_strict_requires_matching_supplier_and_invoice_counts() -> None:
     )
     with pytest.raises(ValueError):
         run(population, TruthfulAgent, random.Random(0))
+
+
+def test_single_eligible_clears_at_reserve_end_to_end() -> None:
+    # One funder eligible (0.08 <= 0.10), one not (0.15 > 0.10), no buyer: the
+    # single-eligible branch must clear at the reserve, not the lone bid, all the way
+    # through to the scored supplier surplus.
+    population = Population(
+        suppliers=(Supplier("S0", 0.10),),
+        funders=(Funder("F0", 0.08), Funder("F1", 0.15)),
+        invoices=(Invoice("INV0", 100_000.0, 60),),
+    )
+    result = run(population, TruthfulAgent, random.Random(0))[0].result
+    assert result.traded
+    assert result.winner_id == "F0"
+    assert result.num_eligible == 1
+    assert result.clearing_apr == 0.10  # the reserve, not the lone bid (0.08)
+
+    # Clearing at the reserve means the supplier captures no surplus on this trade.
+    # A price bug (clearing at the lone bid) would silently show positive supplier surplus.
+    report = summarize(run(population, TruthfulAgent, random.Random(0)))
+    assert report.realized_total > 0
+    assert report.supplier_surplus_total == 0.0
+    assert report.supplier_share == 0.0
