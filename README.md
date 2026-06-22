@@ -40,6 +40,26 @@ uv run lint-imports
 uv run pytest
 ```
 
+## Web UI
+
+A Streamlit UI (`app.py`) presents the same results interactively in four panels: efficiency,
+house extraction, the truthfulness non-result, and the first-price counterfactual. It lives
+outside the `aelab` package, so the core stays pure and the import contracts hold. It runs the
+deterministic experiments live and replays the LLM experiments from committed bids in `data/`,
+so it needs no API key.
+
+```
+uv sync --extra ui
+uv run streamlit run app.py
+```
+
+Deploy to Streamlit Community Cloud (free): push this repo to GitHub, open
+[share.streamlit.io](https://share.streamlit.io), choose New app, pick the repo and `app.py`,
+and Deploy. The host installs `requirements.txt` (which is `.[ui]`). No secret is needed for
+the deterministic and replayed panels. To light up the first-price panel in the deployed app,
+run `uv run aelab counterfactual` once with a key and commit the resulting
+`data/first_price_raw.json`.
+
 ## Three results
 
 **1. Efficiency and the supplier-share curve.** Under truthful bidding the lowest-cost

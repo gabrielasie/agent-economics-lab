@@ -13,6 +13,11 @@ dependencies = [
     "typer",
 ]
 
+[project.optional-dependencies]
+# The Streamlit UI layer. Kept out of the core deps: app.py is an edge consumer, and no
+# aelab module imports streamlit. Install locally with: uv sync --extra ui
+ui = ["streamlit"]
+
 [project.scripts]
 aelab = "aelab.cli:app"
 

@@ -9,8 +9,9 @@ the two ever disagree, fix the disagreement, do not pick one silently.
 A command-line simulation lab for the sealed-bid second-price reverse auction at the core
 of an invoice early-payment protocol. Competing funders bid to finance an approved invoice;
 the auction clears; synthetic populations and an adversarial harness let us measure how the
-mechanism behaves and how it gets gamed. It produces tables and charts, not a UI or a
-deployed service. It is a pre-interview artifact for a Product Engineer, Agent Economics
+mechanism behaves and how it gets gamed. It produces tables and charts, plus an optional
+Streamlit UI over the same results (app.py), deployable to Streamlit Community Cloud. It is a
+pre-interview artifact for a Product Engineer, Agent Economics
 role, so it is judged on the correctness of the mechanism, the sharpness of the findings,
 and the accompanying memo.
 
@@ -69,7 +70,7 @@ A pure deterministic core with the LLM isolated at the outermost edge. Dependenc
 inward.
 
 ```
-cli / scripts            (entry, thin)
+cli / scripts / app.py   (entry, thin; app.py is the Streamlit UI, an edge outside the package)
    report                (presentation; the only matplotlib importer)
    harness               (orchestration; runs scenarios, diffs vs baseline)
    engine                (runs one scenario -> list[InvoiceOutcome])
@@ -147,6 +148,11 @@ truthfulness, attacks). scripts run_efficiency.py and run_truthfulness_probe.py,
 scenario-driven, the probe with --from-raw. README and demo.ipynb (the three results run in
 sequence). scenarios/extraction.toml: a population built so the house is the pivotal funder,
 where the withholding attack is measurable, with an honest cost-priced policy (zero loadings).
+app.py: a Streamlit UI over the orchestration, sharing one compute path with the CLI via
+compute_efficiency and compute_deviations. It runs the deterministic experiments live and
+replays the LLM experiments from committed bids (data/), so it needs no API key. It lives
+outside the aelab package, so the import contracts are unaffected. Deploy: Streamlit Community
+Cloud reads requirements.txt (.[ui]); local dev uses uv sync --extra ui.
 
 The parser fix (strip the json fence, extract the first balanced JSON object) and the probe
 --from-raw mode are done. The run_efficiency controlled-sweep fix is done: suppliers and

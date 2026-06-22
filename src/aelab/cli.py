@@ -63,8 +63,12 @@ def attack_population(scenario: Scenario) -> Population:
     return Population(suppliers=suppliers, funders=tuple(funders), invoices=invoices)
 
 
-def run_efficiency(scenario: Scenario) -> None:
-    """Controlled sweep: suppliers and invoices fixed, only the financier pool grows."""
+def compute_efficiency(scenario: Scenario) -> tuple[list[int], list[float], list[float]]:
+    """Controlled sweep: suppliers and invoices fixed, only the financier pool grows.
+
+    Returns the financier counts and, for each, allocative efficiency and supplier share.
+    The compute is separated from presentation so the CLI and the UI share one path.
+    """
     suppliers = tuple(
         generate_suppliers(scenario.supplier, scenario.n_suppliers, random.Random(scenario.seed))
     )
@@ -74,7 +78,6 @@ def run_efficiency(scenario: Scenario) -> None:
     counts: list[int] = []
     efficiency: list[float] = []
     supplier_share: list[float] = []
-    print(f"{'financiers':>10}  {'efficiency':>10}  {'supplier share':>14}")
     for n in scenario.financier_counts:
         financiers = generate_financiers(scenario.financier, n, random.Random(scenario.seed + 2))
         buyer = (make_buyer(scenario.buyer_cost_apr),) if scenario.include_buyer else ()
@@ -83,7 +86,15 @@ def run_efficiency(scenario: Scenario) -> None:
         counts.append(n)
         efficiency.append(report.allocative_efficiency)
         supplier_share.append(report.supplier_share)
-        print(f"{n:>10}  {report.allocative_efficiency:>10.3f}  {report.supplier_share:>14.3f}")
+    return counts, efficiency, supplier_share
+
+
+def run_efficiency(scenario: Scenario) -> None:
+    """Print and plot the controlled efficiency and supplier-share sweep."""
+    counts, efficiency, supplier_share = compute_efficiency(scenario)
+    print(f"{'financiers':>10}  {'efficiency':>10}  {'supplier share':>14}")
+    for n, eff, share in zip(counts, efficiency, supplier_share, strict=True):
+        print(f"{n:>10}  {eff:>10.3f}  {share:>14.3f}")
     _EFFICIENCY_PLOT.parent.mkdir(parents=True, exist_ok=True)
     plot_efficiency_and_supplier_share(counts, efficiency, supplier_share, _EFFICIENCY_PLOT)
     print(f"\nSaved plot to {_EFFICIENCY_PLOT}")
@@ -103,8 +114,12 @@ def _bid_texts(requests: list[BatchRequest], raw_path: Path) -> dict[str, str]:
     return texts
 
 
-def run_probe(scenario: Scenario, from_raw: Path | None) -> None:
-    """Measure bid deviation from true cost over (funder, invoice) pairs via the batch path."""
+def compute_deviations(scenario: Scenario, texts: dict[str, str]) -> tuple[list[float], int]:
+    """Parse saved bids into (bid minus true cost) deviations, plus a parse-failure count.
+
+    Regenerates the probe's (funder, invoice) pairs from the seed to map each custom_id back
+    to its funder, so the UI and the CLI score the same saved raw the same way.
+    """
     funders = generate_financiers(
         scenario.financier, scenario.probe_n_funders, random.Random(scenario.seed)
     )
@@ -112,12 +127,7 @@ def run_probe(scenario: Scenario, from_raw: Path | None) -> None:
         scenario.invoice, scenario.probe_n_invoices, random.Random(scenario.seed + 1)
     )
     pairs = [(funder, invoice) for funder in funders for invoice in invoices]
-    requests, index_map = build_batch_requests(pairs)
-    if from_raw is not None:
-        print(f"Parsing saved raw results from {from_raw} (no live batch)")
-        texts: dict[str, str] = json.loads(from_raw.read_text(encoding="utf-8"))
-    else:
-        texts = _bid_texts(requests, _RAW_PATH)
+    _, index_map = build_batch_requests(pairs)
     deviations: list[float] = []
     failures = 0
     for custom_id, text in texts.items():
@@ -127,6 +137,25 @@ def run_probe(scenario: Scenario, from_raw: Path | None) -> None:
             failures += 1
             continue
         deviations.append(apr - funder.true_cost_apr)
+    return deviations, failures
+
+
+def run_probe(scenario: Scenario, from_raw: Path | None) -> None:
+    """Measure bid deviation from true cost over (funder, invoice) pairs via the batch path."""
+    funders = generate_financiers(
+        scenario.financier, scenario.probe_n_funders, random.Random(scenario.seed)
+    )
+    invoices = generate_invoices(
+        scenario.invoice, scenario.probe_n_invoices, random.Random(scenario.seed + 1)
+    )
+    pairs = [(funder, invoice) for funder in funders for invoice in invoices]
+    requests, _ = build_batch_requests(pairs)
+    if from_raw is not None:
+        print(f"Parsing saved raw results from {from_raw} (no live batch)")
+        texts: dict[str, str] = json.loads(from_raw.read_text(encoding="utf-8"))
+    else:
+        texts = _bid_texts(requests, _RAW_PATH)
+    deviations, failures = compute_deviations(scenario, texts)
     stats = deviation_stats(deviations, scenario.epsilon)
     print()
     print(f"bids parsed:             {stats.n}")

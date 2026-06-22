@@ -1,0 +1,4 @@
+# Streamlit Community Cloud reads this file. It installs the aelab package (with its runtime
+# dependencies: anthropic, matplotlib, typer) plus Streamlit via the 'ui' extra, building from
+# pyproject.toml. Local development uses uv instead: uv sync --extra ui.
+.[ui]

@@ -1,0 +1,11 @@
+# A clean, modern light theme: indigo accent on a near-white canvas.
+[theme]
+base = "light"
+primaryColor = "#4f46e5"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f4f4fb"
+textColor = "#1f2430"
+font = "sans serif"
+
+[server]
+headless = true
