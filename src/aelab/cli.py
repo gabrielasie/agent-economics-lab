@@ -21,13 +21,15 @@ from aelab.agents.llm import (
     build_counterfactual_requests,
     counterfactual_deviations,
     decode_custom_id,
+    encode_custom_id,
     parse_bid_apr,
+    parse_rationale,
 )
 from aelab.config import Scenario, load_scenario
 from aelab.engine import run
 from aelab.harness import format_table, run_harness
 from aelab.metrics import deviation_stats, summarize
-from aelab.models import Funder, FunderKind
+from aelab.models import Bid, Funder, FunderKind, Invoice
 from aelab.populations import (
     Population,
     generate_financiers,
@@ -138,6 +140,39 @@ def compute_deviations(scenario: Scenario, texts: dict[str, str]) -> tuple[list[
             continue
         deviations.append(apr - funder.true_cost_apr)
     return deviations, failures
+
+
+def arena_bids(
+    scenario: Scenario, texts: dict[str, str], invoice_index: int
+) -> tuple[Invoice, list[tuple[Funder, Bid]]]:
+    """Gather every funder's saved bid on one invoice as a sealed-bid field for the arena.
+
+    In a sealed-bid auction the bids are independent and private, so one invoice's column of the
+    probe is exactly a competitive field: each agent saw only its own cost and the invoice. Each
+    bid carries the model's rationale; an unparseable completion falls back to the truthful bid.
+    """
+    funders = generate_financiers(
+        scenario.financier, scenario.probe_n_funders, random.Random(scenario.seed)
+    )
+    invoices = generate_invoices(
+        scenario.invoice, scenario.probe_n_invoices, random.Random(scenario.seed + 1)
+    )
+    pairs = [(funder, invoice) for funder in funders for invoice in invoices]
+    _, index_map = build_batch_requests(pairs)
+    field: list[tuple[Funder, Bid]] = []
+    for i, (funder, _invoice) in index_map.items():
+        if i % scenario.probe_n_invoices != invoice_index:
+            continue
+        text = texts.get(encode_custom_id(i))
+        if text is None:
+            continue
+        apr = parse_bid_apr(text)
+        if apr is None:
+            bid = Bid(funder.party_id, funder.true_cost_apr, "parse failed; truthful fallback")
+        else:
+            bid = Bid(funder.party_id, apr, parse_rationale(text))
+        field.append((funder, bid))
+    return invoices[invoice_index], field
 
 
 def run_probe(scenario: Scenario, from_raw: Path | None) -> None:

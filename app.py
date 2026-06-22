@@ -22,12 +22,12 @@ import streamlit as st
 
 from aelab.agents.llm import build_counterfactual_requests, counterfactual_deviations
 from aelab.auction import clear_auction, clear_first_price
-from aelab.cli import attack_population, compute_deviations, compute_efficiency
+from aelab.cli import arena_bids, attack_population, compute_deviations, compute_efficiency
 from aelab.config import load_scenario
 from aelab.economics import apr_to_discount, financing_cost, surplus_split
 from aelab.harness import run_harness
 from aelab.metrics import deviation_stats
-from aelab.models import Bid
+from aelab.models import Bid, Funder, Invoice
 from aelab.populations import generate_financiers, generate_invoices
 
 st.set_page_config(page_title="Agent Economics Lab", page_icon="📈", layout="wide")
@@ -158,8 +158,9 @@ with st.sidebar:
             "enable live runs, set ANTHROPIC_API_KEY (see .streamlit/secrets.toml.example)."
         )
 
-tab_play, tab_eff, tab_house, tab_truth, tab_first, tab_terms = st.tabs(
+tab_arena, tab_play, tab_eff, tab_house, tab_truth, tab_first, tab_terms = st.tabs(
     [
+        "Agent arena",
         "Try the auction",
         "Efficiency",
         "Incentive integrity",
@@ -168,6 +169,111 @@ tab_play, tab_eff, tab_house, tab_truth, tab_first, tab_terms = st.tabs(
         "Plain-English terms",
     ]
 )
+
+# --- agent arena: Claude funders bid against each other ------------------------
+
+with tab_arena:
+    st.subheader("Claude agents bid against each other")
+    st.write(
+        "Several funders, each a Claude agent, privately bid on one invoice. This is a "
+        "sealed-bid auction, so they never see each other: every agent gets only its own cost of "
+        "capital and the invoice, then submits one APR with a rationale. Below is a real field of "
+        "Claude bids; the auction clears to a winner and a price, and you can read each agent's "
+        "reasoning."
+    )
+    arena_raw = find_raw("truthfulness_raw.json")
+    arena_scenario = load_scenario(PROBE_SCENARIO)
+    if arena_raw is None:
+        st.info("No committed Claude bids found (data/truthfulness_raw.json).")
+    else:
+        arena_texts = json.loads(arena_raw.read_text(encoding="utf-8"))
+        pick = st.columns([1, 1, 2])
+        inv_idx = pick[0].slider("Invoice", 0, arena_scenario.probe_n_invoices - 1, 0)
+        reserve_a = pick[1].slider("Supplier reserve (APR %)", 5.0, 60.0, 40.0, 1.0) / 100
+        invoice, field = arena_bids(arena_scenario, arena_texts, inv_idx)
+        result = clear_auction([bid for _, bid in field], reserve_a, random.Random(0))
+
+        table = pd.DataFrame(
+            [
+                {
+                    "agent": funder.party_id,
+                    "cost": funder.true_cost_apr,
+                    "bid": bid.apr,
+                    "winner": bool(result.traded and result.winner_id == funder.party_id),
+                }
+                for funder, bid in field
+            ]
+        ).set_index("agent")
+        chart_col, win_col = st.columns([3, 2])
+        chart_col.bar_chart(table[["bid"]], height=300)
+        with win_col:
+            if result.traded:
+                assert result.clearing_apr is not None and result.winning_bid_apr is not None
+                split = surplus_split(
+                    invoice.face_value,
+                    reserve_a,
+                    result.clearing_apr,
+                    result.winning_bid_apr,
+                    invoice.days_early,
+                )
+                st.metric("Winner", f"Agent {result.winner_id}")
+                st.metric("Clearing APR (paid)", f"{result.clearing_apr:.1%}")
+                m = st.columns(2)
+                m[0].metric("Supplier surplus", f"EUR {split.supplier_surplus:,.0f}")
+                m[1].metric("Winner rent", f"EUR {split.winner_rent:,.0f}")
+            else:
+                st.warning("No bid cleared under this reserve.")
+        st.dataframe(table.style.format({"cost": "{:.1%}", "bid": "{:.1%}"}), width="stretch")
+
+        with st.expander("Read each agent's reasoning"):
+            for funder, bid in field:
+                crown = " (winner)" if result.traded and result.winner_id == funder.party_id else ""
+                st.markdown(f"**Agent {funder.party_id}**{crown} bid {bid.apr:.2%}")
+                st.caption(bid.rationale or "(no rationale returned)")
+
+        st.caption(
+            "These are real Claude Haiku bids from the committed probe, made under a prompt that "
+            "names truthful bidding, so the agents bid close to their cost and the lowest-cost "
+            "agent wins. Whether they would still do that under a neutral first-price prompt is "
+            "what the First-price tab tests."
+        )
+
+    if API_KEY:
+        with st.expander("Run a fresh live arena with custom costs (uses your API key)"):
+            live = st.columns(4)
+            costs_live = [
+                live[0].slider("Agent A cost (%)", 1.0, 40.0, 7.0, 0.5, key="arena_a") / 100,
+                live[1].slider("Agent B cost (%)", 1.0, 40.0, 10.0, 0.5, key="arena_b") / 100,
+                live[2].slider("Agent C cost (%)", 1.0, 40.0, 14.0, 0.5, key="arena_c") / 100,
+            ]
+            face_live = live[3].number_input(
+                "Face value (EUR)", 1_000, 5_000_000, 100_000, 1_000, key="arena_face"
+            )
+            reserve_live = st.slider("Reserve (APR %)", 5.0, 60.0, 40.0, 1.0, key="arena_res") / 100
+            if st.button("Run live arena"):
+                from aelab.agents.base import AuctionContext, AuctionRules
+                from aelab.agents.cache import AnthropicClient, ResponseCache
+                from aelab.agents.llm import LLMAgent
+
+                client = ResponseCache(AnthropicClient())
+                ctx = AuctionContext(
+                    invoice=Invoice("ARENA", float(face_live), 60),
+                    rules=AuctionRules(reserve_apr=reserve_live),
+                )
+                live_field: list[tuple[Funder, Bid]] = []
+                with st.spinner("Asking each Claude agent for a bid..."):
+                    for i, cost in enumerate(costs_live):
+                        funder = Funder(f"L{i}", cost)
+                        live_field.append((funder, LLMAgent(funder, client).bid(ctx)))
+                live_result = clear_auction([b for _, b in live_field], reserve_live, random.Random(0))
+                if live_result.traded:
+                    st.success(f"Winner: Agent {live_result.winner_id} at {live_result.clearing_apr:.1%}")
+                for funder, bid in live_field:
+                    st.markdown(
+                        f"**Agent {funder.party_id}** cost {funder.true_cost_apr:.1%}, "
+                        f"bid {bid.apr:.2%}"
+                    )
+                    st.caption(bid.rationale or "(no rationale returned)")
 
 # --- interactive auction ------------------------------------------------------
 

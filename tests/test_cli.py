@@ -9,7 +9,7 @@ import pytest
 from typer.testing import CliRunner
 
 from aelab.agents.llm import build_batch_requests, encode_custom_id
-from aelab.cli import app, attack_population, compute_deviations, compute_efficiency
+from aelab.cli import app, arena_bids, attack_population, compute_deviations, compute_efficiency
 from aelab.config import load_scenario
 from aelab.models import FunderKind
 from aelab.populations import generate_financiers, generate_invoices
@@ -66,3 +66,27 @@ def test_compute_deviations_scores_truthful_and_counts_failures() -> None:
     deviations, failures = compute_deviations(scenario, texts)
     assert failures == 1
     assert deviations == pytest.approx([0.0])
+
+
+def test_arena_bids_builds_one_invoice_field() -> None:
+    scenario = load_scenario("default")
+    funders = generate_financiers(
+        scenario.financier, scenario.probe_n_funders, random.Random(scenario.seed)
+    )
+    invoices = generate_invoices(
+        scenario.invoice, scenario.probe_n_invoices, random.Random(scenario.seed + 1)
+    )
+    pairs = [(f, inv) for f in funders for inv in invoices]
+    _, index_map = build_batch_requests(pairs)
+    # Every funder bids its cost on invoice 0.
+    texts = {}
+    for i, (funder, _inv) in index_map.items():
+        if i % scenario.probe_n_invoices == 0:
+            texts[encode_custom_id(i)] = json.dumps(
+                {"apr": funder.true_cost_apr, "rationale": f"cost of {funder.party_id}"}
+            )
+    invoice, field = arena_bids(scenario, texts, 0)
+    assert invoice.invoice_id == invoices[0].invoice_id
+    assert len(field) == scenario.probe_n_funders
+    assert all(bid.apr == funder.true_cost_apr for funder, bid in field)
+    assert all(bid.rationale for _, bid in field)
