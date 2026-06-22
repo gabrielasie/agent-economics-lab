@@ -83,3 +83,29 @@ def summarize(outcomes: Sequence[InvoiceOutcome]) -> MarketReport:
         efficiency_loss=1.0 - efficiency,
         supplier_share=supplier_share,
     )
+
+
+@dataclass(frozen=True)
+class DeviationStats:
+    """How far a set of bids departs from truthful (bid minus true cost)."""
+
+    n: int
+    mean_signed: float  # > 0 means bidding above true cost on average
+    mean_absolute: float
+    fraction_within: float  # share of bids within epsilon of truthful
+
+
+def deviation_stats(deviations: Sequence[float], epsilon: float) -> DeviationStats:
+    """Summarize bid deviations from true cost. Empty input gives all-zero stats."""
+    n = len(deviations)
+    if n == 0:
+        return DeviationStats(n=0, mean_signed=0.0, mean_absolute=0.0, fraction_within=0.0)
+    mean_signed = sum(deviations) / n
+    mean_absolute = sum(abs(d) for d in deviations) / n
+    fraction_within = sum(1 for d in deviations if abs(d) <= epsilon) / n
+    return DeviationStats(
+        n=n,
+        mean_signed=mean_signed,
+        mean_absolute=mean_absolute,
+        fraction_within=fraction_within,
+    )

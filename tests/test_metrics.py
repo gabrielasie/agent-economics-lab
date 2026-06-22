@@ -7,7 +7,7 @@ supplier surplus over realized total, not over first-best.
 import pytest
 
 from aelab.economics import first_best_surplus, surplus_split
-from aelab.metrics import InvoiceOutcome, summarize
+from aelab.metrics import InvoiceOutcome, deviation_stats, summarize
 from aelab.models import AuctionResult, Funder, Invoice, Supplier
 
 
@@ -114,3 +114,27 @@ def test_aggregates_across_invoices() -> None:
     assert both.realized_total == pytest.approx(one.realized_total)
     assert both.first_best_total == pytest.approx(one.first_best_total)
     assert both.supplier_surplus_total == pytest.approx(one.supplier_surplus_total)
+
+
+# --- deviation stats (truthfulness probe) -------------------------------------
+
+
+def test_deviation_stats_known_values() -> None:
+    stats = deviation_stats([0.0, 0.02, -0.04], epsilon=0.01)
+    assert stats.n == 3
+    assert stats.mean_signed == pytest.approx((0.0 + 0.02 - 0.04) / 3)
+    assert stats.mean_absolute == pytest.approx((0.0 + 0.02 + 0.04) / 3)
+    assert stats.fraction_within == pytest.approx(1 / 3)  # only 0.0 is within 0.01
+
+
+def test_deviation_stats_all_within_epsilon() -> None:
+    stats = deviation_stats([0.001, -0.002, 0.0], epsilon=0.01)
+    assert stats.fraction_within == 1.0
+
+
+def test_deviation_stats_empty() -> None:
+    stats = deviation_stats([], epsilon=0.01)
+    assert stats.n == 0
+    assert stats.mean_signed == 0.0
+    assert stats.mean_absolute == 0.0
+    assert stats.fraction_within == 0.0
