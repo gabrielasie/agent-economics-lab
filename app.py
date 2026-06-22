@@ -12,6 +12,7 @@ Run locally:  uv sync --extra ui && uv run streamlit run app.py
 from __future__ import annotations
 
 import json
+import os
 import random
 from pathlib import Path
 
@@ -49,6 +50,17 @@ def find_raw(filename: str) -> Path | None:
         if path.exists():
             return path
     return None
+
+
+def get_api_key() -> str | None:
+    """Read the Anthropic key from the environment or Streamlit secrets, if either is set."""
+    key = os.environ.get("ANTHROPIC_API_KEY")
+    if key:
+        return key
+    try:
+        return str(st.secrets["ANTHROPIC_API_KEY"])
+    except Exception:
+        return None
 
 
 @st.cache_data(show_spinner=False)
@@ -121,6 +133,10 @@ for col, (heading, body) in zip(card_cols, cards, strict=True):
 
 st.divider()
 
+API_KEY = get_api_key()
+if API_KEY:
+    os.environ["ANTHROPIC_API_KEY"] = API_KEY
+
 with st.sidebar:
     st.header("Controls")
     names = scenario_names()
@@ -134,10 +150,13 @@ with st.sidebar:
         "population the saved bids were generated under."
     )
     st.divider()
-    st.caption(
-        "Deterministic and reproducible. The LLM panels replay committed bids, so this app uses "
-        "no API key."
-    )
+    if API_KEY:
+        st.success("API key detected: live LLM runs are enabled.")
+    else:
+        st.caption(
+            "No API key. Deterministic panels run live; LLM panels replay committed bids. To "
+            "enable live runs, set ANTHROPIC_API_KEY (see .streamlit/secrets.toml.example)."
+        )
 
 tab_play, tab_eff, tab_house, tab_truth, tab_first, tab_terms = st.tabs(
     [
@@ -276,6 +295,43 @@ with tab_house:
         width="stretch",
     )
 
+    st.divider()
+    st.markdown("**Fee structure: the base decides the incentive**")
+    st.write(
+        "The venue has to charge a fee, but the base it charges on sets its incentive. A fee on "
+        "the supplier's surplus shrinks when the supplier is squeezed, so withholding costs the "
+        "venue its own revenue. A fee on the spread (the winner's rent) grows when the supplier "
+        "is squeezed, so that base literally pays the venue to extract. Switch the sidebar to "
+        "`extraction` to see the two bases diverge."
+    )
+    fee_left, fee_right = st.columns([1, 2])
+    fee_rate = fee_left.slider("Fee rate (%)", 0.0, 30.0, 10.0, 1.0) / 100
+    fee_base = fee_left.radio("Fee base", ["supplier surplus (aligned)", "the spread (extractive)"])
+    aligned = fee_base.startswith("supplier")
+    fee_df = frame.copy()
+    # Conservation: supplier share + winner-rent share = 1 of the realized pie on each invoice.
+    fee_df["winner rent share"] = 1.0 - fee_df["supplier share"]
+    base_share = fee_df["supplier share"] if aligned else fee_df["winner rent share"]
+    fee_df["venue fee"] = fee_rate * base_share
+    fee_df["supplier net"] = fee_df["supplier share"] - (fee_df["venue fee"] if aligned else 0.0)
+    fee_right.caption("Venue fee revenue by regime (share of the realized pie)")
+    fee_right.bar_chart(fee_df[["venue fee"]], height=240)
+    if "separated" in fee_df.index and "informed" in fee_df.index:
+        delta = float(fee_df.loc["informed", "venue fee"] - fee_df.loc["separated", "venue fee"])
+        if aligned:
+            st.success(
+                f"A surplus-based fee tracks the supplier: going from the honest house to "
+                f"withholding moves the venue's fee by {delta:+.4f} of the pie. The venue earns "
+                f"most when the supplier does, so it has no reason to withhold. Extraction is "
+                f"self-defeating, which is what makes the separation externally defensible."
+            )
+        else:
+            st.error(
+                f"A spread-based fee tracks the squeeze: going from the honest house to "
+                f"withholding moves the venue's fee by {delta:+.4f} of the pie. This base can pay "
+                f"the venue to extract, so do not price the underwriting book on the spread."
+            )
+
 # --- truthfulness -------------------------------------------------------------
 
 with tab_truth:
@@ -326,10 +382,35 @@ with tab_first:
         "truthful-under-both means it followed coaching all along."
     )
     raw = find_raw("first_price_raw.json")
-    if raw is None:
+    if raw is None and API_KEY:
+        st.caption(
+            "Live runs are enabled. Generating bids calls the Anthropic API and spends your key; "
+            "on a public deployment every visitor can trigger it. For a shareable demo, prefer "
+            "running it once locally and committing data/first_price_raw.json."
+        )
+        if st.button("Generate first-price bids live (uses your API key)"):
+            from aelab.agents.cache import AnthropicBatchClient
+
+            scenario = load_scenario(PROBE_SCENARIO)
+            funders = generate_financiers(
+                scenario.financier, scenario.probe_n_funders, random.Random(scenario.seed)
+            )
+            invoices = generate_invoices(
+                scenario.invoice, scenario.probe_n_invoices, random.Random(scenario.seed + 1)
+            )
+            pairs = [(funder, invoice) for funder in funders for invoice in invoices]
+            requests, _ = build_counterfactual_requests(pairs)
+            with st.spinner("Running a live Message Batch. This can take a few minutes..."):
+                texts = AnthropicBatchClient().run(requests)
+                RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+                (RESULTS_DIR / "first_price_raw.json").write_text(
+                    json.dumps(texts, indent=2), encoding="utf-8"
+                )
+            st.rerun()
+    elif raw is None:
         st.info(
-            "Pending a live run. Run `uv run aelab counterfactual` with an API key, then commit "
-            "`data/first_price_raw.json`. The deterministic panels above need no key."
+            "Pending a live run. Either set ANTHROPIC_API_KEY to generate the bids from here, or "
+            "run `uv run aelab counterfactual` locally and commit data/first_price_raw.json."
         )
     else:
         scenario = load_scenario(PROBE_SCENARIO)

@@ -10,7 +10,10 @@ dist/
 build/
 
 # project
-.cache/            # LLM response cache: commit a curated sample, ignore the rest
+# LLM response cache: commit a curated sample, ignore the rest
+.cache/
 results/*.json
 *.png
 .env
+# the real Streamlit key; commit .streamlit/secrets.toml.example instead
+.streamlit/secrets.toml
