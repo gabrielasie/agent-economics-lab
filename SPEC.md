@@ -144,7 +144,9 @@ attacks/prompt_injection (payloads, success-rate measurement, output-validation 
 harness (baseline plus house regimes plus a collusion row, formatted as a table). config
 (Scenario loaded from scenarios/*.toml) and cli (the aelab Typer app: efficiency,
 truthfulness, attacks). scripts run_efficiency.py and run_truthfulness_probe.py, both
-scenario-driven, the probe with --from-raw. README.
+scenario-driven, the probe with --from-raw. README and demo.ipynb (the three results run in
+sequence). scenarios/extraction.toml: a population built so the house is the pivotal funder,
+where the withholding attack is measurable, with an honest cost-priced policy (zero loadings).
 
 The parser fix (strip the json fence, extract the first balanced JSON object) and the probe
 --from-raw mode are done. The run_efficiency controlled-sweep fix is done: suppliers and
@@ -156,8 +158,8 @@ Remaining (designed in sections 2, 4, and 6, not yet built):
 - First-price counterfactual: clear_first_price in auction.py (lowest eligible wins, paid
   its own bid); a NEUTRAL prompt variant in agents/llm.py that states the rules and
   recommends no strategy; scripts/run_first_price_counterfactual.py.
-- A demo notebook. Live numbers that need an API key: the truthfulness probe has a result
-  from saved raw bids; the prompt-injection live success rates per class are not yet run.
+- Live numbers that need an API key: the truthfulness probe has a result from saved raw bids;
+  the first-price probe and the prompt-injection live success rates per class are not yet run.
 
 Disagreement to resolve, not blocking: the truthfulness probe's system prompt currently
 coaches ("bidding your true cost of capital is optimal"), which section 7 forbids for
@@ -176,7 +178,9 @@ from the probe.
   Shading up means strategic reasoning; near-truthful in both auction types means
   prompt-following.
 - House extraction: informed vs separated house, reporting supplier share, efficiency, and
-  fair-rate-index flags. The argument for structural separation.
+  fair-rate-index flags. The argument for structural separation. Measurable only where the
+  house is the pivotal funder (scenarios/extraction.toml); in the default market a competitive
+  buyer disciplines it, so the same attack moves nothing. That contrast is the result.
 
 ## 7. Locked conventions
 

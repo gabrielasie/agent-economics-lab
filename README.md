@@ -14,11 +14,15 @@ surplus and efficiency against a clean baseline.
 Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/).
 
 ```
-uv sync                       # install dependencies and the package
-uv run aelab efficiency       # efficiency and supplier-share curves
-uv run aelab attacks          # baseline vs house and collusion regimes (a table)
+uv sync                                   # install dependencies and the package
+uv run aelab efficiency                   # efficiency and supplier-share curve -> results/efficiency.png
+uv run aelab attacks --scenario extraction  # the house-extraction harness (a table)
+uv run aelab attacks                      # the default market, where competition disciplines extraction
 uv run aelab truthfulness --from-raw results/truthfulness_raw.json
 ```
+
+`demo.ipynb` runs all three results in sequence with context. Open it with Jupyter, or
+execute it headless: `uv run jupyter nbconvert --to notebook --execute --inplace demo.ipynb`.
 
 Every command takes `--scenario NAME`, loaded from `scenarios/NAME.toml` (default:
 `scenarios/default.toml`). A run is reproducible from its scenario file plus the response
@@ -40,28 +44,35 @@ uv run pytest
 **1. Efficiency and the supplier-share curve.** Under truthful bidding the lowest-cost
 funder always wins, so allocative efficiency is 1.000 at every financier count. The
 controlled sweep holds the suppliers and invoices fixed and grows only the financier pool;
-the supplier share of surplus rises with competition (0.897 to 0.927 in the default
+the supplier share of surplus rises with competition (0.885 to 0.917 in the default
 scenario). Efficiency is necessary but not sufficient: a market can be fully efficient and
-still split the pie against the supplier, so supplier share is a first-class metric.
+still split the pie against the supplier, so supplier share is a first-class metric. The
+chart is `results/efficiency.png`.
 
 **2. Do LLM agents bid the dominant strategy?** Human subjects famously overbid in Vickrey
 experiments. Given a known private cost, a Claude Haiku agent bids it: across 120 bids the
 mean signed deviation is about zero and 100% land within 50 bps of truthful. No systematic
-shading. (The tiny residual is the prompt's four-decimal rounding of the cost, not model
-error; measuring shading below that floor needs more prompt precision and adversarial
-framings.)
+shading (the chart is `results/truthfulness.png`). The tiny residual is the prompt's
+four-decimal rounding of the cost, not model error. One caveat the artifact is honest about:
+the probe's prompt states that truthful bidding is optimal, so this may be prompt-following,
+not reasoning. The first-price counterfactual is the test that would tell them apart, and it
+is not yet built or run.
 
-**3. House extraction, and a fair-rate index that catches it.** A house that bids its
-signed policy blind helps suppliers by adding competition. A house that peeks at sealed
-competitor bids extracts by withholding: when it cannot win profitably it bids just under
-the reserve, removing the low bid that would have set the clearing, so the supplier pays
-more. The extraction is on price, not allocation, so the market stays 100% efficient and a
-no-house baseline cannot see it (the informed regime reverts to baseline). The fair-rate
-index, benchmarked against the honest (structurally separated) house, flags it. The same
-index flags financier collusion (a ring parking bids to lift the second price), and a
-competitive in-house buyer disciplines that ring. For the LLM agents, clamping each bid to
-the signed pricing policy is an output-validation defense that provably caps any prompt
-injection inside the policy bounds, whatever the model returns.
+**3. House extraction, and a fair-rate index that catches it.** Extraction is only
+measurable where the house is the pivotal funder, so this runs on the `extraction` scenario:
+a cheap buyer wins every invoice and the house is the price-setting second-lowest bid at its
+honest cost. A house that bids that policy blind helps suppliers by adding competition
+(supplier share 0.754 to 0.855). A house that peeks at sealed bids extracts by withholding:
+it cannot beat the buyer, so it bids just under the reserve, removing the bid that set the
+clearing, and supplier share falls back to 0.754 on all 50 invoices. The extraction is on
+price, not allocation, so the market stays 100% efficient and a no-house baseline cannot see
+it. The fair-rate index, benchmarked against the honest (structurally separated) house,
+flags every extracted invoice; the same index flags financier collusion. The discipline that
+defeats both is competition: in the `default` scenario a cheap in-house buyer and competitive
+financiers sit below the house, so withholding and the ring move nothing and the index stays
+quiet. For the LLM agents, clamping each bid to the signed pricing policy is an
+output-validation defense that provably caps any prompt injection inside the policy bounds,
+whatever the model returns.
 
 ## Architecture
 

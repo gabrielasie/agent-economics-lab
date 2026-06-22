@@ -1,0 +1,51 @@
+# Extraction scenario: a population where the house is the pivotal funder, so the
+# house-withholding attack is measurable. A cheap buyer (0.06) below the house wins every
+# invoice (extraction stays on price, not allocation); financiers sit entirely above the
+# house cost (0.10), so the honest house is the second-lowest bid that sets the clearing.
+# Withholding it lifts the clearing to a financier, and the fair-rate index flags the gap.
+name = "extraction"
+seed = 7
+
+[supplier]
+# All strapped with high reservations, so every bid is eligible and the house is in play.
+comfortable_fraction = 0.0
+comfortable_apr = [0.05, 0.12]
+strapped_apr = [0.25, 0.45]
+
+[financier]
+# Entirely above the house cost of 0.10: the house is the price-setting second-lowest bid.
+cost_apr = [0.12, 0.18]
+
+[invoice]
+face_value = [10000.0, 500000.0]
+days_early = [15, 90]
+
+[counts]
+suppliers = 50
+invoices = 50
+financiers = 4
+
+[buyer]
+# A cheap buyer below the house wins every invoice, so extraction is on price, not allocation.
+include = true
+cost_apr = 0.06
+
+[house]
+cost_apr = 0.10
+
+[policy]
+# Honest benchmark: base at the house cost, no risk loadings, so the separated house quotes
+# its true cost. This isolates withholding from margin: the only lever is peeking.
+base_apr = 0.10
+buyer_credit_loading = 0.0
+dilution_loading = 0.0
+min_apr = 0.0
+max_apr = 1.0
+
+[efficiency]
+financier_counts = [1, 2, 3, 4]
+
+[truthfulness]
+n_funders = 6
+n_invoices = 20
+epsilon = 0.005
