@@ -35,6 +35,9 @@ cost_apr = 0.07
 cost_apr = 0.09
 
 [policy]
+base_apr = 0.09
+buyer_credit_loading = 0.02
+dilution_loading = 0.02
 min_apr = 0.0
 max_apr = 1.0
 
@@ -65,6 +68,7 @@ def test_load_scenario_parses_fields(tmp_path: Path) -> None:
     assert scenario.buyer_cost_apr == 0.07
     assert scenario.house_cost_apr == 0.09
     assert scenario.policy.clamp(2.0) == 1.0  # policy max_apr is 1.0
+    assert scenario.policy.base_apr == 0.09  # the house quote base
     assert scenario.financier_counts == (1, 2, 3)
     assert scenario.probe_n_funders == 6
     assert scenario.epsilon == 0.005

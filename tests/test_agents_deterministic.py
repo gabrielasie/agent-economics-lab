@@ -68,16 +68,40 @@ def test_truthful_agent_frozen() -> None:
 
 
 def _policy() -> PricingPolicy:
-    return PricingPolicy(version="v1", min_apr=0.05, max_apr=0.30)
+    return PricingPolicy(
+        version="v1",
+        min_apr=0.05,
+        max_apr=0.30,
+        base_apr=0.12,
+        buyer_credit_loading=0.05,
+        dilution_loading=0.03,
+    )
 
 
-def test_policy_agent_bids_clamped_true_cost() -> None:
-    within = PolicyAgent(Funder("H", 0.12), _policy())
-    assert within.bid(_ctx()).apr == 0.12  # within bounds: bids true cost
-    below = PolicyAgent(Funder("H", 0.01), _policy())
-    assert below.bid(_ctx()).apr == 0.05  # below floor -> clamped up
-    above = PolicyAgent(Funder("H", 0.90), _policy())
-    assert above.bid(_ctx()).apr == 0.30  # above ceiling -> clamped down
+def _risk_ctx() -> AuctionContext:
+    invoice = Invoice("INV-R", 100_000.0, 60, buyer_credit=0.4, dilution_risk=0.6)
+    return AuctionContext(invoice=invoice, rules=AuctionRules(reserve_apr=0.30))
+
+
+def test_policy_agent_bids_the_quote() -> None:
+    policy = _policy()
+    agent = PolicyAgent(Funder("H", 0.12), policy)
+    ctx = _risk_ctx()
+    assert agent.bid(ctx).apr == policy.quote(ctx.invoice)  # the signed quote, not the cost
+
+
+def test_policy_agent_bid_ignores_true_cost() -> None:
+    # The quote depends on the policy and invoice, never the funder's cost.
+    cheap = PolicyAgent(Funder("H", 0.01), _policy())
+    dear = PolicyAgent(Funder("H", 0.90), _policy())
+    assert cheap.bid(_ctx()).apr == dear.bid(_ctx()).apr
+
+
+def test_policy_agent_rationale_carries_version_and_hash() -> None:
+    policy = _policy()
+    bid = PolicyAgent(Funder("H", 0.12), policy).bid(_ctx())
+    assert policy.version in bid.rationale
+    assert policy.content_hash in bid.rationale
 
 
 def test_policy_agent_satisfies_protocol() -> None:

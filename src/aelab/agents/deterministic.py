@@ -29,14 +29,18 @@ class TruthfulAgent:
 class PolicyAgent:
     """A house funder bidding a signed, deterministic pricing policy, blind to competitors.
 
-    Bids its true cost clamped to the policy bounds, ignoring ctx (including ctx.leaked).
-    The bid is reproducible from the policy and the funder's cost: the structural
-    separation the house-extraction defense relies on. (A margin-based quote is a future
-    refinement; clamping the true cost is enough for an honest, bounded, no-peek bid.)
+    Bids the policy quote for the invoice (base APR plus risk loadings, clamped), ignoring
+    ctx.leaked. The bid is reproducible from the policy and the invoice, and it carries the
+    policy version and content hash as its rationale: the structural separation the
+    house-extraction defense relies on. The bid does not depend on the funder's true cost.
     """
 
     party: Funder
     policy: PricingPolicy
 
     def bid(self, ctx: AuctionContext) -> Bid:
-        return Bid(bidder_id=self.party.party_id, apr=self.policy.clamp(self.party.true_cost_apr))
+        return Bid(
+            bidder_id=self.party.party_id,
+            apr=self.policy.quote(ctx.invoice),
+            rationale=f"policy {self.policy.version} {self.policy.content_hash}",
+        )

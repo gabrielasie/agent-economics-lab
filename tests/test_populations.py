@@ -126,6 +126,8 @@ def test_invoices_in_range(seed: int) -> None:
         assert inv.face_value > 0
         assert ic.days_early[0] <= inv.days_early <= ic.days_early[1]
         assert inv.days_early >= 1
+        assert 0.0 <= inv.buyer_credit < 1.0
+        assert 0.0 <= inv.dilution_risk < 1.0
 
 
 # --- counts, ids, and kind mix ------------------------------------------------

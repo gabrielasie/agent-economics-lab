@@ -114,12 +114,26 @@ def generate_financiers(config: FinancierConfig, n: int, rng: random.Random) -> 
 
 
 def generate_invoices(config: InvoiceConfig, n: int, rng: random.Random) -> list[Invoice]:
-    """Draw n invoices with positive face value and a tenor in days."""
+    """Draw n invoices: positive face value, a tenor in days, and risk scores in [0, 1).
+
+    Buyer credit and dilution risk are drawn uniform in [0, 1). They feed a policy quote,
+    never the auction directly, so they leave truthful-bidding efficiency untouched.
+    """
     invoices: list[Invoice] = []
     for i in range(n):
         face = rng.uniform(*config.face_value)
         days = rng.randint(*config.days_early)
-        invoices.append(Invoice(invoice_id=f"INV{i}", face_value=face, days_early=days))
+        buyer_credit = rng.random()
+        dilution_risk = rng.random()
+        invoices.append(
+            Invoice(
+                invoice_id=f"INV{i}",
+                face_value=face,
+                days_early=days,
+                buyer_credit=buyer_credit,
+                dilution_risk=dilution_risk,
+            )
+        )
     return invoices
 
 

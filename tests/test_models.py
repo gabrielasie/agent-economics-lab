@@ -44,6 +44,30 @@ def test_invoice_memo_stored_verbatim() -> None:
     assert inv.memo == payload  # untrusted text is data, never interpreted
 
 
+def test_invoice_risk_fields_default_zero() -> None:
+    inv = Invoice(invoice_id="x", face_value=1000.0, days_early=90)
+    assert inv.buyer_credit == 0.0
+    assert inv.dilution_risk == 0.0
+
+
+def test_invoice_risk_fields_stored() -> None:
+    inv = Invoice(invoice_id="x", face_value=1000.0, days_early=90, buyer_credit=0.3, dilution_risk=0.7)
+    assert inv.buyer_credit == 0.3
+    assert inv.dilution_risk == 0.7
+
+
+@pytest.mark.parametrize("value", [-0.01, 1.01])
+def test_invoice_rejects_out_of_range_buyer_credit(value: float) -> None:
+    with pytest.raises(ValueError):
+        Invoice(invoice_id="x", face_value=1000.0, days_early=90, buyer_credit=value)
+
+
+@pytest.mark.parametrize("value", [-0.01, 1.01])
+def test_invoice_rejects_out_of_range_dilution_risk(value: float) -> None:
+    with pytest.raises(ValueError):
+        Invoice(invoice_id="x", face_value=1000.0, days_early=90, dilution_risk=value)
+
+
 def test_invoice_frozen() -> None:
     inv = Invoice(invoice_id="x", face_value=1000.0, days_early=90)
     with pytest.raises(dataclasses.FrozenInstanceError):
@@ -96,6 +120,14 @@ def test_supplier_frozen() -> None:
 
 def test_bid_valid() -> None:
     assert Bid(bidder_id="F1", apr=0.08).apr == 0.08
+
+
+def test_bid_rationale_defaults_empty() -> None:
+    assert Bid(bidder_id="F1", apr=0.08).rationale == ""
+
+
+def test_bid_rationale_stored() -> None:
+    assert Bid(bidder_id="F1", apr=0.08, rationale="because").rationale == "because"
 
 
 def test_bid_rejects_negative_apr() -> None:
@@ -165,6 +197,9 @@ def test_policy_hash_deterministic_for_equal_fields() -> None:
         {"version": "v2", "min_apr": 0.05, "max_apr": 0.30},
         {"version": "v1", "min_apr": 0.06, "max_apr": 0.30},
         {"version": "v1", "min_apr": 0.05, "max_apr": 0.31},
+        {"version": "v1", "min_apr": 0.05, "max_apr": 0.30, "base_apr": 0.10},
+        {"version": "v1", "min_apr": 0.05, "max_apr": 0.30, "buyer_credit_loading": 0.01},
+        {"version": "v1", "min_apr": 0.05, "max_apr": 0.30, "dilution_loading": 0.01},
     ],
 )
 def test_policy_hash_changes_when_any_field_changes(kwargs: dict[str, object]) -> None:
@@ -183,6 +218,68 @@ def test_policy_clamp() -> None:
 def test_policy_rejects_bad_bounds(lo: float, hi: float) -> None:
     with pytest.raises(ValueError):
         PricingPolicy(version="v1", min_apr=lo, max_apr=hi)
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [{"base_apr": -0.01}, {"buyer_credit_loading": -0.01}, {"dilution_loading": -0.01}],
+)
+def test_policy_rejects_negative_base_or_loadings(kwargs: dict[str, float]) -> None:
+    with pytest.raises(ValueError):
+        PricingPolicy(version="v1", min_apr=0.05, max_apr=0.30, **kwargs)
+
+
+# --- PricingPolicy.quote ------------------------------------------------------
+
+
+def _quote_policy() -> PricingPolicy:
+    return PricingPolicy(
+        version="v1",
+        min_apr=0.0,
+        max_apr=1.0,
+        base_apr=0.10,
+        buyer_credit_loading=0.05,
+        dilution_loading=0.03,
+    )
+
+
+def test_quote_is_base_when_no_risk() -> None:
+    inv = Invoice("x", 1000.0, 90)  # risk fields default to 0
+    assert _quote_policy().quote(inv) == pytest.approx(0.10)
+
+
+def test_quote_deterministic() -> None:
+    policy = _quote_policy()
+    inv = Invoice("x", 1000.0, 90, buyer_credit=0.4, dilution_risk=0.6)
+    assert policy.quote(inv) == policy.quote(inv)
+
+
+def test_quote_adds_each_loading() -> None:
+    policy = _quote_policy()
+    inv = Invoice("x", 1000.0, 90, buyer_credit=1.0, dilution_risk=1.0)
+    assert policy.quote(inv) == pytest.approx(0.10 + 0.05 + 0.03)
+
+
+def test_quote_monotonic_in_buyer_credit() -> None:
+    policy = _quote_policy()
+    lo = policy.quote(Invoice("x", 1000.0, 90, buyer_credit=0.2, dilution_risk=0.5))
+    hi = policy.quote(Invoice("x", 1000.0, 90, buyer_credit=0.8, dilution_risk=0.5))
+    assert hi > lo
+
+
+def test_quote_monotonic_in_dilution_risk() -> None:
+    policy = _quote_policy()
+    lo = policy.quote(Invoice("x", 1000.0, 90, buyer_credit=0.5, dilution_risk=0.2))
+    hi = policy.quote(Invoice("x", 1000.0, 90, buyer_credit=0.5, dilution_risk=0.8))
+    assert hi > lo
+
+
+def test_quote_clamped_into_bounds() -> None:
+    # base above the ceiling clamps down; base below the floor clamps up.
+    high = PricingPolicy("v1", min_apr=0.05, max_apr=0.20, base_apr=0.18, buyer_credit_loading=0.50)
+    assert high.quote(Invoice("x", 1000.0, 90, buyer_credit=1.0)) == pytest.approx(0.20)
+    low = PricingPolicy("v1", min_apr=0.05, max_apr=0.30, base_apr=0.0)
+    assert low.quote(Invoice("x", 1000.0, 90)) == pytest.approx(0.05)
 
 
 def test_policy_frozen() -> None:

@@ -96,24 +96,27 @@ import anthropic. A violation fails the gate.
 
 FunderKind enum: FINANCIER, BUYER, HOUSE.
 
-Invoice(invoice_id, face_value>0, days_early>0, memo=""). Designed but not yet built: risk
-fields buyer_credit and dilution_risk (defaults, appended after memo). memo is untrusted
-free text, stored verbatim, never interpreted.
+Invoice(invoice_id, face_value>0, days_early>0, memo="", buyer_credit=0.0,
+dilution_risk=0.0). buyer_credit and dilution_risk are risk scores in [0, 1] that feed
+PricingPolicy.quote and never touch the auction directly. memo is untrusted free text,
+stored verbatim, never interpreted.
 
 Funder(party_id, true_cost_apr>=0, kind=FINANCIER). Private cost of capital.
 
 Supplier(party_id, reservation_apr>=0). Becomes the auction reserve. A distinct type from
 Funder so a supplier can never be passed where a bidder is expected.
 
-Bid(bidder_id, apr>=0). Designed but not yet built: an optional rationale string carried by
-LLM agents (the LLM parses a rationale today but Bid does not yet carry it).
+Bid(bidder_id, apr>=0, rationale=""). rationale is optional free text: deterministic agents
+fill it with the policy version and content hash, LLM agents with the model's stated
+reasoning. It never affects clearing, which depends only on bidder_id and apr.
 
 AuctionResult(traded, winner_id, clearing_apr, winning_bid_apr, num_eligible) with
 no_trade() and cleared(...) constructors and a traded iff outcome-fields-non-None invariant.
 
-PricingPolicy(version, min_apr, max_apr) with content_hash (sha256 over canonical JSON, the
-signature stand-in) and clamp(apr). Designed but not yet built: quote(invoice) -> float
-(deterministic APR from base plus risk loadings, clamped).
+PricingPolicy(version, min_apr, max_apr, base_apr=0.0, buyer_credit_loading=0.0,
+dilution_loading=0.0) with content_hash (sha256 over every field, the signature stand-in),
+clamp(apr), and quote(invoice) -> float (base_apr plus the risk loadings times the invoice
+risk scores, clamped; monotonic in each risk input).
 
 AuctionContext(invoice, rules, leaked), AuctionRules(reserve_apr), LeakedInfo(competitor_bids,
 is_empty) (empty by default).
@@ -132,7 +135,8 @@ loss, supplier share of surplus.
 Done and committed:
 
 models, economics, auction (second-price clear_auction), populations, metrics, engine,
-report. agents/base, agents/deterministic (TruthfulAgent and PolicyAgent), agents/cache
+report. agents/base, agents/deterministic (TruthfulAgent and PolicyAgent, the house bidding
+PricingPolicy.quote with the policy version and hash as its rationale), agents/cache
 (single-call and batch clients), agents/llm (LLMAgent with a fence-tolerant JSON parser,
 ValidatedLLMAgent, and the batch path with index-based custom_ids). attacks/house_extraction
 (informed vs separated house plus the fair-rate index), attacks/collusion (ring sweep),
@@ -152,11 +156,6 @@ Remaining (designed in sections 2, 4, and 6, not yet built):
 - First-price counterfactual: clear_first_price in auction.py (lowest eligible wins, paid
   its own bid); a NEUTRAL prompt variant in agents/llm.py that states the rules and
   recommends no strategy; scripts/run_first_price_counterfactual.py.
-- PricingPolicy.quote(invoice) (base APR plus risk loadings, clamped) and Invoice risk
-  fields buyer_credit and dilution_risk. The current PolicyAgent bids clamp(true_cost);
-  quote plus the risk fields is the planned refinement that makes the house book a
-  risk-priced quote.
-- Bid.rationale: the LLM parses a rationale but Bid does not yet carry it.
 - A demo notebook. Live numbers that need an API key: the truthfulness probe has a result
   from saved raw bids; the prompt-injection live success rates per class are not yet run.
 

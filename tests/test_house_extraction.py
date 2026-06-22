@@ -15,7 +15,9 @@ from aelab.attacks.house_extraction import InformedHouseAgent, run_regimes
 from aelab.models import Bid, Funder, FunderKind, Invoice, PricingPolicy, Supplier
 from aelab.populations import Population
 
-POLICY = PricingPolicy(version="v1", min_apr=0.0, max_apr=1.0)  # wide: clamp does not distort
+# base_apr at the house cost (0.10) so the separated house quotes its honest cost and is the
+# price-setting second-lowest bid; wide bounds and zero loadings so the quote is exactly base.
+POLICY = PricingPolicy(version="v1", min_apr=0.0, max_apr=1.0, base_apr=0.10)
 
 
 def _leaked_ctx(reserve: float, competitor_aprs: list[float]) -> AuctionContext:

@@ -8,7 +8,8 @@ from aelab.harness import format_table, run_harness
 from aelab.models import Funder, FunderKind, Invoice, PricingPolicy, Supplier
 from aelab.populations import Population
 
-POLICY = PricingPolicy(version="v1", min_apr=0.0, max_apr=1.0)
+# base_apr at the house cost (0.10) so the separated house quotes its honest cost.
+POLICY = PricingPolicy(version="v1", min_apr=0.0, max_apr=1.0, base_apr=0.10)
 
 
 def _population() -> Population:

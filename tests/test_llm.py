@@ -66,7 +66,7 @@ def _ctx(memo: str = "") -> AuctionContext:
 def test_prompt_construction() -> None:
     fake = FakeCompletionClient('{"apr": 0.11, "rationale": "ok"}')
     bid = LLMAgent(Funder("F1", 0.09), fake).bid(_ctx(memo="net-30"))
-    assert bid == Bid("F1", 0.11)
+    assert bid == Bid("F1", 0.11, rationale="ok")
     assert fake.last is not None
     model, system, user = fake.last
     assert model == DEFAULT_MODEL  # claude-haiku-4-5
@@ -87,6 +87,17 @@ def test_malformed_json_falls_back_to_truthful_bid() -> None:
 def test_valid_json_uses_parsed_apr() -> None:
     agent = LLMAgent(Funder("F1", 0.09), FakeCompletionClient('{"apr": 0.13, "rationale": "y"}'))
     assert agent.bid(_ctx()).apr == 0.13
+
+
+def test_agent_carries_model_rationale() -> None:
+    agent = LLMAgent(Funder("F1", 0.09), FakeCompletionClient('{"apr": 0.13, "rationale": "because"}'))
+    assert agent.bid(_ctx()).rationale == "because"
+
+
+def test_fallback_bid_records_rationale() -> None:
+    bid = LLMAgent(Funder("F1", 0.09), FakeCompletionClient("not json")).bid(_ctx())
+    assert bid.apr == 0.09  # truthful fallback
+    assert "fallback" in bid.rationale  # the bid records why it fell back
 
 
 def test_parse_bid_apr() -> None:
@@ -150,8 +161,8 @@ def test_batch_joins_results_by_custom_id() -> None:
         encode_custom_id(1): '{"apr": 0.22, "rationale": "b"}',
     }
     bids = batch_bids([(f0, inv), (f1, inv)], FakeBatchClient(responses))
-    assert bids[("F0", "INV-7")] == Bid("F0", 0.11)
-    assert bids[("F1", "INV-7")] == Bid("F1", 0.22)
+    assert bids[("F0", "INV-7")] == Bid("F0", 0.11, rationale="a")
+    assert bids[("F1", "INV-7")] == Bid("F1", 0.22, rationale="b")
 
 
 def test_batch_missing_result_falls_back_to_truthful() -> None:

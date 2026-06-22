@@ -111,6 +111,17 @@ def parse_bid_apr(text: str) -> float | None:
     return apr if apr >= 0 else None
 
 
+FALLBACK_RATIONALE = "parse failed; truthful fallback"
+
+
+def parse_rationale(text: str) -> str:
+    """Return the rationale string from a {apr, rationale} object, or "" if absent."""
+    obj = _first_json_object(text)
+    if isinstance(obj, dict) and "rationale" in obj:
+        return str(obj["rationale"])
+    return ""
+
+
 def build_batch_requests(
     pairs: Sequence[tuple[Funder, Invoice]], model: str = DEFAULT_MODEL
 ) -> tuple[list[BatchRequest], dict[int, tuple[Funder, Invoice]]]:
@@ -144,13 +155,16 @@ class LLMAgent:
 
     def bid(self, ctx: AuctionContext) -> Bid:
         user = build_user_prompt(ctx.invoice, self.party.true_cost_apr)
-        apr = parse_bid_apr(self.client.complete(self.model, SYSTEM_PROMPT, user))
+        text = self.client.complete(self.model, SYSTEM_PROMPT, user)
+        apr = parse_bid_apr(text)
+        rationale = parse_rationale(text)
         if apr is None:
             logger.warning(
                 "LLM bid parse failed for %s; falling back to truthful bid", self.party.party_id
             )
             apr = self.party.true_cost_apr
-        return Bid(bidder_id=self.party.party_id, apr=apr)
+            rationale = FALLBACK_RATIONALE
+        return Bid(bidder_id=self.party.party_id, apr=apr, rationale=rationale)
 
 
 @dataclass(frozen=True)
@@ -169,7 +183,11 @@ class ValidatedLLMAgent:
 
     def bid(self, ctx: AuctionContext) -> Bid:
         raw = LLMAgent(self.party, self.client, self.model).bid(ctx)
-        return Bid(bidder_id=self.party.party_id, apr=self.policy.clamp(raw.apr))
+        return Bid(
+            bidder_id=self.party.party_id,
+            apr=self.policy.clamp(raw.apr),
+            rationale=raw.rationale,
+        )
 
 
 def batch_bids(
@@ -184,20 +202,23 @@ def batch_bids(
     """
     requests, index_map = build_batch_requests(pairs, model)
     texts = client.run(requests)
-    bid_apr: dict[int, float] = {}
+    parsed: dict[int, tuple[float, str]] = {}
     for custom_id, text in texts.items():
         apr = parse_bid_apr(text)
         if apr is not None:
-            bid_apr[decode_custom_id(custom_id)] = apr
+            parsed[decode_custom_id(custom_id)] = (apr, parse_rationale(text))
     bids: dict[tuple[str, str], Bid] = {}
     for index, (funder, invoice) in index_map.items():
-        apr = bid_apr.get(index)
-        if apr is None:
+        if index in parsed:
+            apr, rationale = parsed[index]
+        else:
             logger.warning(
                 "batch bid parse failed for (%s, %s); falling back to truthful bid",
                 funder.party_id,
                 invoice.invoice_id,
             )
-            apr = funder.true_cost_apr
-        bids[(funder.party_id, invoice.invoice_id)] = Bid(bidder_id=funder.party_id, apr=apr)
+            apr, rationale = funder.true_cost_apr, FALLBACK_RATIONALE
+        bids[(funder.party_id, invoice.invoice_id)] = Bid(
+            bidder_id=funder.party_id, apr=apr, rationale=rationale
+        )
     return bids

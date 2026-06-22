@@ -29,6 +29,11 @@ cost_apr = 0.07
 cost_apr = 0.09
 
 [policy]
+# The house posts base_apr plus risk loadings as its signed quote (clamped to [min, max]).
+# base_apr sits at the house cost of capital so the separated house is an honest competitor.
+base_apr = 0.09
+buyer_credit_loading = 0.02
+dilution_loading = 0.02
 min_apr = 0.0
 max_apr = 1.0
 
