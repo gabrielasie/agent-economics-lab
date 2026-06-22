@@ -15,7 +15,14 @@ import typer
 
 from aelab.agents.cache import AnthropicBatchClient, BatchRequest
 from aelab.agents.deterministic import TruthfulAgent
-from aelab.agents.llm import DEFAULT_MODEL, build_batch_requests, decode_custom_id, parse_bid_apr
+from aelab.agents.llm import (
+    DEFAULT_MODEL,
+    build_batch_requests,
+    build_counterfactual_requests,
+    counterfactual_deviations,
+    decode_custom_id,
+    parse_bid_apr,
+)
 from aelab.config import Scenario, load_scenario
 from aelab.engine import run
 from aelab.harness import format_table, run_harness
@@ -33,6 +40,7 @@ from aelab.report import plot_deviation_distribution, plot_efficiency_and_suppli
 app = typer.Typer(help="Sealed-bid second-price reverse-auction lab.", no_args_is_help=True)
 
 _RAW_PATH = Path("results/truthfulness_raw.json")
+_COUNTERFACTUAL_RAW_PATH = Path("results/first_price_raw.json")
 _EFFICIENCY_PLOT = Path("results/efficiency.png")
 _TRUTHFULNESS_PLOT = Path("results/truthfulness.png")
 
@@ -81,16 +89,17 @@ def run_efficiency(scenario: Scenario) -> None:
     print(f"\nSaved plot to {_EFFICIENCY_PLOT}")
 
 
-def _bid_texts(requests: list[BatchRequest]) -> dict[str, str]:
-    if _RAW_PATH.exists():
-        print(f"Loaded cached batch results from {_RAW_PATH}")
-        cached: dict[str, str] = json.loads(_RAW_PATH.read_text(encoding="utf-8"))
+def _bid_texts(requests: list[BatchRequest], raw_path: Path) -> dict[str, str]:
+    """Load cached raw bids from raw_path, or run a live batch once and persist them there."""
+    if raw_path.exists():
+        print(f"Loaded cached batch results from {raw_path}")
+        cached: dict[str, str] = json.loads(raw_path.read_text(encoding="utf-8"))
         return cached
     print(f"Running a live Message Batch of {len(requests)} bids against {DEFAULT_MODEL}...")
     texts = AnthropicBatchClient().run(requests)
-    _RAW_PATH.parent.mkdir(parents=True, exist_ok=True)
-    _RAW_PATH.write_text(json.dumps(texts, indent=2), encoding="utf-8")
-    print(f"Saved raw results to {_RAW_PATH}")
+    raw_path.parent.mkdir(parents=True, exist_ok=True)
+    raw_path.write_text(json.dumps(texts, indent=2), encoding="utf-8")
+    print(f"Saved raw results to {raw_path}")
     return texts
 
 
@@ -108,7 +117,7 @@ def run_probe(scenario: Scenario, from_raw: Path | None) -> None:
         print(f"Parsing saved raw results from {from_raw} (no live batch)")
         texts: dict[str, str] = json.loads(from_raw.read_text(encoding="utf-8"))
     else:
-        texts = _bid_texts(requests)
+        texts = _bid_texts(requests, _RAW_PATH)
     deviations: list[float] = []
     failures = 0
     for custom_id, text in texts.items():
@@ -130,6 +139,42 @@ def run_probe(scenario: Scenario, from_raw: Path | None) -> None:
         _TRUTHFULNESS_PLOT.parent.mkdir(parents=True, exist_ok=True)
         plot_deviation_distribution(deviations, _TRUTHFULNESS_PLOT)
         print(f"\nSaved histogram to {_TRUTHFULNESS_PLOT}")
+
+
+def run_counterfactual(scenario: Scenario, from_raw: Path | None) -> None:
+    """Bid the same pairs under neutral second-price and first-price prompts; compare deviations.
+
+    Same funders and invoices as the truthfulness probe, but the system prompt only states
+    the payment rule and recommends no strategy. A positive mean signed deviation under first
+    price (shading up) is the agent reasoning about the rule; near-zero under both is the
+    agent following the rule statement, which is what the coaching probe could not rule out.
+    """
+    funders = generate_financiers(
+        scenario.financier, scenario.probe_n_funders, random.Random(scenario.seed)
+    )
+    invoices = generate_invoices(
+        scenario.invoice, scenario.probe_n_invoices, random.Random(scenario.seed + 1)
+    )
+    pairs = [(funder, invoice) for funder in funders for invoice in invoices]
+    requests, index_map = build_counterfactual_requests(pairs)
+    if from_raw is not None:
+        print(f"Parsing saved raw results from {from_raw} (no live batch)")
+        texts: dict[str, str] = json.loads(from_raw.read_text(encoding="utf-8"))
+    else:
+        texts = _bid_texts(requests, _COUNTERFACTUAL_RAW_PATH)
+    second, first = counterfactual_deviations(texts, index_map)
+    s = deviation_stats(second, scenario.epsilon)
+    f = deviation_stats(first, scenario.epsilon)
+    within = f"within {scenario.epsilon:.3f} of truthful"
+    print()
+    print(f"{'metric':28}{'second price':>14}{'first price':>14}")
+    print(f"{'bids parsed':28}{s.n:>14d}{f.n:>14d}")
+    print(f"{'mean signed deviation':28}{s.mean_signed:>+14.5f}{f.mean_signed:>+14.5f}")
+    print(f"{'mean absolute deviation':28}{s.mean_absolute:>14.5f}{f.mean_absolute:>14.5f}")
+    print(f"{within:28}{s.fraction_within:>14.1%}{f.fraction_within:>14.1%}")
+    print()
+    print("Shading up under first price (positive mean signed) is the agent reasoning about")
+    print("the rule. Near-zero under both means it followed the prompt, not the incentive.")
 
 
 def run_attacks(scenario: Scenario) -> None:
@@ -157,3 +202,12 @@ def truthfulness(
 def attacks(scenario: str = "default") -> None:
     """Run the baseline and house/collusion regimes; print the comparison table."""
     run_attacks(load_scenario(scenario))
+
+
+@app.command()
+def counterfactual(
+    scenario: str = "default",
+    from_raw: Annotated[Path | None, typer.Option(help="Use saved raw results; no live batch.")] = None,
+) -> None:
+    """First-price vs second-price under neutral prompts: do the agents shade up or echo?"""
+    run_counterfactual(load_scenario(scenario), from_raw)

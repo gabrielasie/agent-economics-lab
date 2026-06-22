@@ -11,7 +11,7 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from aelab.auction import clear_auction
+from aelab.auction import clear_auction, clear_first_price
 from aelab.economics import financing_cost
 from aelab.models import Bid
 
@@ -126,6 +126,83 @@ def test_tie_break_independent_of_input_order(seed: int) -> None:
     assert clear_auction(forward, 0.25, random.Random(seed)) == clear_auction(
         shuffled, 0.25, random.Random(seed)
     )
+
+
+# --- first-price reverse auction ----------------------------------------------
+
+
+def test_first_price_winner_pays_own_bid() -> None:
+    bids = [Bid("a", 0.10), Bid("b", 0.15), Bid("c", 0.20)]
+    r = clear_first_price(bids, 0.25, random.Random(0))
+    assert r.winner_id == "a"
+    assert r.winning_bid_apr == 0.10
+    assert r.clearing_apr == 0.10  # paid its own bid, not the second-lowest
+    assert r.num_eligible == 3
+
+
+def test_first_price_single_eligible_pays_own_bid_not_reserve() -> None:
+    # The distinguishing case: under second-price this clears at the reserve (0.20),
+    # under first-price the lone winner is paid its own bid (0.10).
+    bids = [Bid("a", 0.10), Bid("b", 0.30), Bid("c", 0.40)]
+    r = clear_first_price(bids, 0.20, random.Random(0))
+    assert r.winner_id == "a"
+    assert r.winning_bid_apr == 0.10
+    assert r.clearing_apr == 0.10
+    assert r.num_eligible == 1
+
+
+def test_first_price_no_eligible_no_trade() -> None:
+    r = clear_first_price(_bids([0.30, 0.40]), 0.20, random.Random(0))
+    assert r.traded is False
+    assert r.num_eligible == 0
+
+
+def test_first_price_empty_no_trade() -> None:
+    r = clear_first_price([], 0.20, random.Random(0))
+    assert r.traded is False
+
+
+def test_first_price_bid_at_reserve_is_eligible() -> None:
+    r = clear_first_price([Bid("a", 0.20)], 0.20, random.Random(0))
+    assert r.traded is True
+    assert r.clearing_apr == 0.20  # own bid, which happens to equal the reserve here
+
+
+def test_first_price_duplicate_bidder_ids_raise() -> None:
+    with pytest.raises(ValueError):
+        clear_first_price([Bid("dup", 0.10), Bid("dup", 0.15)], 0.20, random.Random(0))
+
+
+@given(apr_list=st.lists(aprs, min_size=1, max_size=6), reserve=reserves, seed=seeds)
+def test_first_price_clearing_equals_winning_bid(
+    apr_list: list[float], reserve: float, seed: int
+) -> None:
+    r = clear_first_price(_bids(apr_list), reserve, random.Random(seed))
+    if r.traded:
+        assert r.clearing_apr == r.winning_bid_apr  # the defining first-price property
+        assert r.winning_bid_apr == min(a for a in apr_list if a <= reserve)
+        assert r.clearing_apr is not None and r.clearing_apr <= reserve + 1e-12
+
+
+@given(apr_list=st.lists(aprs, min_size=1, max_size=6), reserve=reserves, seed=seeds)
+def test_first_price_reproducible_given_seed(
+    apr_list: list[float], reserve: float, seed: int
+) -> None:
+    bids = _bids(apr_list)
+    assert clear_first_price(bids, reserve, random.Random(seed)) == clear_first_price(
+        bids, reserve, random.Random(seed)
+    )
+
+
+def test_first_price_tie_winner_is_one_of_tied() -> None:
+    bids = [Bid("a", 0.10), Bid("b", 0.10), Bid("c", 0.20)]
+    winners = set()
+    for seed in range(50):
+        r = clear_first_price(bids, 0.25, random.Random(seed))
+        assert r.winner_id in {"a", "b"}
+        assert r.clearing_apr == 0.10
+        winners.add(r.winner_id)
+    assert winners == {"a", "b"}
 
 
 # --- headline: truthful bidding is weakly dominant ----------------------------

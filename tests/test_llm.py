@@ -9,15 +9,21 @@ the real Anthropic custom_id constraint, so an id-scheme regression fails here.
 import re
 from collections.abc import Sequence
 
+import pytest
+
 from aelab.agents.base import AuctionContext, AuctionRules
 from aelab.agents.cache import BatchRequest
 from aelab.agents.llm import (
     DEFAULT_MODEL,
+    NEUTRAL_FIRST_PRICE_SYSTEM_PROMPT,
+    NEUTRAL_SECOND_PRICE_SYSTEM_PROMPT,
     SYSTEM_PROMPT,
     LLMAgent,
     ValidatedLLMAgent,
     batch_bids,
     build_batch_requests,
+    build_counterfactual_requests,
+    counterfactual_deviations,
     decode_custom_id,
     encode_custom_id,
     parse_bid_apr,
@@ -169,6 +175,66 @@ def test_batch_missing_result_falls_back_to_truthful() -> None:
     inv = Invoice("INV-7", 50_000.0, 30)
     bids = batch_bids([(Funder("F0", 0.10), inv)], FakeBatchClient({}))
     assert bids[("F0", "INV-7")].apr == 0.10  # truthful fallback
+
+
+# --- first-price counterfactual (neutral prompts) -----------------------------
+
+
+def test_neutral_prompts_state_rule_without_coaching() -> None:
+    # The whole point of the counterfactual: neutral prompts state the payment rule and
+    # recommend no strategy, so a non-truthful bid is the model's reasoning, not ours.
+    banned = ["optimal", "truthful", "dominant", "shade", "shading", "strategy", "should"]
+    for prompt in (NEUTRAL_SECOND_PRICE_SYSTEM_PROMPT, NEUTRAL_FIRST_PRICE_SYSTEM_PROMPT):
+        low = prompt.lower()
+        for word in banned:
+            assert word not in low, f"neutral prompt leaks coaching word {word!r}"
+    assert "second-lowest" in NEUTRAL_SECOND_PRICE_SYSTEM_PROMPT.lower()
+    assert "the apr it submitted" in NEUTRAL_FIRST_PRICE_SYSTEM_PROMPT.lower()
+    assert "optimal" in SYSTEM_PROMPT.lower()  # the existing probe prompt does coach
+
+
+def test_build_batch_requests_honors_system_and_prefix() -> None:
+    pairs = [(Funder("F0", 0.10), Invoice("INV0", 1000.0, 30))]
+    requests, _ = build_batch_requests(pairs, system="SYS", prefix="z")
+    assert requests[0].custom_id == "z0"
+    assert requests[0].system == "SYS"
+    assert CUSTOM_ID_PATTERN.match(requests[0].custom_id)
+    assert decode_custom_id(requests[0].custom_id) == 0
+
+
+def test_build_counterfactual_requests_covers_both_auctions() -> None:
+    pairs = [
+        (Funder("F0", 0.10), Invoice("INV0", 1000.0, 30)),
+        (Funder("F1", 0.20), Invoice("INV1", 2000.0, 60)),
+    ]
+    requests, index_map = build_counterfactual_requests(pairs)
+    assert len(requests) == 2 * len(pairs)
+    second = [r for r in requests if r.custom_id.startswith("s")]
+    first = [r for r in requests if r.custom_id.startswith("f")]
+    assert len(second) == len(pairs)
+    assert len(first) == len(pairs)
+    for r in requests:
+        assert CUSTOM_ID_PATTERN.match(r.custom_id)
+    assert all(r.system == NEUTRAL_SECOND_PRICE_SYSTEM_PROMPT for r in second)
+    assert all(r.system == NEUTRAL_FIRST_PRICE_SYSTEM_PROMPT for r in first)
+    assert set(index_map) == set(range(len(pairs)))
+
+
+def test_counterfactual_deviations_splits_by_auction() -> None:
+    funders = [Funder("F0", 0.10), Funder("F1", 0.20)]
+    invoices = [Invoice("INV0", 1000.0, 30)]
+    pairs = [(f, inv) for f in funders for inv in invoices]
+    _, index_map = build_counterfactual_requests(pairs)
+    # Simulate: truthful under second price, shaded up by 0.03 under first price.
+    texts: dict[str, str] = {}
+    for index, (funder, _inv) in index_map.items():
+        texts[encode_custom_id(index, "s")] = f'{{"apr": {funder.true_cost_apr}, "rationale": "x"}}'
+        texts[encode_custom_id(index, "f")] = (
+            f'{{"apr": {funder.true_cost_apr + 0.03}, "rationale": "x"}}'
+        )
+    second, first = counterfactual_deviations(texts, index_map)
+    assert second == pytest.approx([0.0, 0.0])
+    assert first == pytest.approx([0.03, 0.03])
 
 
 # --- ValidatedLLMAgent (output-validation defense) ----------------------------
