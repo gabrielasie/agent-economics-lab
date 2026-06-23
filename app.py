@@ -106,29 +106,22 @@ st.markdown(
     "##### Sealed-bid auctions where AI agents finance invoices, and the mechanism that keeps "
     "every party honest"
 )
-st.write(
-    "When a buyer approves an invoice, competing funder agents enter a sealed-bid, second-price "
-    "auction that clears in seconds. This lab shows the agents bidding, checks that the mechanism "
-    "keeps them honest, and stress-tests where that breaks."
-)
-pillars = st.columns(3)
-pillars[0].markdown("**Agents, not spreadsheets**  \nClaude funders submit private bids with reasoning.")
-pillars[1].markdown("**Incentive integrity**  \nA fair-rate index shows the venue cannot quietly extract.")
-pillars[2].markdown("**Tested honestly**  \nIncluding where LLM agents stop actually reasoning.")
-st.divider()
-
-with st.sidebar:
-    st.subheader("Settings")
-    names = scenario_names()
-    scenario_name = st.selectbox(
-        "Market scenario", names, index=names.index("default") if "default" in names else 0
+with st.expander("About this lab"):
+    st.write(
+        "When a buyer approves an invoice, competing funder agents enter a sealed-bid, "
+        "second-price auction that clears in seconds. This lab shows the agents bidding, checks "
+        "that the mechanism keeps them honest, and stress-tests where that breaks."
     )
-    st.caption("Used by the Trust view. The agent panels use the population the saved bids came from.")
-    st.divider()
-    if API_KEY:
-        st.success("Live LLM runs enabled.")
-    else:
-        st.caption("Running keyless: deterministic work is live, LLM panels replay committed bids.")
+    pillars = st.columns(3)
+    pillars[0].markdown(
+        "**Agents, not spreadsheets**  \nClaude funders submit private bids with reasoning."
+    )
+    pillars[1].markdown(
+        "**Incentive integrity**  \nA fair-rate index shows the venue cannot quietly extract."
+    )
+    pillars[2].markdown(
+        "**Tested honestly**  \nIncluding where LLM agents stop actually reasoning."
+    )
 
 arena_tab, trust_tab, reason_tab = st.tabs(
     ["Agent arena", "Trust & integrity", "Do the agents reason?"]
@@ -219,6 +212,16 @@ with arena_tab:
 
 with trust_tab:
     st.subheader("Can the venue extract, and would a supplier see it?")
+    labels = {"default": "Competitive market", "extraction": "House is pivotal"}
+    names = scenario_names()
+    options = [labels.get(n, n) for n in names]
+    choice = st.radio("Market", options, horizontal=True, label_visibility="collapsed")
+    scenario_name = names[options.index(choice)]
+    st.caption(
+        "**Competitive market**: a cheap in-house buyer and rival financiers sit below the house, "
+        "so it cannot pivot the price. **House is pivotal**: the house is the marginal funder, so "
+        "withholding bites. The contrast is the finding: competition, not a rule, is the defense."
+    )
     st.write(
         "The hard part is not efficiency. Under truthful bidding the lowest-cost funder always "
         "wins, so the market is fully efficient. What matters is how the surplus is split, and "
@@ -373,3 +376,14 @@ with reason_tab:
             st.success("Shading up under first price: the agents reason about the rule.")
         else:
             st.warning("Near-zero under both: the agents followed the prompt, not the incentive.")
+
+# --- footer -------------------------------------------------------------------
+
+st.divider()
+foot = st.columns([3, 1])
+foot[0].caption(
+    "Live LLM runs enabled."
+    if API_KEY
+    else "Running keyless: deterministic work is live; the LLM panels replay committed bids."
+)
+foot[1].caption("[Source on GitHub](https://github.com/gabrielasie/agent-economics-lab)")
