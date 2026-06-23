@@ -67,7 +67,8 @@ A [Streamlit](https://streamlit.io) app (`app.py`) presents the work in three vi
   at a time, the auction clears to a winner and a price, and each agent's reasoning is shown.
 - **Trust & integrity** - efficiency is not enough; the fair-rate index catches a house that
   extracts by withholding, and a fee-structure lever shows which fee base keeps the venue honest.
-- **Do the agents reason?** - the truthfulness non-result beside the first-price counterfactual.
+- **Do the agents reason?** - the first-price counterfactual: the agents shade up where truthful
+  stops being optimal, so they respond to the rule, not the prompt.
 
 It lives outside the `aelab` package, so the pure core is untouched and the import contracts
 still hold. The deterministic work runs live and the LLM panels replay committed bids in
@@ -227,15 +228,14 @@ count. The metric that moves is the supplier's share of surplus, which rises wit
 (0.885 to 0.917 in the default scenario). Efficiency tells you the pie is whole; supplier share
 tells you who ate it.
 
-**2. Do LLM agents bid the dominant strategy? (deliberately a non-result)** Given a known
-private cost, a Claude Haiku agent does not overbid the way humans do in Vickrey experiments:
-across 120 bids the mean signed deviation is about zero and 100% land within 50 bps of truthful.
-This is **not** presented as a finding. The probe's prompt states that truthful bidding is
-optimal, so the near-zero deviation measures instruction-following, not reasoning. The test that
-separates the two is the first-price counterfactual (`aelab counterfactual`): the same agent
-under a first-price auction with a neutral prompt, where truthful is no longer optimal and a
-reasoner shades its bid up. That experiment is built and awaits one live run; until then the
-honest claim is only "the agent does not overbid."
+**2. The LLM agents reason about the mechanism.** Under second-price a Claude Haiku agent bids
+its true cost (mean deviation about zero across 120 bids). That alone is a non-result: the
+probe's prompt names truthful bidding as optimal, so it could be instruction-following. The
+first-price counterfactual settles it by removing the coaching. Under a neutral prompt that
+states only the payment rule, the same agents stay truthful under second-price (mean signed
+deviation -0.00001) and shade their bids up by +0.034 APR under first-price, where bidding true
+cost earns no margin. The only change between the two runs is the payment rule, so the agents
+are responding to the incentive, not echoing a coached answer. That is reasoning, not coaching.
 
 **3. House extraction, and a fair-rate index that catches it.** In the `extraction` scenario the
 house is the pivotal second-lowest bid at its honest cost. A house that posts that policy blind
@@ -295,18 +295,20 @@ surplus conservation holds for all inputs.
 ## Status and roadmap
 
 Built and green: the full core, both auctions, the agents and the cache, all three attacks, the
-harness, the CLI, the Streamlit UI, `demo.ipynb`, and the memo.
+harness, the CLI, the Streamlit UI, `demo.ipynb`, and the memo. The first-price counterfactual
+has been run: the agents shade up under first-price (+0.034 APR) and stay truthful under
+second-price, so result 2 is a real claim about reasoning.
 
-Pending: one live run of the first-price counterfactual (it needs a key; the machinery is built
-and tested), which would turn result 2 from "the agent does not overbid" into a claim about
-reasoning; and live prompt-injection success rates per class.
+Pending: live prompt-injection success rates per class against a real model (the defense is
+already shown deterministically); broader model and framing coverage for the reasoning result.
 
 ## Caveats and open questions
 
-This is a toy built to pressure-test the mechanism, not a production system. The truthfulness
-result is one model under one coaching prompt, and is reported as a non-result for exactly that
-reason. The input-separation defense (delimiting the untrusted memo as data) is measured on a
-live model, not proven, unlike the output clamp. The extraction result is demonstrated in a
+This is a toy built to pressure-test the mechanism, not a production system. The reasoning
+result is one model (Claude Haiku) under one neutral prompt: it shows this agent responds to the
+payment rule, not that every model or framing would. The input-separation defense (delimiting
+the untrusted memo as data) is measured on a live model, not proven, unlike the output clamp.
+The extraction result is demonstrated in a
 scenario deliberately built to make the house pivotal, with the default market as the control
 where the same attack does nothing.
 

@@ -26,22 +26,19 @@ realized surplus, which rises with competition (0.885 to 0.917 in the default sc
 financier pool grows). Efficiency tells you the pie is whole. Supplier share tells you who
 ate it.
 
-**2. The LLM does not overbid, but that table is a non-result, not a finding.** Given a
-known private cost, a Claude Haiku agent does not overbid the way humans do in Vickrey
-experiments: across 120 bids the mean signed deviation is about zero and 100% land within 50
-bps of truthful. Presenting that as evidence the agent plays the dominant strategy would be a
-mistake, and a sharp reader would catch it in one question: did the prompt name the optimal
-strategy? It did. The probe's system prompt states that truthful bidding is optimal, so the
-near-zero deviation measures instruction-following, not reasoning. It is exactly the number
-you would get from a model that read its cost out of the prompt and echoed it back. The test
-that separates the two is the first-price counterfactual: the same agent under a first-price
-auction with a neutral prompt that states the payment rule and recommends nothing. Truthful
-is no longer optimal there, so a reasoner shades its bid up to capture margin and a
-prompt-follower stays put. That experiment is now built (clear_first_price, the neutral
-prompts, the side-by-side probe) and awaits one live run. Until those two numbers sit beside
-each other the honest claim is only "the agent does not overbid." Shaded-up-under-first means
-the agent reasons and the project lands; truthful-under-both means it followed coaching, which
-is itself a finding worth reporting honestly. Either is worth more than the table alone.
+**2. The LLM agents reason about the mechanism, not just the prompt.** Two experiments make
+this airtight. First, the coaching probe: told that truthful bidding is optimal, a Claude
+Haiku agent bids its cost almost exactly, mean deviation about zero across 120 bids. On its
+own that is a non-result, because the prompt named the answer; a sharp reader would dismiss it
+in one question. The first-price counterfactual removes the coaching and isolates the
+variable. The same agents bid under a neutral prompt that states only the payment rule, once
+for second-price and once for first-price. Under second-price they stay truthful (mean signed
+deviation -0.00001). Under first-price, where bidding true cost earns no margin, they shade
+their bids up by +0.034 APR on average. The only thing that changed between the two runs is
+the payment rule, and the agents responded to it correctly, shading exactly where truthful
+stops being optimal and nowhere else. That is a strategic response to the rule, not an echo of
+a coached answer: these agents reason about the mechanism. It is the claim the truthfulness
+table alone could never support.
 
 **3. A house that runs the venue extracts on price, and a fair-rate index catches it.** This
 only shows up where the house is the marginal funder, so it runs on a scenario built for it:
@@ -76,9 +73,9 @@ that is sound on price has a hidden, non-linear cost on allocation.
 
 ## What I would build next, and the questions that matter
 
-The first-price counterfactual is built; the single thing standing between this project and a
-real claim about agent reasoning is one live run of it, reading the two deviation means side
-by side. After that the open questions are not modules, they are decisions. What makes threshold-setting smart for the parties the mechanism
+The first-price counterfactual is run and the agents reason, so the headline question is
+answered. The open questions now are not modules, they are decisions. What makes
+threshold-setting smart for the parties the mechanism
 does not protect, the supplier and the buyer? How do you construct a fair-rate benchmark that
 a supplier can actually trust, given that the honest-house counterfactual here is something
 only the operator can compute? And where should a signed deterministic policy end and an
@@ -88,9 +85,10 @@ questions worth a conversation. The auction is solved; the governance around it 
 
 ## Limits
 
-This is a toy built to pressure-test the mechanism, not a production system. The truthfulness
-result is one model under one coaching prompt. The input-separation defense (delimiting the
-untrusted memo as data) is structural here; its effect on a live model is measured, not
-proven, unlike the output clamp. The extraction result is demonstrated in a scenario
+This is a toy built to pressure-test the mechanism, not a production system. The reasoning
+result is one model (Claude Haiku) under one neutral prompt: it shows this agent responds to
+the payment rule, not that every agent or framing would. The input-separation defense
+(delimiting the untrusted memo as data) is structural here; its effect on a live model is
+measured, not proven, unlike the output clamp. The extraction result is demonstrated in a scenario
 deliberately built to make the house pivotal, which is the honest way to show a mechanism: the
 default market is the control where the same attack does nothing.

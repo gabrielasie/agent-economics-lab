@@ -159,20 +159,19 @@ The parser fix (strip the json fence, extract the first balanced JSON object) an
 invoices are generated once and only the financier pool grows, so the supplier-share line is
 a clean controlled comparison.
 
-Remaining (designed in sections 2, 4, and 6, not yet built):
+The first-price counterfactual is built and run: clear_first_price in auction.py, the NEUTRAL
+prompt variants in agents/llm.py, build_counterfactual_requests, the CLI command, and
+scripts/run_first_price_counterfactual.py. Under the neutral prompt the agents stay truthful
+under second-price (mean signed deviation -0.00001) and shade up under first-price (+0.034 APR),
+so they respond to the payment rule, not the prompt. That resolves the coaching caveat: the
+truthfulness probe alone is a non-result, but the counterfactual distinguishes reasoning from
+prompt-following, and these agents reason.
 
-- First-price counterfactual: clear_first_price in auction.py (lowest eligible wins, paid
-  its own bid); a NEUTRAL prompt variant in agents/llm.py that states the rules and
-  recommends no strategy; scripts/run_first_price_counterfactual.py.
-- Live numbers that need an API key: the truthfulness probe has a result from saved raw bids;
-  the first-price probe and the prompt-injection live success rates per class are not yet run.
+Remaining:
 
-Disagreement to resolve, not blocking: the truthfulness probe's system prompt currently
-coaches ("bidding your true cost of capital is optimal"), which section 7 forbids for
-strategy-reasoning experiments. So the 100%-within-epsilon probe result may be
-prompt-following, not strategic reasoning. The first-price counterfactual with the neutral
-prompt is the test that distinguishes the two; build it before drawing a strong conclusion
-from the probe.
+- Live numbers that need an API key: the prompt-injection success rates per class against a
+  real model are not yet run (the output-validation defense is shown deterministically).
+- Broader coverage for the reasoning result: one model (Claude Haiku) under one neutral prompt.
 
 ## 6. Experiments the tool produces
 

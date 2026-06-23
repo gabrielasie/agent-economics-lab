@@ -191,7 +191,8 @@ with st.container():
     else:
         texts = json.loads(raw.read_text(encoding="utf-8"))
         top = st.columns([1, 1, 1])
-        inv_idx = top[0].slider("Invoice", 0, scenario.probe_n_invoices - 1, 0)
+        inv_num = top[0].slider("Invoice", 1, scenario.probe_n_invoices, 1)
+        inv_idx = inv_num - 1
         reserve = top[1].slider("Supplier reserve (APR %)", 5.0, 60.0, 40.0, 1.0) / 100
         top[2].write("")
         reveal = top[2].button("▶ Reveal the bids")
@@ -199,6 +200,11 @@ with st.container():
         invoice, field = arena_bids(scenario, texts, inv_idx)
         result = clear_auction([bid for _, bid in field], reserve, random.Random(0))
         identities = identities_for(field)
+        st.caption(
+            f"Invoice {inv_num} of {scenario.probe_n_invoices}: €{invoice.face_value:,.0f} face "
+            f"value, due in {invoice.days_early} days. The slider selects which invoice to "
+            f"auction, not a count or an amount."
+        )
 
         run_key = (inv_idx, round(reserve, 4))
         if reveal:
