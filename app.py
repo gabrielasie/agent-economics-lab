@@ -157,37 +157,32 @@ if API_KEY:
 
 st.title("Agent Economics Lab")
 st.markdown(
-    "##### Sealed-bid auctions where AI agents finance invoices, and the mechanism that keeps "
-    "every party honest"
+    "##### A sealed-bid, second-price auction for invoice early-payment, with AI funder agents "
+    "and an incentive-integrity harness"
 )
-with st.expander("About this lab"):
-    st.write(
-        "When a buyer approves an invoice, competing funder agents enter a sealed-bid, "
-        "second-price auction that clears in seconds. This lab shows the agents bidding, checks "
-        "that the mechanism keeps them honest, and stress-tests where that breaks."
-    )
-    pillars = st.columns(3)
-    pillars[0].markdown(
-        "**Agents, not spreadsheets**  \nClaude funders submit private bids with reasoning."
-    )
-    pillars[1].markdown(
-        "**Incentive integrity**  \nA fair-rate index shows the venue cannot quietly extract."
-    )
-    pillars[2].markdown(
-        "**Tested honestly**  \nIncluding where LLM agents stop actually reasoning."
-    )
+st.write(
+    "When a buyer approves an invoice, competing funder agents enter a sealed-bid auction that "
+    "clears in seconds. This page presents the mechanism and the work that keeps it honest, in "
+    "four parts."
+)
+orient = st.columns(4)
+orient[0].markdown("**1 · The auction**  \nAgents bid on an invoice; it clears to a winner.")
+orient[1].markdown("**2 · Incentive integrity**  \nCan the venue extract; the index that catches it.")
+orient[2].markdown("**3 · Injection defense**  \nThe clamp that bounds a compromised bid.")
+orient[3].markdown("**4 · Agent reasoning**  \nReasoning, or following the prompt.")
 
 st.divider()
 
 # --- arena --------------------------------------------------------------------
 
 with st.container():
-    st.subheader("Claude agents bid against each other")
+    st.subheader("1 · The auction")
+    st.caption("Claude funders bid on one invoice; the auction clears to a winner and a price.")
     st.write(
-        "Each funder is a Claude agent. The auction is sealed-bid, so they never see each other: "
-        "an agent gets only its own cost of capital and the invoice, then submits one APR. The "
-        "lowest bid wins and is paid the second-lowest, which makes bidding your true cost the "
-        "smart move. Watch the field clear, then read what each agent was thinking."
+        "Each funder is a Claude agent. The auction is sealed-bid: an agent sees only its own "
+        "cost of capital and the invoice, never the other bids. The lowest APR wins and is paid "
+        "the second-lowest, the rule under which truthful bidding is a dominant strategy for "
+        "funders."
     )
     raw = find_raw("truthfulness_raw.json")
     scenario = load_scenario(PROBE_SCENARIO)
@@ -212,8 +207,8 @@ with st.container():
 
         if not shown:
             note(
-                "Set the invoice and the supplier reserve above, then press **▶ Reveal the bids** "
-                "to run the sealed-bid auction. Nothing is computed until you do."
+                "The auction is computed on demand. The field and clearing appear once the bids "
+                "are revealed."
             )
         else:
             grid = st.columns(3)
@@ -248,19 +243,18 @@ with st.container():
                 money[0].metric("Supplier surplus", f"€{split.supplier_surplus:,.0f}")
                 money[1].metric("Winner rent", f"€{split.winner_rent:,.0f}")
                 note(
-                    f"**In plain terms:** the supplier receives **€{invoice.face_value - cost:,.0f}** "
-                    f"today instead of **€{invoice.face_value:,.0f}** in {invoice.days_early} days. "
-                    f"Paying early costs **€{cost:,.0f}** at **{result.clearing_apr:.1%}** APR."
+                    f"The supplier receives **€{invoice.face_value - cost:,.0f}** today instead of "
+                    f"**€{invoice.face_value:,.0f}** in {invoice.days_early} days. Early payment "
+                    f"costs **€{cost:,.0f}** at **{result.clearing_apr:.1%}** APR."
                 )
 
             st.divider()
             st.markdown("##### How each agent reasons")
             st.caption(
-                "Each agent sees only its own cost of capital and the invoice, never the other "
-                "bids. It picks an APR and explains why. Because the auction is second-price (the "
-                "winner is paid the runner-up's price), the smart move is to bid your true cost, "
-                "and the agents mostly do. So they differ in their cost, which sets the bid, more "
-                "than in their logic. Whether that is real reasoning is what the last section tests."
+                "Each agent explains the APR it submits. Under second-price clearing truthful "
+                "bidding is dominant, and the agents mostly bid their cost, so they differ in cost "
+                "(which sets the bid) more than in reasoning. Whether that reflects reasoning or "
+                "instruction-following is examined in the final section."
             )
             for i, (funder, bid) in enumerate(field):
                 color, name, _persona = identities[i]
@@ -271,11 +265,10 @@ with st.container():
                     st.write(bid.rationale or "(no rationale returned)")
 
     st.divider()
-    st.markdown("##### Run it live with your own agents")
+    st.markdown("##### Live arena, with custom agents")
     st.caption(
-        "The field above replays real committed bids, so it needs no key. This is the same "
-        "arena run live: set custom funder costs and Claude bids in real time. It is gated on a "
-        "key because each run calls the API."
+        "The field above replays committed bids and needs no key. The same auction can run live "
+        "on custom funder costs, gated on an API key because each run calls the model."
     )
     if not API_KEY:
         st.caption("Add an ANTHROPIC_API_KEY (Settings, then Secrets) to enable live runs.")
@@ -313,7 +306,8 @@ st.divider()
 # --- trust & integrity --------------------------------------------------------
 
 with st.container():
-    st.subheader("Can the venue extract, and would a supplier see it?")
+    st.subheader("2 · Incentive integrity")
+    st.caption("Whether the venue can extract from suppliers, and whether they would see it.")
     labels = {"default": "Competitive market", "extraction": "House is pivotal"}
     names = scenario_names()
     options = [labels.get(n, n) for n in names]
@@ -325,10 +319,10 @@ with st.container():
         "withholding bites. The contrast is the finding: competition, not a rule, is the defense."
     )
     st.write(
-        "The hard part is not efficiency. Under truthful bidding the lowest-cost funder always "
-        "wins, so the market is fully efficient. What matters is how the surplus is split, and "
-        "whether the house that runs the venue can quietly take more of it. If suppliers ever "
-        "conclude the venue extracts, the network dies."
+        "Efficiency is not the hard part. Under truthful bidding the lowest-cost funder wins, so "
+        "the market is fully efficient regardless. What matters is how the surplus is split, and "
+        "whether the house that runs the venue can quietly take more of it. A supplier who "
+        "concludes the venue extracts from them leaves the network."
     )
 
     eff = efficiency_frame(scenario_name)
@@ -373,45 +367,54 @@ with st.container():
                 "withholding moves nothing. Competition is the discipline."
             )
 
-    with st.expander("Fee structure: the base decides the incentive"):
-        st.write(
-            "The venue must charge a fee, but the base sets its incentive. A fee on the supplier's "
-            "surplus shrinks when the supplier is squeezed, so withholding costs the venue its own "
-            "revenue. A fee on the spread grows when the supplier is squeezed, so it pays the venue "
-            "to extract."
-        )
-        fee_cols = st.columns([1, 2])
-        fee_rate = fee_cols[0].slider("Fee rate (%)", 0.0, 30.0, 10.0, 1.0) / 100
-        base = fee_cols[0].radio("Fee base", ["supplier surplus", "the spread"])
-        aligned = base == "supplier surplus"
-        fee_df = harness_frame(scenario_name).copy()
-        fee_df["winner rent share"] = 1.0 - fee_df["supplier share"]
-        base_share = fee_df["supplier share"] if aligned else fee_df["winner rent share"]
-        fee_df["venue fee"] = fee_rate * base_share
-        fee_cols[1].caption("Venue fee revenue by regime (share of the pie)")
-        fee_cols[1].bar_chart(fee_df[["venue fee"]], height=240, color=ACCENT)
-        if "separated" in fee_df.index and "informed" in fee_df.index:
-            delta = float(fee_df.loc["informed", "venue fee"] - fee_df.loc["separated", "venue fee"])
-            if aligned:
-                st.caption(
-                    f":green[Aligned.] Withholding moves the venue's fee by {delta:+.4f} of the "
-                    f"pie, so a surplus-based fee makes extraction self-defeating."
-                )
-            else:
-                st.caption(
-                    f":red[Misaligned.] Withholding moves the venue's fee by {delta:+.4f} of the "
-                    f"pie, so a spread-based fee can pay the venue to extract."
-                )
+    st.divider()
+    st.markdown("##### The fee base sets the venue's incentive")
+    st.write(
+        "The venue charges a fee, and the base it charges on decides whether its own incentive "
+        "fights extraction or funds it. Each bar below is the venue's fee revenue, as a share of "
+        "total surplus, in one regime. Compare the honest house (separated) to the peeking house "
+        "(informed)."
+    )
+    fee_cols = st.columns([1, 2])
+    fee_rate = fee_cols[0].slider("Fee rate (%)", 0.0, 30.0, 10.0, 1.0) / 100
+    base = fee_cols[0].radio("Fee base", ["supplier surplus", "the spread"])
+    aligned = base == "supplier surplus"
+    fee_df = harness_frame(scenario_name).copy()
+    fee_df["winner rent share"] = 1.0 - fee_df["supplier share"]
+    base_share = fee_df["supplier share"] if aligned else fee_df["winner rent share"]
+    fee_df["venue fee"] = fee_rate * base_share
+    fee_cols[1].bar_chart(fee_df[["venue fee"]], height=240, color=ACCENT)
+    if "separated" in fee_df.index and "informed" in fee_df.index:
+        delta = float(fee_df.loc["informed", "venue fee"] - fee_df.loc["separated", "venue fee"])
+        if aligned:
+            st.caption(
+                f":green[Aligned.] When the house peeks, its fee moves by {delta:+.4f} of the "
+                f"pie. A surplus-based fee shrinks as the supplier is squeezed, so extraction is "
+                f"self-defeating."
+            )
+        else:
+            st.caption(
+                f":red[Misaligned.] When the house peeks, its fee moves by {delta:+.4f} of the "
+                f"pie. A spread-based fee grows as the supplier is squeezed, so it can pay the "
+                f"venue to extract."
+            )
 
-    with st.expander("Supplier share rises with competition"):
-        st.line_chart(eff, height=260)
+    st.divider()
+    st.markdown("##### Competition lifts the supplier's share")
+    st.caption(
+        "In the competitive market, as more financiers compete (horizontal axis) the supplier's "
+        "share of surplus rises, while allocative efficiency stays at 1.000 throughout. "
+        "Efficiency says the pie is whole; supplier share says who keeps it."
+    )
+    st.line_chart(efficiency_frame("default")[["supplier share"]], height=240, color=ACCENT)
 
 st.divider()
 
 # --- defending the agents (prompt injection) ----------------------------------
 
 with st.container():
-    st.subheader("Defending the agents from prompt injection")
+    st.subheader("3 · Defending the agents")
+    st.caption("Prompt injection through the invoice memo, and the output-validation defense.")
     st.write(
         "An agent reads the invoice memo, which is untrusted text from a counterparty. A "
         "malicious memo can hide instructions that try to move the agent's bid. The defense is "
@@ -451,7 +454,8 @@ st.divider()
 # --- do the agents reason? ----------------------------------------------------
 
 with st.container():
-    st.subheader("Do the agents reason, or just follow the prompt?")
+    st.subheader("4 · Do the agents reason?")
+    st.caption("Truthful bidding under second-price, versus the first-price test.")
     scenario = load_scenario(PROBE_SCENARIO)
 
     st.markdown("**The truthfulness probe is a non-result.**")
@@ -472,9 +476,9 @@ with st.container():
     st.divider()
     st.markdown("**The first-price counterfactual is the real test.**")
     st.write(
-        "Run the same agents under a first-price auction with a neutral prompt that states the "
-        "rule and recommends nothing. There, bidding your cost earns zero, so a reasoner shades "
-        "its bid up and a prompt-follower stays put."
+        "The same agents bid under a first-price auction with a neutral prompt that states the "
+        "rule and recommends nothing. There, bidding cost earns nothing, so a reasoner shades its "
+        "bid up while a prompt-follower stays put."
     )
     fp_raw = find_raw("first_price_raw.json")
     if fp_raw is None and API_KEY:
