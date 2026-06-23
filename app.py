@@ -179,57 +179,72 @@ with arena_tab:
         top = st.columns([1, 1, 1])
         inv_idx = top[0].slider("Invoice", 0, scenario.probe_n_invoices - 1, 0)
         reserve = top[1].slider("Supplier reserve (APR %)", 5.0, 60.0, 40.0, 1.0) / 100
+        top[2].write("")
+        reveal = top[2].button("▶ Reveal the bids")
+
         invoice, field = arena_bids(scenario, texts, inv_idx)
         result = clear_auction([bid for _, bid in field], reserve, random.Random(0))
         identities = identities_for(field)
 
-        top[2].write("")
-        reveal = top[2].button("▶ Reveal the bids")
-        grid = st.columns(3)
-        slots = [grid[i % 3].empty() for i in range(len(field))]
-        banner = st.empty()
+        run_key = (inv_idx, round(reserve, 4))
+        if reveal:
+            st.session_state["arena_revealed"] = run_key
+        shown = st.session_state.get("arena_revealed") == run_key
 
-        if reveal and result.traded:
-            for i in sorted(range(len(field)), key=lambda j: -field[j][1].apr):  # winner revealed last
-                render_card(slots[i], field[i][0], field[i][1], identities[i], won=False)
-                time.sleep(0.3)
-            widx = next(i for i, (f, _b) in enumerate(field) if f.party_id == result.winner_id)
-            time.sleep(0.2)
-            render_card(slots[widx], field[widx][0], field[widx][1], identities[widx], won=True)
-            time.sleep(0.35)
-            render_banner(banner, result, identities, field)
+        if not shown:
+            st.info(
+                "Set the invoice and the supplier reserve above, then press **Reveal the bids** "
+                "to run the sealed-bid auction. Nothing is computed until you do."
+            )
         else:
-            for i in range(len(field)):
-                won = result.traded and field[i][0].party_id == result.winner_id
-                render_card(slots[i], field[i][0], field[i][1], identities[i], won)
-            render_banner(banner, result, identities, field)
+            grid = st.columns(3)
+            slots = [grid[i % 3].empty() for i in range(len(field))]
+            banner = st.empty()
+            if reveal and result.traded:
+                for i in sorted(range(len(field)), key=lambda j: -field[j][1].apr):  # winner last
+                    render_card(slots[i], field[i][0], field[i][1], identities[i], won=False)
+                    time.sleep(0.3)
+                widx = next(i for i, (f, _b) in enumerate(field) if f.party_id == result.winner_id)
+                time.sleep(0.2)
+                render_card(slots[widx], field[widx][0], field[widx][1], identities[widx], won=True)
+                time.sleep(0.35)
+                render_banner(banner, result, identities, field)
+            else:
+                for i in range(len(field)):
+                    won = result.traded and field[i][0].party_id == result.winner_id
+                    render_card(slots[i], field[i][0], field[i][1], identities[i], won)
+                render_banner(banner, result, identities, field)
 
-        if result.traded:
-            assert result.clearing_apr is not None and result.winning_bid_apr is not None
-            split = surplus_split(
-                invoice.face_value, reserve, result.clearing_apr, result.winning_bid_apr, invoice.days_early
-            )
-            cost = financing_cost(invoice.face_value, result.clearing_apr, invoice.days_early)
-            money = st.columns(2)
-            money[0].metric("Supplier surplus", f"EUR {split.supplier_surplus:,.0f}")
-            money[1].metric("Winner rent", f"EUR {split.winner_rent:,.0f}")
-            st.success(
-                f"In plain terms: the supplier receives **EUR {invoice.face_value - cost:,.0f}** "
-                f"today instead of **EUR {invoice.face_value:,.0f}** in {invoice.days_early} days. "
-                f"Paying early costs **EUR {cost:,.0f}** at **{result.clearing_apr:.1%}** APR."
-            )
+            if result.traded:
+                assert result.clearing_apr is not None and result.winning_bid_apr is not None
+                split = surplus_split(
+                    invoice.face_value,
+                    reserve,
+                    result.clearing_apr,
+                    result.winning_bid_apr,
+                    invoice.days_early,
+                )
+                cost = financing_cost(invoice.face_value, result.clearing_apr, invoice.days_early)
+                money = st.columns(2)
+                money[0].metric("Supplier surplus", f"EUR {split.supplier_surplus:,.0f}")
+                money[1].metric("Winner rent", f"EUR {split.winner_rent:,.0f}")
+                st.success(
+                    f"In plain terms: the supplier receives **EUR {invoice.face_value - cost:,.0f}** "
+                    f"today instead of **EUR {invoice.face_value:,.0f}** in {invoice.days_early} days. "
+                    f"Paying early costs **EUR {cost:,.0f}** at **{result.clearing_apr:.1%}** APR."
+                )
 
-        with st.expander("Read each agent's reasoning"):
+            st.markdown("##### What each agent was thinking")
+            st.caption(
+                "The agents differ mainly in their cost of capital, which sets the bid. The "
+                "reasoning is similar here because the prompt names the truthful strategy, which "
+                "is exactly the caveat the third view tests."
+            )
             for i, (funder, bid) in enumerate(field):
-                crown = " (winner)" if result.traded and result.winner_id == funder.party_id else ""
-                st.markdown(f"**{identities[i][2]}**{crown} bid {bid.apr:.2%}")
-                st.caption(bid.rationale or "(no rationale returned)")
-
-        st.caption(
-            "Real Claude Haiku bids from the committed probe. Under this prompt the agents bid "
-            "close to their cost and the cheapest wins, exactly as the mechanism intends. Whether "
-            "that holds when the prompt does not coach is the third view."
-        )
+                crown = "  (winner)" if result.traded and result.winner_id == funder.party_id else ""
+                ident = identities[i]
+                st.markdown(f":{ident[0]}[{ident[1]} **{ident[2]}**]  bid **{bid.apr:.2%}**{crown}")
+                st.write(bid.rationale or "(no rationale returned)")
 
     if API_KEY:
         with st.expander("Run a fresh live arena with your own funder costs"):
