@@ -88,19 +88,17 @@ def harness_frame(name: str) -> pd.DataFrame:
 
 # Each agent gets a stable identity so the field reads as characters, not table rows.
 AGENT_COLORS = ["violet", "blue", "green", "orange", "red", "gray"]
-AGENT_AVATARS = ["\U0001f7e3", "\U0001f535", "\U0001f7e2", "\U0001f7e0", "\U0001f534", "⚪"]
 AGENT_NAMES = ["Vega", "Orion", "Lyra", "Nova", "Atlas", "Sol"]
 PERSONAS = ["lean", "keen", "balanced", "measured", "cautious", "premium"]
 
 
-def identities_for(field: list[tuple[Funder, Bid]]) -> list[tuple[str, str, str, str]]:
-    """Assign each agent a colour, avatar, name, and a one-word persona by cost rank."""
+def identities_for(field: list[tuple[Funder, Bid]]) -> list[tuple[str, str, str]]:
+    """Assign each agent a stable colour, a name, and a one-word persona ranked by cost."""
     order = sorted(range(len(field)), key=lambda i: field[i][0].true_cost_apr)
     rank = {i: r for r, i in enumerate(order)}
     return [
         (
             AGENT_COLORS[i % len(AGENT_COLORS)],
-            AGENT_AVATARS[i % len(AGENT_AVATARS)],
             AGENT_NAMES[i % len(AGENT_NAMES)],
             PERSONAS[min(rank[i], len(PERSONAS) - 1)],
         )
@@ -108,24 +106,24 @@ def identities_for(field: list[tuple[Funder, Bid]]) -> list[tuple[str, str, str,
     ]
 
 
-def render_card(slot, funder: Funder, bid: Bid, ident: tuple[str, str, str, str], won: bool) -> None:
-    """Render one agent as a bordered card with its identity, cost, and bid."""
-    color, avatar, name, persona = ident
+def render_card(slot, funder: Funder, bid: Bid, ident: tuple[str, str, str], won: bool) -> None:
+    """Render one agent as a bordered card: a colour dot, name, persona, cost, and bid."""
+    color, name, persona = ident
     with slot.container(border=True):
-        st.markdown(f":{color}[{avatar} **{name}**]")
-        st.caption(f"_{persona}_ | cost {funder.true_cost_apr:.1%} -> bid **{bid.apr:.1%}**")
+        st.markdown(f":{color}[● **{name}**]")
+        st.caption(f"{persona} · cost {funder.true_cost_apr:.1%} → bid **{bid.apr:.1%}**")
         if won:
-            st.markdown(":green[\U0001f3c6 **winner**]")
+            st.markdown(":green[**✓ Winner**]")
 
 
-def render_banner(slot, result, identities: list[tuple[str, str, str, str]], field) -> None:
+def render_banner(slot, result, identities: list[tuple[str, str, str]], field) -> None:
     """The cleared-price highlight: who won and at what APR, in the winner's colour."""
     if not result.traded:
         slot.warning("No agent's bid was at or below the reserve, so nothing cleared.")
         return
     widx = next(i for i, (f, _b) in enumerate(field) if f.party_id == result.winner_id)
-    color, avatar, name, _persona = identities[widx]
-    slot.markdown(f"### :{color}[{avatar} {name} wins, cleared at {result.clearing_apr:.1%} APR]")
+    color, name, _persona = identities[widx]
+    slot.markdown(f"### :{color}[● {name} wins, cleared at {result.clearing_apr:.1%} APR]")
 
 
 API_KEY = get_api_key()
@@ -226,56 +224,67 @@ with arena_tab:
                 )
                 cost = financing_cost(invoice.face_value, result.clearing_apr, invoice.days_early)
                 money = st.columns(2)
-                money[0].metric("Supplier surplus", f"EUR {split.supplier_surplus:,.0f}")
-                money[1].metric("Winner rent", f"EUR {split.winner_rent:,.0f}")
+                money[0].metric("Supplier surplus", f"€{split.supplier_surplus:,.0f}")
+                money[1].metric("Winner rent", f"€{split.winner_rent:,.0f}")
                 st.success(
-                    f"In plain terms: the supplier receives **EUR {invoice.face_value - cost:,.0f}** "
-                    f"today instead of **EUR {invoice.face_value:,.0f}** in {invoice.days_early} days. "
-                    f"Paying early costs **EUR {cost:,.0f}** at **{result.clearing_apr:.1%}** APR."
+                    f"In plain terms: the supplier receives **€{invoice.face_value - cost:,.0f}** "
+                    f"today instead of **€{invoice.face_value:,.0f}** in {invoice.days_early} days. "
+                    f"Paying early costs **€{cost:,.0f}** at **{result.clearing_apr:.1%}** APR."
                 )
 
+            st.divider()
             st.markdown("##### What each agent was thinking")
             st.caption(
-                "The agents differ mainly in their cost of capital, which sets the bid. The "
-                "reasoning is similar here because the prompt names the truthful strategy, which "
-                "is exactly the caveat the third view tests."
+                "The agents differ mainly in their cost of capital, which sets the bid. Their "
+                "reasoning is similar here because the prompt names the truthful strategy, which is "
+                "exactly the caveat the third view tests."
             )
             for i, (funder, bid) in enumerate(field):
-                crown = "  (winner)" if result.traded and result.winner_id == funder.party_id else ""
-                ident = identities[i]
-                st.markdown(f":{ident[0]}[{ident[1]} **{ident[2]}**]  bid **{bid.apr:.2%}**{crown}")
-                st.write(bid.rationale or "(no rationale returned)")
+                color, name, _persona = identities[i]
+                win = result.traded and result.winner_id == funder.party_id
+                with st.container(border=True):
+                    badge = " · :green[✓ winner]" if win else ""
+                    st.markdown(f":{color}[● **{name}**] · bid **{bid.apr:.2%}**{badge}")
+                    st.write(bid.rationale or "(no rationale returned)")
 
-    if API_KEY:
-        with st.expander("Run a fresh live arena with your own funder costs"):
-            live = st.columns(3)
-            costs_live = [
-                live[0].slider("Agent A cost (%)", 1.0, 40.0, 7.0, 0.5, key="a_a") / 100,
-                live[1].slider("Agent B cost (%)", 1.0, 40.0, 10.0, 0.5, key="a_b") / 100,
-                live[2].slider("Agent C cost (%)", 1.0, 40.0, 14.0, 0.5, key="a_c") / 100,
-            ]
-            reserve_live = st.slider("Reserve (APR %)", 5.0, 60.0, 40.0, 1.0, key="a_res") / 100
-            if st.button("Ask Claude agents to bid live"):
-                from aelab.agents.base import AuctionContext, AuctionRules
-                from aelab.agents.cache import AnthropicClient, ResponseCache
-                from aelab.agents.llm import LLMAgent
+    st.divider()
+    st.markdown("##### Run it live with your own agents")
+    st.caption(
+        "The field above replays real committed bids, so it needs no key. This is the same "
+        "arena run live: set custom funder costs and Claude bids in real time. It is gated on a "
+        "key because each run calls the API."
+    )
+    if not API_KEY:
+        st.caption("Add an ANTHROPIC_API_KEY (Settings, then Secrets) to enable live runs.")
+    else:
+        live = st.columns(3)
+        costs_live = [
+            live[0].slider("Agent A cost (%)", 1.0, 40.0, 7.0, 0.5, key="a_a") / 100,
+            live[1].slider("Agent B cost (%)", 1.0, 40.0, 10.0, 0.5, key="a_b") / 100,
+            live[2].slider("Agent C cost (%)", 1.0, 40.0, 14.0, 0.5, key="a_c") / 100,
+        ]
+        reserve_live = st.slider("Reserve (APR %)", 5.0, 60.0, 40.0, 1.0, key="a_res") / 100
+        if st.button("Ask Claude agents to bid live"):
+            from aelab.agents.base import AuctionContext, AuctionRules
+            from aelab.agents.cache import AnthropicClient, ResponseCache
+            from aelab.agents.llm import LLMAgent
 
-                client = ResponseCache(AnthropicClient())
-                ctx = AuctionContext(Invoice("ARENA", 100_000.0, 60), AuctionRules(reserve_live))
-                live_field: list[tuple[Funder, Bid]] = []
-                with st.spinner("Asking each Claude agent for a bid..."):
-                    for i, cost in enumerate(costs_live):
-                        funder = Funder(f"L{i}", cost)
-                        live_field.append((funder, LLMAgent(funder, client).bid(ctx)))
-                live_result = clear_auction([b for _, b in live_field], reserve_live, random.Random(0))
-                live_ids = identities_for(live_field)
-                live_cols = st.columns(len(live_field))
-                for i, (funder, bid) in enumerate(live_field):
-                    won = live_result.traded and funder.party_id == live_result.winner_id
-                    render_card(live_cols[i], funder, bid, live_ids[i], won)
-                render_banner(st.empty(), live_result, live_ids, live_field)
-                for i, (_funder, bid) in enumerate(live_field):
-                    st.caption(f"**{live_ids[i][2]}**: {bid.rationale or '(none)'}")
+            client = ResponseCache(AnthropicClient())
+            ctx = AuctionContext(Invoice("ARENA", 100_000.0, 60), AuctionRules(reserve_live))
+            live_field: list[tuple[Funder, Bid]] = []
+            with st.spinner("Asking each Claude agent for a bid..."):
+                for i, cost in enumerate(costs_live):
+                    funder = Funder(f"L{i}", cost)
+                    live_field.append((funder, LLMAgent(funder, client).bid(ctx)))
+            live_result = clear_auction([b for _, b in live_field], reserve_live, random.Random(0))
+            live_ids = identities_for(live_field)
+            live_cols = st.columns(len(live_field))
+            for i, (funder, bid) in enumerate(live_field):
+                won = live_result.traded and funder.party_id == live_result.winner_id
+                render_card(live_cols[i], funder, bid, live_ids[i], won)
+            render_banner(st.empty(), live_result, live_ids, live_field)
+            for i, (_funder, bid) in enumerate(live_field):
+                st.caption(f"**{live_ids[i][1]}**: {bid.rationale or '(none)'}")
 
 # --- trust & integrity --------------------------------------------------------
 
@@ -334,10 +343,6 @@ with trust_tab:
                 "The fair-rate index is quiet: in this market a competitive buyer sits below the "
                 "house, so withholding moves nothing. Competition is the discipline."
             )
-        st.caption(
-            "Switch the scenario in the sidebar to `extraction` (house is pivotal) versus "
-            "`default` (a competitive buyer disciplines it)."
-        )
 
     with st.expander("Fee structure: the base decides the incentive"):
         st.write(

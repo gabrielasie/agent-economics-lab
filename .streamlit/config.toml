@@ -1,10 +1,11 @@
-# A clean, modern light theme: indigo accent on a near-white canvas.
+# A clean, professional light theme: an indigo accent on a near-white canvas, with neutral
+# (not purple-tinted) cards and sidebar so the colour stays on the accent and the agent dots.
 [theme]
 base = "light"
 primaryColor = "#4f46e5"
 backgroundColor = "#ffffff"
-secondaryBackgroundColor = "#f4f4fb"
-textColor = "#1f2430"
+secondaryBackgroundColor = "#f5f6f8"
+textColor = "#0f172a"
 font = "sans serif"
 
 [server]
