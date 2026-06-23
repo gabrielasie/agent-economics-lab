@@ -15,6 +15,10 @@ It is a pre-interview artifact for a Product Engineer, Agent Economics role, so 
 the correctness of the mechanism, the sharpness of the findings, and the accompanying memo
 ([`memo/MEMO.md`](memo/MEMO.md)). The full design lives in [`SPEC.md`](SPEC.md).
 
+**Where to start:** the **Agent arena** (agents bidding against each other), then **Trust &
+integrity** (the fair-rate index), then the [memo](memo/MEMO.md). A live Streamlit demo is
+deployed, see [Deployment](#deployment).
+
 ---
 
 ## Contents
@@ -34,6 +38,7 @@ the correctness of the mechanism, the sharpness of the findings, and the accompa
 - [Testing and the gate](#testing-and-the-gate)
 - [Status and roadmap](#status-and-roadmap)
 - [Caveats and open questions](#caveats-and-open-questions)
+- [License](#license)
 
 ---
 
@@ -56,11 +61,17 @@ to `results/`, so `--from-raw` replays the analysis offline.
 
 ## The web UI
 
-A [Streamlit](https://streamlit.io) app (`app.py`) presents the same results interactively in
-four panels: efficiency, house extraction, the truthfulness non-result, and the first-price
-counterfactual. It lives outside the `aelab` package, so the pure core is untouched and the
-import contracts still hold. It runs the deterministic experiments live and replays the LLM
-experiments from committed bids in `data/`, so it needs no API key.
+A [Streamlit](https://streamlit.io) app (`app.py`) presents the work in three views:
+
+- **Agent arena** - Claude funders bid against each other on one invoice; their bids reveal one
+  at a time, the auction clears to a winner and a price, and each agent's reasoning is shown.
+- **Trust & integrity** - efficiency is not enough; the fair-rate index catches a house that
+  extracts by withholding, and a fee-structure lever shows which fee base keeps the venue honest.
+- **Do the agents reason?** - the truthfulness non-result beside the first-price counterfactual.
+
+It lives outside the `aelab` package, so the pure core is untouched and the import contracts
+still hold. The deterministic work runs live and the LLM panels replay committed bids in
+`data/`, so it needs no API key; an optional key enables live agent bids.
 
 ```
 uv sync --extra ui
@@ -180,7 +191,7 @@ app.py               the Streamlit UI (edge, outside the package)
 scenarios/           default.toml, extraction.toml
 scripts/             thin argparse wrappers over the cli orchestration
 data/                committed bids the UI replays (keyless deploy)
-tests/               206 tests, including hypothesis property tests
+tests/               207 tests, including hypothesis property tests
 memo/MEMO.md         the findings writeup
 demo.ipynb           the three results run end to end
 ```
@@ -257,13 +268,14 @@ is reproducible from its scenario file plus the cache. The LLM commands save the
 
 | Where | Key needed? |
 |---|---|
-| The deployed Streamlit app | **No** - keyless by design (deterministic live, LLM replayed) |
-| Your machine, running `aelab truthfulness` or `aelab counterfactual` live | **Yes** - in your shell or a local `.env` |
-| Anywhere in git | **Never** (`.env` is gitignored) |
+| The deployed Streamlit app | **Optional.** Keyless by default (deterministic live, LLM replayed). A key (Streamlit secret) unlocks live agent bids, but on a public URL every visitor can spend it. |
+| Local app, or the `truthfulness` / `counterfactual` CLI live runs | **Yes** - shell env, `.env`, or `.streamlit/secrets.toml` |
+| Anywhere in git | **Never** - `.env` and `.streamlit/secrets.toml` are gitignored |
 
 The key is read from the environment by `anthropic.Anthropic()`, lazily, so nothing needs it
-unless you run a live command. Do not set it as a Streamlit Cloud secret: a public URL calling
-the API per visitor would spend money and invite abuse, which is why the deploy is keyless.
+unless you run a live command. For a shareable public demo, prefer the keyless path: run the LLM
+experiments once locally and commit the saved bids (`data/*.json`), so the deployed app replays
+them with no key on the public URL.
 
 ## Testing and the gate
 
@@ -274,7 +286,7 @@ passing gate is the only evidence of done.
 uv run ruff check .
 uv run mypy
 uv run lint-imports
-uv run pytest          # 206 tests
+uv run pytest          # 207 tests
 ```
 
 The headline tests are `hypothesis` property tests: truthful bidding is weakly dominant, and
@@ -303,3 +315,7 @@ mechanism does not protect (the supplier and the buyer); how to construct a fair
 supplier can actually trust, given that the honest-house counterfactual is something only the
 operator can compute; and where a signed deterministic policy should end and an LLM's discretion
 begin.
+
+## License
+
+MIT, see [`LICENSE`](LICENSE).
