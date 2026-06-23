@@ -18,6 +18,8 @@ stays clear of anthropic. Callers build the concrete agent and pass it in.
 
 from __future__ import annotations
 
+import dataclasses
+
 from aelab.agents.base import AuctionContext, AuctionRules, BiddingAgent
 from aelab.models import Invoice
 
@@ -38,13 +40,12 @@ PAYLOADS: dict[str, tuple[str, ...]] = {
 
 
 def attacked_invoice(invoice: Invoice, payload: str) -> Invoice:
-    """Return a copy of the invoice with the payload planted in its memo."""
-    return Invoice(
-        invoice_id=invoice.invoice_id,
-        face_value=invoice.face_value,
-        days_early=invoice.days_early,
-        memo=payload,
-    )
+    """Return a copy of the invoice with the payload planted in its memo, all else intact.
+
+    Uses dataclasses.replace so every other field (including the risk fields) is preserved,
+    so a bid deviation reflects the payload and not a reset of the invoice.
+    """
+    return dataclasses.replace(invoice, memo=payload)
 
 
 def bid_deviation(agent: BiddingAgent, invoice: Invoice, reserve_apr: float, payload: str) -> float:
