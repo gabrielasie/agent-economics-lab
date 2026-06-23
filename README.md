@@ -15,9 +15,9 @@ It is a pre-interview artifact for a Product Engineer, Agent Economics role, so 
 the correctness of the mechanism, the sharpness of the findings, and the accompanying memo
 ([`memo/MEMO.md`](memo/MEMO.md)). The full design lives in [`SPEC.md`](SPEC.md).
 
-**Where to start:** the **Agent arena** (agents bidding against each other), then **Trust &
-integrity** (the fair-rate index), then the [memo](memo/MEMO.md). A live Streamlit demo is
-deployed, see [Deployment](#deployment).
+**[Live demo](https://agent-economics-lab-mthq892brens5xgelgbr9i.streamlit.app/)** ·
+**[Memo](memo/MEMO.md)** · **Where to start:** the **Agent arena** (agents bidding against each
+other), then **Trust & integrity** (the fair-rate index).
 
 ---
 
