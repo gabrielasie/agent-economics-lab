@@ -14,6 +14,7 @@ from __future__ import annotations
 import json
 import os
 import random
+import time
 from pathlib import Path
 
 import pandas as pd
@@ -85,14 +86,46 @@ def harness_frame(name: str) -> pd.DataFrame:
     ).set_index("regime")
 
 
-def agent_cards(field: list[tuple[Funder, Bid]], winner_id: str | None) -> None:
-    """Render a competitive field as compact cards, not a table."""
-    cols = st.columns(min(len(field), 3))
-    for idx, (funder, bid) in enumerate(field):
-        won = winner_id == funder.party_id
-        with cols[idx % len(cols)].container(border=True):
-            st.markdown(f"**Agent {funder.party_id}**" + ("  🏆" if won else ""))
-            st.caption(f"cost {funder.true_cost_apr:.1%}  →  bid **{bid.apr:.1%}**")
+# Each agent gets a stable identity so the field reads as characters, not table rows.
+AGENT_COLORS = ["violet", "blue", "green", "orange", "red", "gray"]
+AGENT_AVATARS = ["\U0001f7e3", "\U0001f535", "\U0001f7e2", "\U0001f7e0", "\U0001f534", "⚪"]
+AGENT_NAMES = ["Vega", "Orion", "Lyra", "Nova", "Atlas", "Sol"]
+PERSONAS = ["lean", "keen", "balanced", "measured", "cautious", "premium"]
+
+
+def identities_for(field: list[tuple[Funder, Bid]]) -> list[tuple[str, str, str, str]]:
+    """Assign each agent a colour, avatar, name, and a one-word persona by cost rank."""
+    order = sorted(range(len(field)), key=lambda i: field[i][0].true_cost_apr)
+    rank = {i: r for r, i in enumerate(order)}
+    return [
+        (
+            AGENT_COLORS[i % len(AGENT_COLORS)],
+            AGENT_AVATARS[i % len(AGENT_AVATARS)],
+            AGENT_NAMES[i % len(AGENT_NAMES)],
+            PERSONAS[min(rank[i], len(PERSONAS) - 1)],
+        )
+        for i in range(len(field))
+    ]
+
+
+def render_card(slot, funder: Funder, bid: Bid, ident: tuple[str, str, str, str], won: bool) -> None:
+    """Render one agent as a bordered card with its identity, cost, and bid."""
+    color, avatar, name, persona = ident
+    with slot.container(border=True):
+        st.markdown(f":{color}[{avatar} **{name}**]")
+        st.caption(f"_{persona}_ | cost {funder.true_cost_apr:.1%} -> bid **{bid.apr:.1%}**")
+        if won:
+            st.markdown(":green[\U0001f3c6 **winner**]")
+
+
+def render_banner(slot, result, identities: list[tuple[str, str, str, str]], field) -> None:
+    """The cleared-price highlight: who won and at what APR, in the winner's colour."""
+    if not result.traded:
+        slot.warning("No agent's bid was at or below the reserve, so nothing cleared.")
+        return
+    widx = next(i for i, (f, _b) in enumerate(field) if f.party_id == result.winner_id)
+    color, avatar, name, _persona = identities[widx]
+    slot.markdown(f"### :{color}[{avatar} {name} wins, cleared at {result.clearing_apr:.1%} APR]")
 
 
 API_KEY = get_api_key()
@@ -143,14 +176,33 @@ with arena_tab:
         st.info("No committed Claude bids found (data/truthfulness_raw.json).")
     else:
         texts = json.loads(raw.read_text(encoding="utf-8"))
-        top = st.columns([1, 1])
+        top = st.columns([1, 1, 1])
         inv_idx = top[0].slider("Invoice", 0, scenario.probe_n_invoices - 1, 0)
         reserve = top[1].slider("Supplier reserve (APR %)", 5.0, 60.0, 40.0, 1.0) / 100
         invoice, field = arena_bids(scenario, texts, inv_idx)
         result = clear_auction([bid for _, bid in field], reserve, random.Random(0))
+        identities = identities_for(field)
 
-        agent_cards(field, result.winner_id if result.traded else None)
-        st.write("")
+        top[2].write("")
+        reveal = top[2].button("▶ Reveal the bids")
+        grid = st.columns(3)
+        slots = [grid[i % 3].empty() for i in range(len(field))]
+        banner = st.empty()
+
+        if reveal and result.traded:
+            for i in sorted(range(len(field)), key=lambda j: -field[j][1].apr):  # winner revealed last
+                render_card(slots[i], field[i][0], field[i][1], identities[i], won=False)
+                time.sleep(0.3)
+            widx = next(i for i, (f, _b) in enumerate(field) if f.party_id == result.winner_id)
+            time.sleep(0.2)
+            render_card(slots[widx], field[widx][0], field[widx][1], identities[widx], won=True)
+            time.sleep(0.35)
+            render_banner(banner, result, identities, field)
+        else:
+            for i in range(len(field)):
+                won = result.traded and field[i][0].party_id == result.winner_id
+                render_card(slots[i], field[i][0], field[i][1], identities[i], won)
+            render_banner(banner, result, identities, field)
 
         if result.traded:
             assert result.clearing_apr is not None and result.winning_bid_apr is not None
@@ -158,22 +210,19 @@ with arena_tab:
                 invoice.face_value, reserve, result.clearing_apr, result.winning_bid_apr, invoice.days_early
             )
             cost = financing_cost(invoice.face_value, result.clearing_apr, invoice.days_early)
-            outcome = st.columns(3)
-            outcome[0].metric("Winner", f"Agent {result.winner_id}")
-            outcome[1].metric("Clearing APR", f"{result.clearing_apr:.1%}")
-            outcome[2].metric("Supplier surplus", f"EUR {split.supplier_surplus:,.0f}")
+            money = st.columns(2)
+            money[0].metric("Supplier surplus", f"EUR {split.supplier_surplus:,.0f}")
+            money[1].metric("Winner rent", f"EUR {split.winner_rent:,.0f}")
             st.success(
                 f"In plain terms: the supplier receives **EUR {invoice.face_value - cost:,.0f}** "
                 f"today instead of **EUR {invoice.face_value:,.0f}** in {invoice.days_early} days. "
                 f"Paying early costs **EUR {cost:,.0f}** at **{result.clearing_apr:.1%}** APR."
             )
-        else:
-            st.warning("No agent's bid was at or below the reserve, so nothing cleared.")
 
         with st.expander("Read each agent's reasoning"):
-            for funder, bid in field:
+            for i, (funder, bid) in enumerate(field):
                 crown = " (winner)" if result.traded and result.winner_id == funder.party_id else ""
-                st.markdown(f"**Agent {funder.party_id}**{crown} bid {bid.apr:.2%}")
+                st.markdown(f"**{identities[i][2]}**{crown} bid {bid.apr:.2%}")
                 st.caption(bid.rationale or "(no rationale returned)")
 
         st.caption(
@@ -204,9 +253,14 @@ with arena_tab:
                         funder = Funder(f"L{i}", cost)
                         live_field.append((funder, LLMAgent(funder, client).bid(ctx)))
                 live_result = clear_auction([b for _, b in live_field], reserve_live, random.Random(0))
-                agent_cards(live_field, live_result.winner_id if live_result.traded else None)
-                for funder, bid in live_field:
-                    st.caption(f"**{funder.party_id}**: {bid.rationale or '(none)'}")
+                live_ids = identities_for(live_field)
+                live_cols = st.columns(len(live_field))
+                for i, (funder, bid) in enumerate(live_field):
+                    won = live_result.traded and funder.party_id == live_result.winner_id
+                    render_card(live_cols[i], funder, bid, live_ids[i], won)
+                render_banner(st.empty(), live_result, live_ids, live_field)
+                for i, (_funder, bid) in enumerate(live_field):
+                    st.caption(f"**{live_ids[i][2]}**: {bid.rationale or '(none)'}")
 
 # --- trust & integrity --------------------------------------------------------
 
