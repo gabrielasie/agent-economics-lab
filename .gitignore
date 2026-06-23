@@ -17,3 +17,5 @@ results/*.json
 .env
 # the real Streamlit key; commit .streamlit/secrets.toml.example instead
 .streamlit/secrets.toml
+# personal notes (interview prep etc.); kept local, never published
+notes/
