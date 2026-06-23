@@ -154,13 +154,11 @@ with st.expander("About this lab"):
         "**Tested honestly**  \nIncluding where LLM agents stop actually reasoning."
     )
 
-arena_tab, trust_tab, reason_tab = st.tabs(
-    ["Agent arena", "Trust & integrity", "Do the agents reason?"]
-)
+st.divider()
 
 # --- arena --------------------------------------------------------------------
 
-with arena_tab:
+with st.container():
     st.subheader("Claude agents bid against each other")
     st.write(
         "Each funder is a Claude agent. The auction is sealed-bid, so they never see each other: "
@@ -286,9 +284,11 @@ with arena_tab:
             for i, (_funder, bid) in enumerate(live_field):
                 st.caption(f"**{live_ids[i][1]}**: {bid.rationale or '(none)'}")
 
+st.divider()
+
 # --- trust & integrity --------------------------------------------------------
 
-with trust_tab:
+with st.container():
     st.subheader("Can the venue extract, and would a supplier see it?")
     labels = {"default": "Competitive market", "extraction": "House is pivotal"}
     names = scenario_names()
@@ -377,9 +377,11 @@ with trust_tab:
     with st.expander("Supplier share rises with competition"):
         st.line_chart(eff, height=260)
 
+st.divider()
+
 # --- do the agents reason? ----------------------------------------------------
 
-with reason_tab:
+with st.container():
     st.subheader("Do the agents reason, or just follow the prompt?")
     scenario = load_scenario(PROBE_SCENARIO)
 
