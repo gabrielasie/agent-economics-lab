@@ -359,64 +359,72 @@ st.divider()
 with st.container():
     st.subheader("2 · Incentive integrity")
     st.caption("Whether the venue can extract from suppliers, and whether they would see it.")
+    st.write(
+        "Efficiency is not the hard part: under truthful bidding the cheapest funder wins, so the "
+        "market is efficient regardless. What matters is how the surplus splits, and whether the "
+        "house that runs the venue can quietly take more. A supplier who concludes it does leaves."
+    )
     labels = {"default": "Competitive market", "extraction": "House is pivotal"}
-    names = scenario_names()
+    order = ["extraction", "default"]  # pivotal first, so the contrast is visible on landing
+    names = [n for n in order if n in scenario_names()]
+    names += [n for n in scenario_names() if n not in names]
     options = [labels.get(n, n) for n in names]
     choice = st.radio("Market", options, horizontal=True, label_visibility="collapsed")
     scenario_name = names[options.index(choice)]
-    st.caption(
-        "**Competitive market**: a cheap in-house buyer and rival financiers sit below the house, "
-        "so it cannot pivot the price. **House is pivotal**: the house is the marginal funder, so "
-        "withholding bites. The contrast is the finding: competition, not a rule, is the defense."
-    )
-    st.write(
-        "Efficiency is not the hard part. Under truthful bidding the lowest-cost funder wins, so "
-        "the market is fully efficient regardless. What matters is how the surplus is split, and "
-        "whether the house that runs the venue can quietly take more of it. A supplier who "
-        "concludes the venue extracts from them leaves the network."
-    )
+    pivotal = scenario_name == "extraction"
 
     eff = efficiency_frame(scenario_name)
     har = harness_frame(scenario_name).to_dict("index")
-    sep = har.get("separated", {})
-    inf = har.get("informed", {})
+    sep_share = float(har.get("separated", {}).get("supplier share", 0.0))
+    inf_share = float(har.get("informed", {}).get("supplier share", 0.0))
+    flags = int(har.get("informed", {}).get("flags", 0))
+    lost = sep_share - inf_share
 
-    cols = st.columns(3)
-    cols[0].metric("Allocative efficiency", f"{eff['efficiency'].mean():.3f}", help="Always near 1.0")
-    cols[1].metric(
-        "Supplier share, honest house",
-        f"{sep.get('supplier share', 0):.3f}",
-        help="A house that bids its signed policy blind adds competition and helps the supplier.",
-    )
-    cols[2].metric(
-        "Supplier share, house peeks",
-        f"{inf.get('supplier share', 0):.3f}",
-        delta=f"{inf.get('supplier share', 0) - sep.get('supplier share', 0):+.3f}",
-        delta_color="normal",
-        help="A house that peeks at sealed bids and withholds extracts from the supplier.",
-    )
-
-    chart_cols = st.columns([3, 2])
-    with chart_cols[0]:
-        st.caption("Supplier share of surplus, by regime")
-        st.bar_chart(harness_frame(scenario_name)[["supplier share"]], height=260, color=ACCENT)
-    with chart_cols[1]:
-        flags = int(inf.get("flags", 0))
-        st.metric(
-            "Fair-rate index",
-            f"{flags} flagged",
-            help="Invoices where the peeking house lifted the clearing above the honest benchmark.",
+    if pivotal:
+        st.write(
+            "The house is the marginal, price-setting funder here. When it peeks at the sealed "
+            "bids and withholds one, the clearing rises and the supplier's share falls, while "
+            "allocative efficiency stays at 1.000. The fair-rate index catches it; an efficiency "
+            "metric never would."
         )
-        if flags > 0:
-            st.caption(
-                f":green[Working as intended.] The index catches the house's hidden extraction "
-                f"on {flags} invoices, where an efficiency metric would see nothing."
-            )
-        else:
-            st.caption(
-                ":green[Quiet, as it should be.] A competitive buyer sits below the house, so "
-                "withholding moves nothing. Competition is the discipline."
-            )
+    else:
+        st.write(
+            "These bars are equal on purpose, and that is the result. With a competitive buyer "
+            "below the house, neither an informed house nor a financier ring moves the supplier's "
+            "share, because none of them is pivotal. The only signal is the fair-rate index. You "
+            "cannot monitor venue extraction with an efficiency metric; you need a price index."
+        )
+
+    m = st.columns(3)
+    m[0].metric(
+        "Allocative efficiency",
+        f"{eff['efficiency'].mean():.3f}",
+        help="Stays near 1.0 even under extraction, so an efficiency metric is blind to it.",
+    )
+    m[1].metric(
+        "Fair-rate index",
+        f"{flags} flagged",
+        help="Invoices where the peeking house lifted the clearing above the honest benchmark.",
+    )
+    m[2].metric(
+        "Supplier share lost to the house",
+        f"{lost:.3f}",
+        help="How much the peeking house takes from the supplier; zero when competition stops it.",
+    )
+    st.caption(
+        f"Underlying supplier share: {sep_share:.3f} with an honest house, {inf_share:.3f} when "
+        f"it peeks."
+    )
+
+    st.caption("Supplier share of surplus, by regime")
+    st.bar_chart(harness_frame(scenario_name)[["supplier share"]], height=260, color=ACCENT)
+    if flags > 0:
+        st.caption(":green[Caught.] The index flags the extraction the efficiency number missed.")
+    else:
+        st.caption(
+            ":green[Quiet.] No regime is pivotal, so the attacks move nothing; competition is the "
+            "discipline."
+        )
 
     st.divider()
     st.markdown("##### The fee base sets the venue's incentive")
