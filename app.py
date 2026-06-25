@@ -458,15 +458,6 @@ with st.container():
                 f"venue to extract."
             )
 
-    st.divider()
-    st.markdown("##### Competition lifts the supplier's share")
-    st.caption(
-        "In the competitive market, as more financiers compete (horizontal axis) the supplier's "
-        "share of surplus rises, while allocative efficiency stays at 1.000 throughout. "
-        "Efficiency says the pie is whole; supplier share says who keeps it."
-    )
-    st.line_chart(efficiency_frame("default")[["supplier share"]], height=240, color=ACCENT)
-
 st.divider()
 
 # --- defending the agents (prompt injection) ----------------------------------
