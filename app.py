@@ -149,6 +149,46 @@ class _SusceptibleClient:
         return f'{{"apr": {apr}, "rationale": "demo"}}'
 
 
+@st.dialog("How to read this page", width="large")
+def _tutorial() -> None:
+    """A short walkthrough: what each section shows and how to interpret it."""
+    st.markdown(
+        "This is a working model of an invoice early-payment auction, run by AI agents. A "
+        "supplier wants cash now for an invoice due later; funder agents compete to pay it "
+        "early, and the lowest rate wins. Scroll the page top to bottom, in four parts."
+    )
+    st.markdown(
+        "**1 · The auction.** Pick an invoice and the supplier's reserve (the worst rate it will "
+        "accept), then press **Reveal the bids**. Each AI funder bids privately. *Read it as:* "
+        "the lowest APR wins (the green card) and is paid the second-lowest bid (the clearing "
+        "APR). Below, supplier surplus is the supplier's slice in euros, and each agent's "
+        "reasoning is shown."
+    )
+    st.markdown(
+        "**2 · Incentive integrity.** Switch between a competitive market and one where the house "
+        "is the pivotal funder. *Read it as:* efficiency stays near 1.000 in both, but supplier "
+        "share drops when the house peeks at the bids and withholds one to lift the price. The "
+        "fair-rate index counts the invoices where that happened, so a supplier could see it. The "
+        "fee chart shows which fee base keeps the venue's own incentive honest."
+    )
+    st.markdown(
+        "**3 · Defending the agents.** A malicious invoice memo can try to hijack an agent's bid. "
+        "*Read it as:* whatever a tricked model outputs, the signed policy clamps it back into "
+        "safe bounds. The two numbers show an undefended agent is moved by 100% of attacks, a "
+        "defended one by 0%."
+    )
+    st.markdown(
+        "**4 · Do the agents reason?** *Read it as:* the agents bid their true cost under "
+        "second-price (about zero) and shade up under first-price (+0.034 APR), where bidding "
+        "cost earns nothing. They respond to the rule, not the prompt, so they reason about the "
+        "mechanism."
+    )
+    st.caption(
+        "Most panels are precomputed and free to explore. Only buttons labelled 'live' call the "
+        "model."
+    )
+
+
 API_KEY = get_api_key()
 if API_KEY:
     os.environ["ANTHROPIC_API_KEY"] = API_KEY
@@ -170,6 +210,11 @@ orient[0].markdown("**1 · The auction**  \nAgents bid on an invoice; it clears 
 orient[1].markdown("**2 · Incentive integrity**  \nCan the venue extract; the index that catches it.")
 orient[2].markdown("**3 · Injection defense**  \nThe clamp that bounds a compromised bid.")
 orient[3].markdown("**4 · Agent reasoning**  \nReasoning, or following the prompt.")
+
+open_tutorial = st.button("How to read this page", help="A short walkthrough of each section")
+if open_tutorial or not st.session_state.get("seen_tutorial", False):
+    st.session_state["seen_tutorial"] = True
+    _tutorial()
 
 st.divider()
 
