@@ -194,7 +194,7 @@ scripts/             thin argparse wrappers over the cli orchestration
 data/                committed bids the UI replays (keyless deploy)
 tests/               207 tests, including hypothesis property tests
 memo/MEMO.md         the findings writeup
-demo.ipynb           the three results run end to end
+demo.ipynb           the main experiments run end to end
 ```
 
 ## Command-line interface
@@ -255,6 +255,14 @@ allocatively free while it stays inside the house's cost advantage over the next
 falls off a step the moment the loaded quote crosses that funder. In a measured case (house cost
 0.08, next funder 0.10), efficiency holds at 1.000 through loadings of 0.02 and drops to 0.923 at
 0.04. Setting policy margin is choosing how much allocative efficiency to spend.
+
+**5. The fee base decides whether the venue's incentive fights extraction or funds it.** The
+venue must charge a fee, and the base is a design choice with teeth. Conservation pins it:
+supplier share plus winner-rent share is one on every invoice. So a fee on the supplier's
+surplus shrinks when the supplier is squeezed, which makes withholding cost the venue its own
+revenue; a fee on the spread grows when the supplier is squeezed, which pays the venue to
+extract. Making "not a buyer-side extraction tool" structural is choosing the base so the venue
+earns most when the supplier does, not a promise or a disclosure.
 
 ## Reproducibility and the cache
 

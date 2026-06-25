@@ -71,6 +71,17 @@ the safe region is bounded by the house's true cost advantage, which the operato
 know. This is the second-order effect the role exists to reason about: a defense (separation)
 that is sound on price has a hidden, non-linear cost on allocation.
 
+**5. The fee base decides whether the venue's own incentive fights extraction or funds it.**
+The venue has to charge a fee, and the base it charges on is a design choice with teeth.
+Conservation pins the two sides: on each invoice, supplier share plus winner-rent share equals
+one. So a fee on the supplier's surplus and a fee on the spread move in opposite directions
+when the house withholds. Charge on the supplier's surplus and the fee shrinks exactly when the
+supplier is squeezed, so withholding to lift the clearing costs the venue its own revenue:
+extraction is self-defeating. Charge on the spread and the fee grows when the supplier is
+squeezed, so the fee structure literally pays the venue to extract. The point of "make
+buyer-side extraction structurally impossible" is not a promise or a disclosure; it is choosing
+the fee base so the venue earns most when the supplier does.
+
 ## What I would build next, and the questions that matter
 
 The first-price counterfactual is run and the agents reason, so the headline question is
