@@ -1,7 +1,8 @@
 """Streamlit UI for the Agent Economics Lab.
 
-A thin presentation edge over the aelab package. Three focused views: an agent arena, the
-incentive-integrity story, and the open question of whether the agents reason. It runs the
+A thin presentation edge over the aelab package. It leads with one result, incentive integrity
+(whether the venue can extract and whether an index catches it), and keeps the agent arena, the
+injection defense, and the reasoning test as deeper experiments on demand. It runs the
 deterministic work live and replays the LLM work from committed bids, so it needs no API key.
 It imports only the public aelab orchestration; the pure core is untouched, and because this
 file lives outside the aelab package the import contracts still hold.
@@ -155,33 +156,21 @@ def _tutorial() -> None:
     st.markdown(
         "This is a working model of an invoice early-payment auction, run by AI agents. A "
         "supplier wants cash now for an invoice due later; funder agents compete to pay it "
-        "early, and the lowest rate wins. Scroll the page top to bottom, in four parts."
+        "early, and the lowest rate wins."
     )
     st.markdown(
-        "**1 · The auction.** Pick an invoice and the supplier's reserve (the worst rate it will "
-        "accept), then press **Reveal the bids**. Each AI funder bids privately. *Read it as:* "
-        "the lowest APR wins (the green card) and is paid the second-lowest bid (the clearing "
-        "APR). Below, supplier surplus is the supplier's slice in euros, and each agent's "
-        "reasoning is shown."
+        "**The headline, at the top: incentive integrity.** Can the venue, which both runs the "
+        "auction and bids in it, quietly extract from suppliers? Flip the one toggle between a "
+        "competitive market and one where the house is pivotal. *Read it as:* efficiency stays "
+        "at 1.000 either way, but when the house is pivotal it withholds a bid, the supplier's "
+        "share falls, and the fair-rate index catches what efficiency cannot. The defense is "
+        "competition, not a rule."
     )
     st.markdown(
-        "**2 · Incentive integrity.** Switch between a competitive market and one where the house "
-        "is the pivotal funder. *Read it as:* efficiency stays near 1.000 in both, but supplier "
-        "share drops when the house peeks at the bids and withholds one to lift the price. The "
-        "fair-rate index counts the invoices where that happened, so a supplier could see it. The "
-        "fee chart shows which fee base keeps the venue's own incentive honest."
-    )
-    st.markdown(
-        "**3 · Defending the agents.** A malicious memo can try to hijack an agent's bid, with a "
-        "real euro cost if it works. *Read it as:* there are two defenses. Hardening the prompt is "
-        "best-effort and cannot be proven; clamping the bid to the signed policy is provable and "
-        "holds even if the model is fully compromised, because the clamp sits outside it."
-    )
-    st.markdown(
-        "**4 · Do the agents reason?** *Read it as:* the agents bid their true cost under "
-        "second-price (about zero) and shade up under first-price (+0.034 APR), where bidding "
-        "cost earns nothing. They respond to the rule, not the prompt, so they reason about the "
-        "mechanism."
+        "**Deeper experiments, expand on demand:** the agent arena (Claude funders bidding on one "
+        "invoice, with their reasoning); the prompt-injection defense (why clamping the bid is "
+        "provable while hardening the prompt is not); and the first-price counterfactual (the "
+        "agents shade up where truthful stops paying, so they reason about the rule)."
     )
     st.caption(
         "Most panels are precomputed and free to explore. Only buttons labelled 'live' call the "
@@ -197,32 +186,137 @@ if API_KEY:
 
 st.title("Agent Economics Lab")
 st.markdown(
-    "##### A sealed-bid, second-price auction for invoice early-payment, with AI funder agents "
-    "and an incentive-integrity harness"
+    "##### Can the operator of an invoice auction quietly extract from suppliers, and would "
+    "anyone catch it?"
 )
-st.write(
-    "When a buyer approves an invoice, competing funder agents enter a sealed-bid auction that "
-    "clears in seconds. This page presents the mechanism and the work that keeps it honest, in "
-    "four parts."
-)
-orient = st.columns(4)
-orient[0].markdown("**1 · The auction**  \nAgents bid on an invoice; it clears to a winner.")
-orient[1].markdown("**2 · Incentive integrity**  \nCan the venue extract; the index that catches it.")
-orient[2].markdown("**3 · Injection defense**  \nThe clamp that bounds a compromised bid.")
-orient[3].markdown("**4 · Agent reasoning**  \nReasoning, or following the prompt.")
-
-open_tutorial = st.button("How to read this page", help="A short walkthrough of each section")
-if open_tutorial or not st.session_state.get("seen_tutorial", False):
-    st.session_state["seen_tutorial"] = True
+if st.button("How to read this page", help="A short walkthrough"):
     _tutorial()
 
 st.divider()
 
-# --- arena --------------------------------------------------------------------
+# --- the headline: incentive integrity ----------------------------------------
 
-with st.container():
-    st.subheader("1 · The auction")
-    st.caption("Claude funders bid on one invoice; the auction clears to a winner and a price.")
+st.subheader("The finding: extraction is structural, and efficiency is blind to it")
+st.markdown(
+    "A venue that both runs the auction and bids in it can extract from suppliers, but **only "
+    "when it is the pivotal funder**. Add competition and the lever disappears, so the defense "
+    "is competition, not a rulebook. And an efficiency metric never sees it; you need a price "
+    "index. Flip the toggle to feel it."
+)
+with st.container(border=True):
+    st.markdown("**What this models, and what it does not**")
+    st.caption(
+        "Synthetic supplier and funder populations drawn from fixed ranges. Funders bid "
+        "truthfully under second-price, a dominant strategy. The house is modelled as a bidder "
+        "that can peek at sealed bids or withhold one. Everything is in APR space, not real "
+        "settlement or cryptography. The LLM-agent results are separate and measured live."
+    )
+
+labels = {"default": "Competitive market", "extraction": "House is pivotal"}
+order = ["extraction", "default"]  # pivotal first, so the contrast is visible on landing
+names = [n for n in order if n in scenario_names()]
+names += [n for n in scenario_names() if n not in names]
+options = [labels.get(n, n) for n in names]
+choice = st.radio("Market", options, horizontal=True, label_visibility="collapsed")
+scenario_name = names[options.index(choice)]
+pivotal = scenario_name == "extraction"
+
+eff = efficiency_frame(scenario_name)
+har = harness_frame(scenario_name).to_dict("index")
+sep_share = float(har.get("separated", {}).get("supplier share", 0.0))
+inf_share = float(har.get("informed", {}).get("supplier share", 0.0))
+flags = int(har.get("informed", {}).get("flags", 0))
+lost = sep_share - inf_share
+
+if pivotal:
+    st.write(
+        "The house is the marginal, price-setting funder here. When it peeks at the sealed bids "
+        "and withholds one, the clearing rises and the supplier's share falls, while allocative "
+        "efficiency stays at 1.000. The fair-rate index catches it; an efficiency metric never "
+        "would."
+    )
+else:
+    st.write(
+        "These bars are equal on purpose, and that is the result. With a competitive buyer below "
+        "the house, neither an informed house nor a financier ring moves the supplier's share, "
+        "because none of them is pivotal. The only signal is the fair-rate index. You cannot "
+        "monitor venue extraction with an efficiency metric; you need a price index."
+    )
+
+m = st.columns(3)
+m[0].metric(
+    "Allocative efficiency",
+    f"{eff['efficiency'].mean():.3f}",
+    help="Stays near 1.0 even under extraction, so an efficiency metric is blind to it.",
+)
+m[1].metric(
+    "Fair-rate index",
+    f"{flags} flagged",
+    help="Invoices where the peeking house lifted the clearing above the honest benchmark.",
+)
+m[2].metric(
+    "Supplier share lost to the house",
+    f"{lost:.3f}",
+    help="How much the peeking house takes from the supplier; zero when competition stops it.",
+)
+st.caption(
+    f"Underlying supplier share: {sep_share:.3f} with an honest house, {inf_share:.3f} when it "
+    f"peeks."
+)
+
+st.caption("Supplier share of surplus, by regime")
+st.bar_chart(harness_frame(scenario_name)[["supplier share"]], height=260, color=ACCENT)
+if flags > 0:
+    st.caption(":green[Caught.] The index flags the extraction the efficiency number missed.")
+else:
+    st.caption(
+        ":green[Quiet.] No regime is pivotal, so the attacks move nothing; competition is the "
+        "discipline."
+    )
+
+st.markdown(
+    "**The fee base matters too.** Charge the venue's fee on the supplier's surplus and "
+    "withholding shrinks its own fee, so extraction is self-defeating; charge it on the spread "
+    "and the fee rewards extraction. Making separation defensible is choosing the base, not "
+    "writing a rule."
+)
+with st.expander("Explore the fee structure"):
+    fee_cols = st.columns([1, 2])
+    fee_rate = fee_cols[0].slider("Fee rate (%)", 0.0, 30.0, 10.0, 1.0) / 100
+    base = fee_cols[0].radio("Fee base", ["supplier surplus", "the spread"])
+    aligned = base == "supplier surplus"
+    fee_df = harness_frame(scenario_name).copy()
+    fee_df["winner rent share"] = 1.0 - fee_df["supplier share"]
+    base_share = fee_df["supplier share"] if aligned else fee_df["winner rent share"]
+    fee_df["venue fee"] = fee_rate * base_share
+    fee_cols[1].caption("Venue fee revenue by regime, as a share of total surplus")
+    fee_cols[1].bar_chart(fee_df[["venue fee"]], height=240, color=ACCENT)
+    if "separated" in fee_df.index and "informed" in fee_df.index:
+        delta = float(fee_df.loc["informed", "venue fee"] - fee_df.loc["separated", "venue fee"])
+        if aligned:
+            st.caption(
+                f":green[Aligned.] When the house peeks, its fee moves by {delta:+.4f} of the "
+                f"pie. A surplus-based fee shrinks as the supplier is squeezed, so extraction is "
+                f"self-defeating."
+            )
+        else:
+            st.caption(
+                f":red[Misaligned.] When the house peeks, its fee moves by {delta:+.4f} of the "
+                f"pie. A spread-based fee grows as the supplier is squeezed, so it can pay the "
+                f"venue to extract."
+            )
+
+st.divider()
+
+# --- deeper experiments -------------------------------------------------------
+
+st.subheader("Deeper experiments")
+st.caption(
+    "The supporting work, on demand: the agents bidding, the prompt-injection defense, and "
+    "whether the agents reason about the mechanism."
+)
+
+with st.expander("The agent arena — Claude funders bidding against each other"):
     st.write(
         "Each funder is a Claude agent. The auction is sealed-bid: an agent sees only its own "
         "cost of capital and the invoice, never the other bids. The lowest APR wins and is paid "
@@ -352,119 +446,7 @@ with st.container():
             for i, (_funder, bid) in enumerate(live_field):
                 st.caption(f"**{live_ids[i][1]}**: {bid.rationale or '(none)'}")
 
-st.divider()
-
-# --- trust & integrity --------------------------------------------------------
-
-with st.container():
-    st.subheader("2 · Incentive integrity")
-    st.caption("Whether the venue can extract from suppliers, and whether they would see it.")
-    st.write(
-        "Efficiency is not the hard part: under truthful bidding the cheapest funder wins, so the "
-        "market is efficient regardless. What matters is how the surplus splits, and whether the "
-        "house that runs the venue can quietly take more. A supplier who concludes it does leaves."
-    )
-    labels = {"default": "Competitive market", "extraction": "House is pivotal"}
-    order = ["extraction", "default"]  # pivotal first, so the contrast is visible on landing
-    names = [n for n in order if n in scenario_names()]
-    names += [n for n in scenario_names() if n not in names]
-    options = [labels.get(n, n) for n in names]
-    choice = st.radio("Market", options, horizontal=True, label_visibility="collapsed")
-    scenario_name = names[options.index(choice)]
-    pivotal = scenario_name == "extraction"
-
-    eff = efficiency_frame(scenario_name)
-    har = harness_frame(scenario_name).to_dict("index")
-    sep_share = float(har.get("separated", {}).get("supplier share", 0.0))
-    inf_share = float(har.get("informed", {}).get("supplier share", 0.0))
-    flags = int(har.get("informed", {}).get("flags", 0))
-    lost = sep_share - inf_share
-
-    if pivotal:
-        st.write(
-            "The house is the marginal, price-setting funder here. When it peeks at the sealed "
-            "bids and withholds one, the clearing rises and the supplier's share falls, while "
-            "allocative efficiency stays at 1.000. The fair-rate index catches it; an efficiency "
-            "metric never would."
-        )
-    else:
-        st.write(
-            "These bars are equal on purpose, and that is the result. With a competitive buyer "
-            "below the house, neither an informed house nor a financier ring moves the supplier's "
-            "share, because none of them is pivotal. The only signal is the fair-rate index. You "
-            "cannot monitor venue extraction with an efficiency metric; you need a price index."
-        )
-
-    m = st.columns(3)
-    m[0].metric(
-        "Allocative efficiency",
-        f"{eff['efficiency'].mean():.3f}",
-        help="Stays near 1.0 even under extraction, so an efficiency metric is blind to it.",
-    )
-    m[1].metric(
-        "Fair-rate index",
-        f"{flags} flagged",
-        help="Invoices where the peeking house lifted the clearing above the honest benchmark.",
-    )
-    m[2].metric(
-        "Supplier share lost to the house",
-        f"{lost:.3f}",
-        help="How much the peeking house takes from the supplier; zero when competition stops it.",
-    )
-    st.caption(
-        f"Underlying supplier share: {sep_share:.3f} with an honest house, {inf_share:.3f} when "
-        f"it peeks."
-    )
-
-    st.caption("Supplier share of surplus, by regime")
-    st.bar_chart(harness_frame(scenario_name)[["supplier share"]], height=260, color=ACCENT)
-    if flags > 0:
-        st.caption(":green[Caught.] The index flags the extraction the efficiency number missed.")
-    else:
-        st.caption(
-            ":green[Quiet.] No regime is pivotal, so the attacks move nothing; competition is the "
-            "discipline."
-        )
-
-    st.divider()
-    st.markdown("##### The fee base sets the venue's incentive")
-    st.write(
-        "The venue charges a fee, and the base it charges on decides whether its own incentive "
-        "fights extraction or funds it. Each bar below is the venue's fee revenue, as a share of "
-        "total surplus, in one regime. Compare the honest house (separated) to the peeking house "
-        "(informed)."
-    )
-    fee_cols = st.columns([1, 2])
-    fee_rate = fee_cols[0].slider("Fee rate (%)", 0.0, 30.0, 10.0, 1.0) / 100
-    base = fee_cols[0].radio("Fee base", ["supplier surplus", "the spread"])
-    aligned = base == "supplier surplus"
-    fee_df = harness_frame(scenario_name).copy()
-    fee_df["winner rent share"] = 1.0 - fee_df["supplier share"]
-    base_share = fee_df["supplier share"] if aligned else fee_df["winner rent share"]
-    fee_df["venue fee"] = fee_rate * base_share
-    fee_cols[1].bar_chart(fee_df[["venue fee"]], height=240, color=ACCENT)
-    if "separated" in fee_df.index and "informed" in fee_df.index:
-        delta = float(fee_df.loc["informed", "venue fee"] - fee_df.loc["separated", "venue fee"])
-        if aligned:
-            st.caption(
-                f":green[Aligned.] When the house peeks, its fee moves by {delta:+.4f} of the "
-                f"pie. A surplus-based fee shrinks as the supplier is squeezed, so extraction is "
-                f"self-defeating."
-            )
-        else:
-            st.caption(
-                f":red[Misaligned.] When the house peeks, its fee moves by {delta:+.4f} of the "
-                f"pie. A spread-based fee grows as the supplier is squeezed, so it can pay the "
-                f"venue to extract."
-            )
-
-st.divider()
-
-# --- defending the agents (prompt injection) ----------------------------------
-
-with st.container():
-    st.subheader("3 · Defending the agents")
-    st.caption("Prompt injection through the invoice memo, and why one defense is provable.")
+with st.expander("Prompt-injection defense — why one defense is provable"):
     st.write(
         "An agent reads the invoice memo, which is untrusted text from a counterparty, so a "
         "malicious memo can hide instructions that try to move the agent's bid."
@@ -525,13 +507,7 @@ with st.container():
         "to all manipulation."
     )
 
-st.divider()
-
-# --- do the agents reason? ----------------------------------------------------
-
-with st.container():
-    st.subheader("4 · Do the agents reason?")
-    st.caption("Truthful bidding under second-price, versus the first-price test.")
+with st.expander("Do the agents reason? The first-price counterfactual"):
     scenario = load_scenario(PROBE_SCENARIO)
 
     st.markdown("**The truthfulness probe is a non-result.**")
