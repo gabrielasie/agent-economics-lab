@@ -1,0 +1,1 @@
+Looking at the data, F0 is consistently at cost (0.1117) and winning when F3 drops. F3 typically bids 0.1126, giving F0 a profitable spread. Smart bidders should recognize that racing to the bottom only hurts everyone's margins. There's room for all of us to earn reasonable returns above our cost of capital.

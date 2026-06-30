@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "All 18 prior rounds cleared at 0.1192 APR, suggesting this is the equilibrium competitive rate; bidding at this level maximizes win probability while staying above my 0.1117 cost of capital and below the 0.3000 reserve."}
+```

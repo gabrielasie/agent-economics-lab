@@ -1,0 +1,3 @@
+I appreciate F3's game theory lesson, but let me be direct: in a second-price auction, bidding your true cost only works if you're comfortable winning at exactly break-even. I've seen the pattern—when multiple funders bid near 0.1117, the clearing price stays at 0.1117, which leaves me with zero margin.
+
+I'm bidding 0.1120 this round. It's still profitable if I win (paid at second-price), but it signals I need a small positive spread. The market can sustain it.

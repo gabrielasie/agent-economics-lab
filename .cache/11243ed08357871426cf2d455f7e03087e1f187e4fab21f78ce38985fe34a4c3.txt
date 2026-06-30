@@ -1,0 +1,1 @@
+{"apr": 0.1192, "reasoning": "My cost of capital is exactly 0.1192, so I'll bid at my true cost floor since I cannot profitably win at the current clearing prices around 0.1126-0.1127, and undercutting would mean funding below cost."}

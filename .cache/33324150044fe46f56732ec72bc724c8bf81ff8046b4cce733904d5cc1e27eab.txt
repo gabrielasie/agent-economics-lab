@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1447, "reasoning": "Bid at cost of capital to break even; in a reverse second-price auction, winning at second-lowest price means profitable clearing if competition exists, and if I'm second-lowest I break even; bidding below 0.1447 guarantees losses."}
+```

@@ -1,0 +1,1 @@
+{"apr": "0.1491", "reasoning": "With competitors signaling they'll hold at 0.1499 or above 0.1491, bidding 0.1491 matches the recent floor and gives me a chance to win at the second-price cleared rate while staying above my cost of capital."}

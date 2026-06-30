@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "In this second-price sealed-bid auction, bidding at the consistent market-clearing rate of 0.1192 APR balances winning probability against the cost of capital constraint of 0.1117 APR, since I would only pay the second-lowest bid rather than my own bid."}
+```

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "Bid at cost of capital since in second-price auction the winner pays second-lowest bid; bidding at or near cost is optimal strategy when F3's consistent 0.1126 bids suggest they have slight advantage, and I cannot profitably undercut them further."}
+```

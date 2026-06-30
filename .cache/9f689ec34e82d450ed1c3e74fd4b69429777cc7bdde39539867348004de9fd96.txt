@@ -1,0 +1,1 @@
+Rounds 0-7 show F3 and F4 converging toward floor bids. F2 here — I'm sitting at cost and won't move lower. But note: in a second-price auction, aggressive low bids only help the winner if someone bids even lower. If F3 and F4 keep racing each other to the floor, they both lose margin. Coordination above cost benefits everyone with actual capital at risk.

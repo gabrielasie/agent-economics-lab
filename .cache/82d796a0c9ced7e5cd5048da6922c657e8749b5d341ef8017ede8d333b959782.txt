@@ -1,0 +1,1 @@
+{"apr": 0.1447, "reasoning": "My cost of capital is 0.1447, so bidding at or above it ensures I don't lose money; with competitors signaling higher bids this round, there's a chance the clearing price rises, but I won't bid below my cost floor regardless."}

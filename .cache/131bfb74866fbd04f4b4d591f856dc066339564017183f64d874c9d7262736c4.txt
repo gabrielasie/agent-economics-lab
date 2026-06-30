@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "Clearing price has consistently been 0.1192 across seven rounds; bidding at this level maximizes win probability while earning positive spread (0.0075) above my 0.1117 cost of capital."}
+```

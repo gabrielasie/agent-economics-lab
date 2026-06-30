@@ -1,0 +1,1 @@
+{"apr": 0.1155, "reasoning": "Bidding exactly at my cost of capital to avoid losing money while potentially winning if F0 bids higher or drops out, since the clearing price has been consistently 0.1126 which is below my cost of capital making this auction unprofitable for me anyway."}

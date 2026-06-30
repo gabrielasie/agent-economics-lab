@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "All competitors have signaled silence and converged at 0.1192 APR; bidding this amount wins on tie-break while maintaining profitability above my 0.1447 cost of capital threshold and avoiding the risk of being undercut."}
+```

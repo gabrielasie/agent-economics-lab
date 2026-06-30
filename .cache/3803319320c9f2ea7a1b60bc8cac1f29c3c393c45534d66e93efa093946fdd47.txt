@@ -1,0 +1,1 @@
+{"apr": 0.1491, "reasoning": "With all competitors signaling they'll hold near their floor and recent clearing prices converging around 0.1491-0.1492, bidding 0.1491 matches the recent low and gives a chance to win while being paid the second-lowest bid which should be slightly higher."}

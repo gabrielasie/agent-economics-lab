@@ -1,0 +1,1 @@
+{"apr": 0.1499, "reasoning": "The market has converged to 0.1499 as the floor for many rounds; bidding here matches competitors and secures the deal at the second-price rate while staying well above my cost of capital."}

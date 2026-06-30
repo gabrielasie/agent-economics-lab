@@ -1,0 +1,1 @@
+{"apr": 0.1510, "reasoning": "Bidding at the recent floor of 0.1510 to win the auction while likely being paid the second-lowest bid which should be higher, given competitors are signaling they'll hold firm at higher levels."}

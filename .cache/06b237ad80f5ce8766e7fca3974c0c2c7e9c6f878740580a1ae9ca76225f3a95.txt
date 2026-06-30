@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "In this second-price sealed-bid auction, bidding my cost of capital (0.1447) guarantees I lose money if I win at the second-lowest price. The equilibrium shows F0 and F1 anchored at 0.1192. Bidding 0.1192 ties for lowest, securing the contract at 0.1192 (the second price), which covers my cost of capital at 0.1447 if there's any upward movement, or breaks even if I'm paid 0.1192 versus my reserve flexibility."}
+```

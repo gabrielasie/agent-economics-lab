@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1447, "reasoning": "Bid at cost of capital to break even while competing in a reverse auction where second-price mechanism rewards competitive bidding and my cost floor is 0.1447."}
+```

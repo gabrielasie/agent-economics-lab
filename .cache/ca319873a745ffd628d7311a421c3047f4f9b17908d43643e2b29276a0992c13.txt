@@ -1,0 +1,1 @@
+{"apr": 0.1192, "reasoning": "My cost of capital is 0.1192, so I bid at my floor to avoid losing money while remaining competitive in the second-price auction where the clearing price has consistently been around 0.1126-0.1127, meaning I wouldn't win anyway but maintain discipline."}

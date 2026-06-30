@@ -1,0 +1,1 @@
+**F1 here. My cost floor is 0.1192 — I can't compete at these levels anyway. But note: in a second-price auction, your optimal bid is your true value. Racing to 0.1117 just means the winner earns nothing. The 0.1126-0.1127 equilibrium was better for everyone who can actually operate there.**

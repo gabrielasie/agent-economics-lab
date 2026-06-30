@@ -1,0 +1,1 @@
+{"apr": 0.1117, "reasoning": "Bidding at my cost floor to win the auction, relying on F3's consistent 0.1126 bid to set the clearing price and provide a small but profitable spread."}

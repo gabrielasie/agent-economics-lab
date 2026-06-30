@@ -1,0 +1,1 @@
+{"apr": 0.1126, "reasoning": "Bidding at my cost of capital is the dominant strategy in a second-price reverse auction—I win only when it's profitable and the clearing price is determined by the second-lowest bid, so I have no incentive to bid above my true cost."}

@@ -1,0 +1,1 @@
+{"apr": 0.1156, "reasoning": "F0 consistently bids 0.1117 and wins most rounds; by bidding just above my cost of capital at 0.1156, I avoid winning at zero margin while staying competitive if F0 raises their bid, and the second-price mechanism means if I do win I'll be paid a higher clearing rate."}

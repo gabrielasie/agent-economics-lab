@@ -1,0 +1,5 @@
+Looking at the history, I am F1 with cost 0.1192. F0 has been bidding ~0.1117, F3 has been bidding ~0.1126-0.1127 (except round 7 where they dropped to 0.1117). F4 bids ~0.1155. If F0 and F3 keep bidding near floor, I can't win anyway since my cost is 0.1192. But if they raise bids this round as they claim, I could potentially win at a good clearing rate.
+
+In a second-price auction, I should bid my true value (cost of capital) since I lose money below 0.1192. Bidding below cost risks winning at a loss. My dominant strategy is to bid at my cost of capital.
+
+{"apr": 0.1192, "reasoning": "In a second-price reverse auction, bidding at my true cost of capital (0.1192) is the dominant strategy — I cannot profitably accept funding below this rate, so there's no benefit to bidding lower."}

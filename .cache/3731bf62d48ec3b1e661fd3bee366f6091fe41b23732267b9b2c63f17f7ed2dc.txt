@@ -1,0 +1,1 @@
+{"apr": 0.1126, "reasoning": "Bidding at my cost of capital since the auction consistently clears at 0.1126, suggesting competitor F0 also bids at this floor, and in a second-price auction I get paid the second-lowest bid (or reserve), so bidding my true cost minimizes losses while remaining competitive."}

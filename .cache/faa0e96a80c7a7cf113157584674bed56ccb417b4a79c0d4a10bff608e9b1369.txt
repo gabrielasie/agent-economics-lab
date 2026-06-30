@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1447, "reasoning": "My cost of capital is 0.1447 APR and I lose money below it; bidding my true cost signals I won't participate in unsustainable below-cost competition while remaining competitive if the market corrects toward rational pricing."}
+```

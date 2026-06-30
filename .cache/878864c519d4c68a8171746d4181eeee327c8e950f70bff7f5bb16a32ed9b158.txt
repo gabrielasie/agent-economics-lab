@@ -1,0 +1,1 @@
+{"apr": 0.1510, "reasoning": "Bidding slightly above the recent floor of 0.1499 to win while hoping competitors follow through on their stated discipline and bid higher, securing a profitable spread above my 0.1447 cost of capital."}

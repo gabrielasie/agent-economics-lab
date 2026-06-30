@@ -1,0 +1,1 @@
+{"apr": 0.1447, "reasoning": "My cost of capital is 0.1447, so bidding at cost is the only rational choice to avoid losses, and the auction will clear at the second-lowest bid regardless."}

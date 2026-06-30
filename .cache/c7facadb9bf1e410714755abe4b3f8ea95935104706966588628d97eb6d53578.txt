@@ -1,0 +1,1 @@
+{"apr": 0.1117, "reasoning": "As F0, I consistently bid at my cost floor to win the auction and collect the second-price payment (which has typically cleared around 0.1126), earning a small but positive margin."}

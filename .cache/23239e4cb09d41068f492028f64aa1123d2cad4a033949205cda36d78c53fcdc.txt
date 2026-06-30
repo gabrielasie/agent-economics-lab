@@ -1,0 +1,1 @@
+{"apr": 0.1491, "reasoning": "With F0 and F2 signaling 0.1499 and F1 signaling above 0.1491, bidding 0.1491 matches the recent floor and wins, likely paid the second-lowest bid around 0.1491-0.1499, staying above my cost of capital."}

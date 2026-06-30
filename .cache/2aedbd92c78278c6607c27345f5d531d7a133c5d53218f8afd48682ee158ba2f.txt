@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "The market has stabilized at my cost of capital (0.1192 APR) where I break even; bidding lower risks losses, bidding higher loses the auction, and the equilibrium is sustainable with all competitors holding at this level."}
+```

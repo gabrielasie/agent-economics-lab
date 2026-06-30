@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "At cost of capital with no winning advantage, bid at cost floor to avoid losses while remaining competitive in a collapsing market where winning increasingly requires breakeven pricing."}
+```

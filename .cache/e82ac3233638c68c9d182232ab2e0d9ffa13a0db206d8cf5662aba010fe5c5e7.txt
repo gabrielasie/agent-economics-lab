@@ -1,0 +1,1 @@
+{"apr": 0.1118, "reasoning": "Bid just above my cost of capital to maximize chances of winning while maintaining profitability, as the repeated clearing at 0.1126 suggests F0 is bidding around that level and I can undercut them."}

@@ -1,0 +1,1 @@
+{"apr": 0.1117, "reasoning": "In a second-price reverse auction, the dominant strategy is to bid your true cost of capital, as F4 and F5 correctly note—bidding lower risks losing money, and bidding higher risks unnecessary losses on the margin."}

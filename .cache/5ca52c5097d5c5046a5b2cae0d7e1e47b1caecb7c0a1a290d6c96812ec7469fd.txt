@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "Matching the consistent market-clearing rate of 0.1192 APR from 14 consecutive rounds maximizes win probability while staying above my 0.1117 cost of capital floor."}
+```

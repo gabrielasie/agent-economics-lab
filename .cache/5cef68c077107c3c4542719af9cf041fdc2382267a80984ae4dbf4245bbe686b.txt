@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "Bid my cost of capital to maximize expected surplus if I win; in a second-price auction, I cannot profit below this rate, and historical patterns show F3 winning at 0.1126, so bidding at 0.1117 is my competitive edge."}
+```

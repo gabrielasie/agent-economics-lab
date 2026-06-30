@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "At my cost of capital floor of 0.1192, I break even; bidding below loses money. The clearing price of 0.1126 from previous rounds is below my cost, so winning would be unprofitable. I'll bid my true cost floor to signal I won't chase deals below my break-even point, letting auction mechanics determine the outcome without further signal escalation."}
+```

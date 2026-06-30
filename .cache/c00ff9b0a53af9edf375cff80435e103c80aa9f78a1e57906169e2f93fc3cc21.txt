@@ -1,0 +1,1 @@
+{"apr": 0.1499, "reasoning": "Despite coordination talk, competitors have consistently bid 0.1499 and I am F2—bidding at 0.1499 matches the floor where I can still win ties and get paid the second-lowest rate, which in a three-way tie is 0.1499, still above my cost of capital of 0.1447."}

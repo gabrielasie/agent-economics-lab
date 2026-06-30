@@ -1,0 +1,1 @@
+{"apr": 0.1447, "reasoning": "My cost of capital is 0.1447, so bidding exactly at my cost is the lowest I can go without losing money; F0 consistently wins at 0.1126 which is below my cost, so I cannot profitably undercut them and should bid my reservation price to avoid losses if somehow selected."}

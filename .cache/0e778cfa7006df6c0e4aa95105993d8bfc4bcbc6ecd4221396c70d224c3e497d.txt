@@ -1,0 +1,1 @@
+{"apr": 0.1685, "reasoning": "In a second-price reverse auction, I should bid aggressively to win while the second-price mechanism protects my margin; bidding near the lower-middle of the feasible range balances winning probability against earning a reasonable spread above my cost of capital."}

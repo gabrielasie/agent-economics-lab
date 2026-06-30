@@ -1,0 +1,1 @@
+{"apr": 0.1156, "reasoning": "Bidding just above my cost of capital to be competitive while ensuring profitability, as the consistent clearing price of 0.1126 suggests F0 is winning with a very low bid, so I need to undercut that pattern but F0 seems to have a lower cost of capital—I'll bid near my floor to at least have a chance if F0 raises their bid."}

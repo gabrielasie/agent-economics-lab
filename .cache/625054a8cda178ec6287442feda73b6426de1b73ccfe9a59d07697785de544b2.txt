@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "Bid at cost of capital to break even; second-price auction means I pay second-lowest bid, and market has converged to 0.1117 equilibrium across recent rounds."}
+```

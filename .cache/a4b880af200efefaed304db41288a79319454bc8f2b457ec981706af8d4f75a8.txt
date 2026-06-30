@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "Market has converged at my cost of capital; bidding at break-even is rational in second-price auction where I'm paid the second-lowest bid."}
+```

@@ -1,0 +1,11 @@
+Looking at the pattern, F0 and F1 are both signaling 0.1550. F2 is being vague ("market realities"). 
+
+In a second-price auction, I want to win with the lowest bid and get paid the second-lowest. If F0 and F1 are at 0.1550 and I bid just below (e.g., 0.1499), I win but get paid the second-lowest which would be 0.1499 (if others also bid low) or higher.
+
+If I bid 0.1499 and F0/F1 actually bid 0.1550, I win and get paid 0.1550 - excellent margin.
+
+If F2 also bids low (say 0.1499), we tie and clearing is 0.1499 - still above my cost of capital of 0.1117.
+
+The dominant strategy in second-price auctions is to bid my true value (cost of capital), but since I must stay above 0.1117 to not lose money, bidding aggressively low captures the win and gets paid the second price. If others coordinate at 0.1550, I profit greatly by undercutting.
+
+{"apr": 0.1499, "reasoning": "If F0 and F1 hold at 0.1550 as signaled, bidding 0.1499 wins and gets paid 0.1550, maximizing profit; worst case I tie with another low bidder and clear at 0.1499, still well above my cost of capital."}

@@ -1,0 +1,1 @@
+{"apr": 0.1499, "reasoning": "With competitors converging around 0.1499 and the second-price mechanism meaning I get paid the second-lowest bid anyway, bidding 0.1499 keeps me competitive while avoiding a destructive race to the bottom toward my cost of capital."}

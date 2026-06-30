@@ -1,0 +1,1 @@
+{"apr": 0.1193, "reasoning": "Bid just above my cost of capital to win if F0 bids at or below their apparent strategy around 0.1126, while ensuring I don't lose money; in a second-price auction the clearing price would be set by the second-lowest bid, so bidding minimally above cost limits downside risk."}

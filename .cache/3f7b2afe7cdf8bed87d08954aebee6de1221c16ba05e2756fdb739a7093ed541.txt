@@ -1,0 +1,1 @@
+{"apr": 0.1117, "reasoning": "As F0 with cost of capital at 0.1117, bidding at cost is the dominant strategy in this second-price auction—I consistently win and get paid the second-lowest bid (~0.1126), earning a positive spread with no incentive to bid higher since F3 sets the price floor."}

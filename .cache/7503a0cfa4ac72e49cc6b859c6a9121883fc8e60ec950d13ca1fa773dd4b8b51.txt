@@ -1,0 +1,1 @@
+{"apr": 0.1499, "reasoning": "All competitors are signaling they'll bid higher, so I can win by staying at 0.1499 while they move up, and I'll be paid the second-lowest bid which should be higher than my own bid."}

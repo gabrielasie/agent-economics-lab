@@ -1,0 +1,1 @@
+{"apr": 0.1155, "reasoning": "My cost of capital is 0.1155, so bidding at my floor avoids losses while staying competitive; in this second-price auction, the clearing price is determined by the second-lowest bid, and historical data shows F0 and F3 consistently bid around 0.1117-0.1126, meaning I won't win but also won't lose money."}

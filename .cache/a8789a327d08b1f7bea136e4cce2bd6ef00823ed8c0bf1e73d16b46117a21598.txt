@@ -1,0 +1,1 @@
+{"apr": 0.1490, "reasoning": "By bidding just below the cluster at 0.1499, I win the auction and get paid the second-lowest bid (likely 0.1499), earning a spread above my cost of capital of 0.1447."}

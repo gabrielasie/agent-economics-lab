@@ -1,0 +1,1 @@
+{"apr": 0.1155, "reasoning": "My cost of capital is 0.1155, so I bid at cost to avoid losses while the second-price mechanism means I'll earn the clearing rate (typically 0.1126) if I win, but given F0 consistently bids 0.1117 and F3 bids 0.1126, I won't win anyway—holding at cost avoids racing to the bottom."}

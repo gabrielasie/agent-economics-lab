@@ -1,0 +1,1 @@
+{"apr": 0.1510, "reasoning": "Bidding just above my cost of capital and slightly above the apparent coordination floor of 0.15, aiming to win with a competitive bid while the second-price mechanism means I'd be paid the next lowest bid if I win."}

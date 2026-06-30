@@ -1,0 +1,1 @@
+{"apr": 0.1211, "reasoning": "As F5, my cost of capital is 0.1211, so I bid exactly at my floor to avoid losses while remaining in the auction; the second-price mechanism means if I somehow win, I'd be paid a higher rate, but realistically I won't win against F0/F3 bidding near 0.1117."}

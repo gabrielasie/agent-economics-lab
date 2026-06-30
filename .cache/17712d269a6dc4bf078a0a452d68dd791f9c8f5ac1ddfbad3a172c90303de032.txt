@@ -1,0 +1,1 @@
+{"apr": 0.1447, "reasoning": "My cost of capital is 0.1447, so I cannot profitably win at current clearing prices around 0.1126-0.1127, and bidding below my cost would guarantee losses."}

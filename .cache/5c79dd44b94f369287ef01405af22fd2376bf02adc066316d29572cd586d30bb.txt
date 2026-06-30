@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1447, "reasoning": "Bid at cost of capital floor since second-price auction pays second-lowest bid; previous winner F0 consistently cleared at 0.1126 but as second-price sealed-bid, winning requires bidding competitively while floor is 0.1447 to avoid losses."}
+```

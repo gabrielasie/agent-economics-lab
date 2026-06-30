@@ -1,0 +1,1 @@
+{"apr": 0.1192, "reasoning": "Bidding exactly at my cost of capital to win while avoiding losses, as the pattern shows F0 consistently wins at the minimum viable rate and second-price mechanics mean I'd be paid at least the second-lowest bid."}

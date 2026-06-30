@@ -1,0 +1,1 @@
+{"apr": 0.1126, "reasoning": "F0 consistently wins at exactly the cost of capital, suggesting they bid at or near 0.1126, so I'll match that to compete for the contract while breaking even or getting paid slightly above cost if F0 bids the same."}

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "In a reverse sealed-bid second-price auction, bidding at the clearing price of 0.1192 APR maximizes expected value since I earn the spread between my bid and the second-lowest bid, while bidding lower risks winning at an unprofitable rate and bidding higher reduces competitiveness without improving my payout."}
+```

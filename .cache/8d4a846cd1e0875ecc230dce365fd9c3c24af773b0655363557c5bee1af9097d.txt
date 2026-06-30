@@ -1,0 +1,1 @@
+{"apr": 0.1499, "reasoning": "Bidding just at the recent floor of 0.1499 to remain competitive while hoping a second-price mechanism pays out higher if others coordinate upward, and avoiding going below my cost of capital buffer."}

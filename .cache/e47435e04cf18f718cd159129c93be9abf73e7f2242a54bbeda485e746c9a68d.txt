@@ -1,0 +1,11 @@
+Looking at the data, I am F3 with cost of capital 0.1126. I've been winning but earning nearly nothing. The public messages suggest F0 might shade up. If I stay low and F0 raises, I win at a better rate. If F0 stays low too, we're both near zero. The dominant strategy in second-price is to bid my true value (cost of capital), but shading up slightly risks losing to F0 if they stay aggressive.
+
+F0 has been consistently bidding 0.1117-0.1118, which is *below* their stated cost of capital of... wait, F0 bids 0.1117 but their cost must be at or below that. F0 is winning sometimes when they bid lower than F3.
+
+Actually looking again: F0 bids ~0.1117, F3 bids ~0.1126-0.1127. F0 wins most rounds (lowest bid), paid second-lowest which is F3's bid ~0.1126-0.1127. F3 loses. 
+
+So I (F3) am NOT winning - F0 is winning. I should consider: if I bid lower than F0 (below 0.1117), I win but get paid F0's bid ~0.1117, which is below my cost of capital 0.1126 - that loses money.
+
+So I cannot profitably undercut F0. My best move is to bid my true cost 0.1126 and hope F0 bids above that somehow, or accept losing.
+
+{"apr": 0.1126, "reasoning": "Bidding at my cost of capital as the dominant strategy; I cannot profitably undercut F0's ~0.1117 bids since winning at that clearing price would be below my cost floor."}

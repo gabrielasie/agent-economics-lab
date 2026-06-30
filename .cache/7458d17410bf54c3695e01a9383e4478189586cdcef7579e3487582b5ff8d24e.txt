@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "All 16 previous rounds cleared at 0.1126 APR, indicating this is the equilibrium price where the second-lowest bid settles; bidding at this level maximizes win probability while matching the consistent market price that exceeds my 0.1211 cost of capital floor."}
+```

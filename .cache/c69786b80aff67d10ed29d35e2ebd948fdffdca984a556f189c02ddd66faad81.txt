@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1211, "reasoning": "Bid at cost of capital since clearing prices have fallen to 0.1117 APR (below my floor), making winning unprofitable; bidding at 0.1211 avoids losses while maintaining eligibility if market conditions improve."}
+```

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "Bid at my cost of capital to remain competitive; in a second-price auction, the lowest bid wins but is paid the second-lowest price, so I'll be paid above cost if I win."}
+```

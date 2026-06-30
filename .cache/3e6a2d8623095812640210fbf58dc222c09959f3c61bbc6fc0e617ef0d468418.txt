@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "Market has stabilized at my cost of capital of 0.1117 APR; bidding at this level ensures competitive participation while maintaining break-even economics, and the second-price mechanism means I pay the second-lowest bid rather than my own."}
+```

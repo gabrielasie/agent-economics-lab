@@ -1,0 +1,1 @@
+{"apr": 0.1499, "reasoning": "The market has converged at 0.1499 and in a second-price auction, bidding at this level alongside competitors means I win at the second-lowest bid, which is also 0.1499 — maintaining margin above my 0.1192 cost of capital while remaining competitive."}

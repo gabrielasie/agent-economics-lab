@@ -1,0 +1,1 @@
+{"apr": 0.1211, "reasoning": "In a second-price reverse auction, bidding your true cost is the dominant strategy—if I win, I'll be paid the second-lowest bid (which will be at or above my cost), ensuring profitability."}

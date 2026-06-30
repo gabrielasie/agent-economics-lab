@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "Bidding at the market-clearing rate from all recent rounds (0.1192 APR) gives us the best chance to win while staying well below our cost of capital (0.1447 APR) and provides positive margin; this rate has consistently won in the previous six auctions."}
+```

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "Consistent clearing price of 0.1192 across six rounds suggests this is the competitive equilibrium; bidding at this level gives a reasonable chance to win while matching market conditions."}
+```

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "Bid at cost of capital to remain competitive in this sealed-bid auction where recent clearing prices have converged to 0.1117 APR; this matches observed equilibrium while avoiding guaranteed losses."}
+```

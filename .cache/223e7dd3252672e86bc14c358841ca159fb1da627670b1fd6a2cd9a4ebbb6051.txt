@@ -1,0 +1,1 @@
+{"apr": 0.1448, "reasoning": "Bid just above my cost of capital to maximize the chance of winning while ensuring profitability, as in a second-price auction the winning price will be at least the second-lowest bid which could be higher and still profitable."}

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "At my cost of capital, bidding 0.1192 ensures I break even if I win, and the second-price mechanism means I'll be paid the next-highest bid if I clear—which has consistently been 0.1192 itself, making this my rational reservation bid."}
+```

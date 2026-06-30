@@ -1,0 +1,1 @@
+{"apr": 0.1118, "reasoning": "F0 consistently wins at 0.1126, suggesting they bid just below that; I'll bid slightly above my cost of capital at 0.1118 to undercut F0 and win at the second-price cleared rate near 0.1126, yielding a small profit."}

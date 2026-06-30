@@ -1,0 +1,1 @@
+{"apr": 0.1127, "reasoning": "Bidding just above my cost of capital to try to win and be paid the second-lowest price, which based on past rounds clears around 0.1126-0.1127, yielding a small but positive margin."}

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1447, "reasoning": "At my cost of capital floor, I'm uncompetitive against F3's apparent 0.1126 cost; bidding below 0.1447 guarantees losses, so I bid my true cost and accept the market outcome."}
+```

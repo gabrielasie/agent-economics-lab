@@ -1,0 +1,1 @@
+{"apr": 0.1447, "reasoning": "Bidding exactly at my cost of capital is the dominant strategy in a second-price reverse auction—I cannot profit below this threshold, and bidding above it risks losing to a competitor who bids between my cost and my bid."}

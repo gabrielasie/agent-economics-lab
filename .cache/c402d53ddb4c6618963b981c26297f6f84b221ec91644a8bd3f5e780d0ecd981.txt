@@ -1,0 +1,1 @@
+{"apr": 0.1510, "reasoning": "Bidding just above my cost of capital at 0.1510 to undercut the apparent coordination around 0.15 while remaining profitable if I win and get paid the second-lowest bid."}

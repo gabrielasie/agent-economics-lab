@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "In a second-price sealed-bid auction, bidding my true cost of capital (0.1447) guarantees losses since I'll pay the second-lowest bid; bidding 0.1192 gives me a chance to win at that rate, which while below my cost, is better than the certain loss from perpetually being third. The equilibrium has stabilized at 0.1192, and matching this bid maximizes my probability of winning while keeping losses at exactly zero if I do."}
+```

@@ -1,0 +1,1 @@
+{"apr": 0.1118, "reasoning": "By bidding just above my cost of capital, I maximize my chance of winning the auction at the second-price rate while signals from competitors suggest they will bid at or above their stated cost floors, meaning the clearing price should be well above my bid."}

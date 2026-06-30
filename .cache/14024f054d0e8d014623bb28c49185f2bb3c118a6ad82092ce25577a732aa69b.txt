@@ -1,0 +1,3 @@
+Looking at the history, I'm F5 with cost 0.1211. F0 consistently bids ~0.1117, F3 ~0.1126, F4 ~0.1155. I can't win below my cost of capital, so I should bid at my cost.
+
+{"apr": 0.1211, "reasoning": "My cost of capital is 0.1211 and bidding below it would lose money, so I bid exactly at cost to remain in the auction without taking a loss."}

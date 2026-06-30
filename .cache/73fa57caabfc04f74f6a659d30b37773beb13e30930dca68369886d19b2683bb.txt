@@ -1,0 +1,1 @@
+{"apr": 0.1499, "reasoning": "Bidding just below the recent clearing prices of ~0.151 to win the auction while the second-price mechanism should pay me a higher rate; going to 0.1499 undercuts likely bids around 0.151 and captures the deal at a profitable spread above my 0.1192 cost of capital."}

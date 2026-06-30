@@ -1,0 +1,1 @@
+{"apr": 0.1126, "reasoning": "In a second-price reverse auction, bidding my true cost of capital is the dominant strategy, as it maximizes chances of winning without risk of losing money, and the pattern shows clearing consistently at 0.1126 suggesting F0 is also bidding at cost."}

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "Market has converged to equilibrium at my cost of capital; bidding below loses money, bidding above cannot win in a second-price reverse auction where 0.1192 is the stable clearing price."}
+```

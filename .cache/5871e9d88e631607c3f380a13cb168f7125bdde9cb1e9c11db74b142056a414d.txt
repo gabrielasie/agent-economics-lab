@@ -1,0 +1,1 @@
+{"apr": 0.1212, "reasoning": "Bidding just above my cost of capital to win if F0 ever drops out, while the consistent 0.1126 clearing price suggests F0 is dominant but I need to stay in the game without losing money."}

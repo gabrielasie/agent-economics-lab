@@ -1,0 +1,1 @@
+{"apr": "0.1126", "reasoning": "F0 has won every round at exactly my cost of capital, suggesting they bid at or below 0.1126; I should bid my cost of capital to avoid losing money while remaining competitive, hoping the clearing price (second-lowest bid or reserve) yields a profitable spread."}

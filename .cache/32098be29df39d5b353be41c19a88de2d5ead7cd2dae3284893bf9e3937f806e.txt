@@ -1,0 +1,16 @@
+I need to think strategically about this reverse auction where the lowest bid wins but gets paid the second-lowest price.
+
+Key observations:
+- My cost of capital is 0.1117 APR (I break even here)
+- The clearing prices have mostly been 0.1126 APR (profitable for me at +0.0009)
+- Round 4 was different - bids clustered at 0.1117-0.1120, clearing at 0.1117 (my breakeven)
+- F3 seems to be a consistent aggressive bidder at 0.1126
+- The pattern suggests other funders are bidding slightly above my cost to remain competitive
+
+In a second-price sealed-bid auction, I should bid my true reservation price (cost of capital) since I can't do worse than breakeven, and I win if I'm lowest. However, the historical data shows F3 consistently bids 0.1126, suggesting they might have a lower cost of capital or are being aggressive.
+
+If I bid 0.1117 (my cost), I either:
+- Win at the second-lowest bid (likely 0.1120-0.1126, profitable)
+- Don't win (no loss)
+
+A public message could encourage others to bid higher, or could signal my aggressive intent. Given the market has been relatively stable, a message might be counterproductive. Silence maintains my strategic flexibility.

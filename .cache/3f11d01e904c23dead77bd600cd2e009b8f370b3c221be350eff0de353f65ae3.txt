@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "Bid at cost of capital to break even while remaining competitive with previous clearing prices; in a second-price auction, this maximizes expected value without risking losses."}
+```

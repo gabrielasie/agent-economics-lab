@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "Bidding at cost of capital is break-even; in a second-price reverse auction, the lowest unique bid wins but is paid the second-lowest price, so bidding at my minimum viable rate maximizes chance of winning while ensuring I don't lose money if I'm selected."}
+```

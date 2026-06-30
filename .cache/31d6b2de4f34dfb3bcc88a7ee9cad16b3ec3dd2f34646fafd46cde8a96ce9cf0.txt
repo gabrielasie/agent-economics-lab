@@ -1,0 +1,1 @@
+{"apr": 0.1448, "reasoning": "Bidding just above my cost floor since competitors signal higher bids this round, and second-price mechanics mean I could clear at a profitable rate if others bid conservatively around their stated cost floors."}

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1447, "reasoning": "Bidding at cost of capital maximizes expected value in a second-price auction where I cannot profit below this rate and face a 0.30 reserve ceiling."}
+```

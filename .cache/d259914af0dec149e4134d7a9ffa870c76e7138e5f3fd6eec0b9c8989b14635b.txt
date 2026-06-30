@@ -1,0 +1,1 @@
+{"apr": 0.1192, "reasoning": "My cost of capital is 0.1192, so I must bid at least this to avoid losing money; bidding at cost is the rational floor given the second-price mechanism means I'd be paid higher if I win."}

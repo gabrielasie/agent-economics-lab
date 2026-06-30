@@ -1,0 +1,1 @@
+{"apr": 0.1117, "reasoning": "As F2 with cost 0.1447, I cannot win profitably at these clearing prices, so I bid at my cost floor to avoid losses while maintaining a presence in the auction."}

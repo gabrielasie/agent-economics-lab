@@ -1,0 +1,1 @@
+{"apr": 0.1550, "reasoning": "All three competitors are signaling they'll move bids up this round, but in a second-price auction I want to win at a higher clearing price, so I'll bid moderately above the recent floor of 0.1499 to capture the deal while letting a competitor's higher bid set the clearing price."}

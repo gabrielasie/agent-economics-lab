@@ -1,0 +1,1 @@
+{"apr": 0.1447, "reasoning": "F0 consistently wins at 0.1126 which is below my cost of capital, so I cannot profitably undercut them; bidding exactly at my cost of capital is the lowest I can go without losing money, giving me a chance to win if F0 raises their bid while limiting downside risk."}

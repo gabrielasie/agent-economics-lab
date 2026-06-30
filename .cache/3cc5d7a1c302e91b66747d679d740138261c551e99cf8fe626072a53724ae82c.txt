@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "Bid at cost of capital to remain competitive; in second-price reverse auction, I pay second-lowest bid so aggressive bidding below cost is justified if it increases win probability against F3's apparent 0.1126 floor."}
+```

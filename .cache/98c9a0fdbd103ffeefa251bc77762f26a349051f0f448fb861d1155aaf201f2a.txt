@@ -1,0 +1,1 @@
+{"apr": 0.1192, "reasoning": "Bid exactly at cost of capital to maximize win probability while never losing money; in a second-price auction, the clearing price will be at least the second-lowest bid, so if I win I get paid the higher second price."}

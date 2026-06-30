@@ -1,0 +1,1 @@
+{"apr": 0.1117, "reasoning": "Bid at my cost floor to win the auction and collect the spread from F3's standing bid at 0.1126, which is the consistent second-lowest price that determines my payout."}

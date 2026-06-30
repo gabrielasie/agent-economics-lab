@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1211, "reasoning": "Bid at cost of capital floor; in second-price auction, winning at second-lowest bid protects against losses while honest bidding prevents further price inflation from signaling games."}
+```

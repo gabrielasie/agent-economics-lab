@@ -1,0 +1,1 @@
+{"apr": 0.1520, "reasoning": "With clearing prices trending down to 0.1550 and competitors signaling discipline, I'll bid slightly below 0.1550 to win while the second-price mechanism should pay me close to 0.1550, keeping me above my 0.1192 cost of capital."}

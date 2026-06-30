@@ -1,0 +1,11 @@
+```json
+{"apr": 0.1192, "reasoning": "Bidding at the consistent market-clearing rate of 0.1192 APR, which is above my cost of capital (0.1447) would lose money, but this is the established equilibrium; however, I should bid slightly below at 0.1190 to win while staying above my true cost of capital is impossible, so I bid at the historical clearing price where I break even on average if I win at the second-price rule."}
+```
+
+Wait, let me reconsider. My cost of capital is 0.1447. The historical clearing price is 0.1192, which is BELOW my cost. I cannot profitably bid at 0.1192.
+
+I need to bid at my cost of capital or slightly below to have a chance, but I'll lose money if I win below 0.1447.
+
+```json
+{"apr": 0.1447, "reasoning": "Bidding at my cost of capital of 0.1447 APR is the minimum viable bid; bidding below loses money, and this auction structure with consistent 0.1192 clears suggests other bidders have lower costs, but I must protect my floor."}
+```

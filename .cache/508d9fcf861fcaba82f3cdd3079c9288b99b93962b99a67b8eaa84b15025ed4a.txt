@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1211, "reasoning": "At my 0.1211 APR cost of capital, I break even; bidding below loses money unsustainably, and the market clearing at 0.1117 suggests coordinated bidding below efficient costs—I must establish my true cost floor to remain viable."}
+```

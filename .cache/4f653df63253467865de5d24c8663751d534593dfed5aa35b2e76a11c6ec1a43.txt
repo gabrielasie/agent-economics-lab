@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1211, "reasoning": "At my cost of capital, I break even; bidding lower loses money, bidding higher risks losing the auction to competitors with better costs shown in round 0, so I bid my floor to stay competitive while protecting margins."}
+```

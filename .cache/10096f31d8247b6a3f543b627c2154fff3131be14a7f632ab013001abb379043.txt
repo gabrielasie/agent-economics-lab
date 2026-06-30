@@ -1,0 +1,1 @@
+{"apr": 0.1126, "reasoning": "Bidding at 0.1126 to win the auction while the second-price mechanism will pay me the next lowest bid (around 0.1126-0.1127), maintaining a small but positive spread above my cost of capital of 0.1126."}

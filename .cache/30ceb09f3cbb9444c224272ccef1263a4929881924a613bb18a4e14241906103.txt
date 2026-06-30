@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1155, "reasoning": "Bid at my cost of capital since second-price auction means I receive second-lowest bid; bidding below 0.1155 causes losses, and the recent 0.1117 clearing price suggests others are bidding around that level, so my 0.1155 will likely not win but protects my break-even point if it does."}
+```

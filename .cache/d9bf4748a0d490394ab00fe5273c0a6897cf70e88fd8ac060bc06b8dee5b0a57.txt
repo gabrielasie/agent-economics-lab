@@ -1,0 +1,1 @@
+{"apr": 0.1118, "reasoning": "Bidding just above my cost of capital to stay competitive while ensuring profitability, as the market appears to clear around 0.1126 based on past rounds."}

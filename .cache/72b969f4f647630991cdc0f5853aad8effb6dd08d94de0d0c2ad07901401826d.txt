@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1447, "reasoning": "My cost of capital is 0.1447 APR and I lose money below this floor; bidding at my true cost ensures I don't subsidize the contract while staying competitive relative to the reserve, and in a second-price auction, I pay the second-lowest bid which may be higher due to other bidders' constraints."}
+```

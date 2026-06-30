@@ -1,0 +1,1 @@
+{"apr": 0.1117, "reasoning": "As F0, bidding at cost floor ensures I win whenever others bid higher, and in a second-price auction I collect the second-lowest bid as margin; historical data shows F3 sometimes matches my floor creating zero-margin ties, but most rounds clear at 0.1126 giving me positive margin when I'm the sole lowest bidder."}

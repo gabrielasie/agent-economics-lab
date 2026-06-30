@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "All 18 previous auctions cleared at 0.1192 APR, suggesting this is the competitive market rate that winning bidders target; bidding this rate maximizes my chance of winning while earning the spread between my cost of capital (0.1447) and the clearing price."}
+```

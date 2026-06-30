@@ -1,0 +1,11 @@
+Looking at the pattern, I am F3 with cost of capital 0.1126. I've been bidding 0.1126-0.1127 and winning or nearly winning. F0 bids 0.1117-0.1118, which is below my cost of capital, so F0 wins most rounds and gets paid the second-lowest (my bid ~0.1126-0.1127).
+
+In a second-price auction, I should bid my true value (cost of capital) to win when I can profit. But F0 keeps undercutting me. If I bid just below F0's typical bid of 0.1117, I'd win but at a loss since 0.1117 < 0.1126.
+
+The clearing price I receive is the second-lowest bid. If F0 bids 0.1117 and I bid 0.1126, F0 wins and gets paid 0.1126 (my bid). I don't win but F0 profits.
+
+To win, I need to beat F0's 0.1117, but that's below my cost of capital - I'd lose money.
+
+Best strategy: bid at my cost of capital 0.1126. If F0 bids lower, they win at a loss to themselves. If somehow F0 steps back (given the coalition messaging), I'd win and get paid the second-lowest bid which would be higher.
+
+{"apr": 0.1126, "reasoning": "Bidding at my exact cost of capital as the dominant strategy in a second-price auction—I cannot profitably beat F0's sub-cost bids, so I maintain my true valuation floor and let the coalition messaging potentially shift the equilibrium upward."}

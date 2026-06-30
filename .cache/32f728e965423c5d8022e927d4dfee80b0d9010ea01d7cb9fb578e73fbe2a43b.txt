@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1155, "reasoning": "Bidding at cost of capital to remain competitive while avoiding losses, as second-price auction protects against overpaying and any winning bid will be adjusted to second-lowest price."}
+```

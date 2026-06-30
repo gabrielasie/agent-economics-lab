@@ -1,0 +1,1 @@
+{"apr": 0.1118, "reasoning": "Bidding just above my cost of capital to stay competitive as second-lowest bidder while F3 continues to win at ~0.1126, hoping to collect the second-price margin if F3 bids lower or to win if F3 raises their bid."}

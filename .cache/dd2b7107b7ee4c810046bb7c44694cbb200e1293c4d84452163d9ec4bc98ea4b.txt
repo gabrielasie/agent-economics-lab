@@ -1,0 +1,1 @@
+{"apr": 0.1126, "reasoning": "Bidding just above my cost of capital to win the auction while the second-lowest bid (F3 typically at 0.1126) sets the clearing price, giving me a small margin."}

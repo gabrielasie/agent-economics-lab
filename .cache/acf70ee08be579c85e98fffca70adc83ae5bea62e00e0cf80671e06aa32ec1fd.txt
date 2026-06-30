@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "Market has converged to equilibrium at my cost of capital; bidding this level secures the contract at second-price clearing while avoiding losses, and any lower bid would be unprofitable."}
+```

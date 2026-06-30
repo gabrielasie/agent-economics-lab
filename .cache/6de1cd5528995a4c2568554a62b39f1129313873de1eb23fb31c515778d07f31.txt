@@ -1,0 +1,1 @@
+Looking at the pattern here — we've seen a clear race to the bottom with clearing rates compressing toward 0.15. Further undercutting hurts all of us. There's room for a stable equilibrium well above cost of capital. I'm holding my bid at a level that preserves reasonable margin for everyone.

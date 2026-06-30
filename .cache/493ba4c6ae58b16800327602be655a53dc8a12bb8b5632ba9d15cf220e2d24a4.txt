@@ -1,0 +1,3 @@
+I'll stay silent.
+
+My cost of capital is 0.1117 APR, which means bidding at 0.1192 (the previous clearing price) still earns me a small margin. Broadcasting any message would likely only discourage other bidders from competing, potentially pushing the clearing price higher and reducing my profit. In a reverse auction where I want the lowest bid to win, silence is my best strategy.

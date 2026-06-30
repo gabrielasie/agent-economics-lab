@@ -1,0 +1,1 @@
+{"apr": 0.1550, "reasoning": "Bidding slightly above cost of capital with a reasonable margin, aiming to win while benefiting from the second-price mechanism if competitors bid higher, based on last round's clearing price of 0.1685."}

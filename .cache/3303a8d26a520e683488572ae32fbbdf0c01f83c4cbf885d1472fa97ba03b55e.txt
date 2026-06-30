@@ -1,0 +1,5 @@
+Looking at the data, F0 consistently bids 0.1117, F3 bids around 0.1126, and I (F5) have been bidding 0.1211 (my cost of capital). The clearing prices have been around 0.1126-0.1127, meaning F0 wins and gets paid the second-lowest bid.
+
+My cost of capital is 0.1211, so I can't profitably bid below that. I should bid exactly at my cost floor since bidding higher doesn't help me win, and I can't go lower without losing money.
+
+{"apr": 0.1211, "reasoning": "Bidding at my cost of capital floor since I cannot profitably go lower, and the second-price mechanics mean winning below cost would be harmful regardless."}

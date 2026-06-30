@@ -1,0 +1,18 @@
+I need to analyze this situation carefully.
+
+**Key facts:**
+- My cost of capital: 0.1155 APR (my break-even point)
+- Recent clearing prices: consistently 0.1117 APR
+- I've been winning at 0.1117 in recent rounds, but this is BELOW my cost of capital
+- I'm losing money on every win at 0.1117
+- The auction is second-price, so the winner gets paid the second-lowest bid
+
+**The problem:** At 0.1117, I make negative returns. I can't continue this pattern sustainably.
+
+**The opportunity:** If I signal that I won't bid below my cost of capital, it might push the clearing price up to around 0.1155-0.1192, which would be profitable for me.
+
+However, signaling explicitly might trigger a competitive race downward (as seen in round 4 where prices dropped to 0.1117). Other funders competing might just bid lower to punish the signal.
+
+**Best strategy:** Stay silent. Let other funders' behavior determine the price, and then bid my true cost of capital (0.1155). If I win at or above 0.1155, I break even or profit. If I don't win, I avoid losses.
+
+Staying silent avoids tipping my hand while protecting my margins.

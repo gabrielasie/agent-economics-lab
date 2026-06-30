@@ -1,0 +1,1 @@
+{"apr": 0.1127, "reasoning": "I am F3 with cost 0.1126; bidding 0.1127 to stay just above cost while remaining the lowest or co-lowest bidder, aiming to win at the second-price clearing rate which has consistently been around 0.1126-0.1127."}

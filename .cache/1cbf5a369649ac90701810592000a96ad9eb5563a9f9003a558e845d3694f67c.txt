@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "At cost of capital with established market equilibrium; in second-price reverse auction, bidding true cost is optimal and I've been consistently clearing at this rate."}
+```

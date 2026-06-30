@@ -1,0 +1,1 @@
+{"apr": 0.1499, "reasoning": "In a second-price reverse auction, bidding just at the apparent coordination floor of 0.15 risks losing if others undercut; given the pattern of bids converging at 0.1499 and the second-price mechanism meaning I'd likely be paid around 0.1499-0.1510 if I win, bidding 0.1499 maximizes my chance of winning while still being above my cost of capital."}

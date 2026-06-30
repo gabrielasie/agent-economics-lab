@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "Bidding at the historical clearing rate of 0.1126 APR matches past auction outcomes and positions me competitively while staying well above my 0.1211 cost of capital floor, though I note this bid would result in a loss; however, the consistent market clearing at this rate suggests it reflects true competition and I should match it to win."}
+```

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "Market has converged to 0.1117 over three consecutive rounds; bidding above this loses the contract while bidding below my 0.1126 cost is irrational, so matching the clearing rate is the only competitive play despite zero margin."}
+```

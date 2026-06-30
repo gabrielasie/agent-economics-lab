@@ -1,0 +1,1 @@
+{"apr": 0.1126, "reasoning": "Bidding at my cost of capital since F0 consistently wins at this exact rate, suggesting they also bid at their floor, and underbidding would lose money while overbidding wouldn't change the clearing price."}

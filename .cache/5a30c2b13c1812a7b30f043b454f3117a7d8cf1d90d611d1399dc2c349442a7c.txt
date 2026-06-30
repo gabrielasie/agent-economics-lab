@@ -1,0 +1,1 @@
+{"apr": "0.1118", "reasoning": "Bid just above my cost of capital to maximize chances of winning while remaining profitable, since the clearing price has consistently been 0.1192 and a second-price auction means I'd be paid that higher rate if I win."}

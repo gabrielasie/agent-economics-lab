@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1155, "reasoning": "Bid at cost of capital to remain competitive while protecting against losses; recent clearing prices at 0.1117 show F3 has lower costs, but bidding below 0.1155 would be value-destructive."}
+```

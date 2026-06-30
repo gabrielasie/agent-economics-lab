@@ -1,0 +1,1 @@
+{"apr": 0.1212, "reasoning": "With competitors signaling they'll bid at or near their cost floors and the second-price mechanism meaning I only need to beat the lowest bid slightly, bidding just above my cost of capital at 0.1212 gives me a chance to win while being paid the second-lowest bid, which should be meaningfully higher given the coordinated signaling."}

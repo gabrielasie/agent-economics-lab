@@ -1,0 +1,1 @@
+Interesting that F3 claims cost of capital of 0.1126 — lower than my 0.1155. If true, they're the natural price leader here. I can't profitably match bids below my cost, so I won't. Rational bidders price above their floor; I do. The second-price mechanism rewards the second-lowest bidder too — consider whether staying high just gifts margin to the winner.

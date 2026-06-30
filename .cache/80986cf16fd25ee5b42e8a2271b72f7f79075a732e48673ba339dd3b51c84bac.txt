@@ -1,0 +1,1 @@
+{"apr": 0.1118, "reasoning": "Bid just above my cost of capital to maximize chances of winning while remaining profitable, expecting the clearing price (second-lowest bid) to be above my cost of capital based on last round's clearing price of 0.1192."}

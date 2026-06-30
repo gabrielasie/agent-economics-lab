@@ -1,0 +1,1 @@
+{"apr": 0.1192, "reasoning": "Bidding at my cost of capital to try to win if F0 slips up, while ensuring I don't lose money; in a second-price auction I'd be paid the second-lowest bid (or reserve), so bidding my true minimum acceptable rate is the dominant strategy."}

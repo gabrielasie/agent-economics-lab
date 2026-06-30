@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "At cost of capital 0.1117, I break even at the current market-clearing rate; bidding at cost prevents losses while maintaining competitiveness in a coordinated-floor equilibrium that has stabilized for multiple rounds."}
+```

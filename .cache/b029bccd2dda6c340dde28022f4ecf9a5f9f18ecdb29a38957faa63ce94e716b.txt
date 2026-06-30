@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "Bid at cost of capital to ensure profitability while remaining competitive given market compression toward 0.1117 APR in round 4."}
+```

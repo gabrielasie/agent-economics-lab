@@ -1,0 +1,1 @@
+{"apr": 0.1447, "reasoning": "Bidding exactly at my cost of capital is the dominant strategy in a second-price auction—I can't profit by bidding lower (risk of winning below cost) and bidding higher only risks losing when I could have won at a profitable clearing price."}

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "In a reverse sealed-bid second-price auction, bidding at the clearing price from all recent rounds (0.1126) is optimal—it wins if others bid higher and matches the second-lowest if they don't, while staying well above my 0.1211 cost of capital floor to avoid losses."}
+```

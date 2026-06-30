@@ -1,0 +1,1 @@
+{"apr": 0.1499, "reasoning": "In a second-price reverse auction, I should bid aggressively to win while relying on the second-lowest bid to set my actual rate; bidding near my cost of capital with a small margin ensures I win frequently and get paid a higher rate if competitors bid higher."}

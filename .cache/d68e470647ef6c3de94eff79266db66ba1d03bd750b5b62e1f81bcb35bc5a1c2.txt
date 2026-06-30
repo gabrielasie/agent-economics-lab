@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "Bid at cost of capital as the competitive floor since multiple bidders already matched this rate in round 4, and silence from all competitors suggests stable equilibrium at breakeven."}
+```

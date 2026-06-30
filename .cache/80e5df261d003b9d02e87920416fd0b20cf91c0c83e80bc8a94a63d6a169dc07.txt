@@ -1,0 +1,14 @@
+Looking at this situation:
+
+- My cost of capital is 0.1447 APR (I lose money below this)
+- The auction has consistently cleared at 0.1192 APR with winner F0
+- F0 appears to be bidding very aggressively at or below 0.1192 APR
+- In a second-price auction, I want to bid my true value (just above cost of capital) to potentially win if F0 ever bids above my cost
+
+Since 0.1192 < 0.1447, F0 is either operating at a loss or has a lower cost of capital. I cannot profitably match that clearing price.
+
+My dominant strategy in a second-price auction is to bid my true value (cost of capital). If I bid 0.1447 and somehow win, I'd be paid the second-lowest bid (which would be higher). But given F0's consistent pattern at 0.1192, I won't win unless F0 changes behavior.
+
+I should bid my true value to stay in contention without risking unprofitable wins.
+
+{"apr": 0.1447, "reasoning": "Bidding my true cost of capital as dominant strategy in second-price auction; F0 consistently wins at 0.1192 which is below my breakeven, so I cannot profitably undercut but should maintain presence in case F0's behavior changes."}

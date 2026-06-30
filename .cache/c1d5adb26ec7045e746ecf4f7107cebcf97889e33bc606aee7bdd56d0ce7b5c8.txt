@@ -1,0 +1,1 @@
+{"apr": 0.1126, "reasoning": "Bidding at my cost floor equivalent to match the typical clearing pattern, staying competitive without racing to the bottom given second-price mechanics."}

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "In a reverse sealed-bid second-price auction, bidding my cost of capital (0.1117) guarantees losses if I win, so I match the consistent clearing price of 0.1126 to compete for wins while breaking even or gaining small margins depending on the second-price settlement."}
+```

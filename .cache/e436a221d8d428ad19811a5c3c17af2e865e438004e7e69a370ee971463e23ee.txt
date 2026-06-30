@@ -1,0 +1,1 @@
+{"apr": 0.1499, "reasoning": "The market has converged at 0.1499 and undercutting further would reduce margins without strategic benefit in a second-price auction where I'd just get paid the second-lowest bid anyway."}

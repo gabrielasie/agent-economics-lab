@@ -1,0 +1,1 @@
+{"apr": 0.1156, "reasoning": "Bidding just above my cost of capital to win if F0 drops out or bids higher, while minimizing risk of losing money since I'm paid the second-lowest APR which should be above my cost."}

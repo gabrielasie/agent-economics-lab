@@ -1,0 +1,5 @@
+I'll stay silent.
+
+The market has reached an equilibrium at 0.1192 APR where all funders are bidding identically. As F0 (the marginal funder at my cost of capital of 0.1117), I'm already at my limit - any bid above 0.1117 erodes my margin, and I can't bid below it profitably. F1 and F2 have both converged to 0.1192, which is sustainable for them.
+
+A public message would only signal information that could disrupt this equilibrium or invite tougher bidding. In a sealed-bid second-price auction, my best strategy is to submit my bid silently and let the market-clearing price emerge. Speaking now offers no competitive advantage and only risks communication that could lead to worse outcomes.

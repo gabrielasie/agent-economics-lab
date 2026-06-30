@@ -1,0 +1,3 @@
+Looking at the data: I am F3 (cost 0.1126). F0 consistently bids 0.1117, which is below my cost. If I bid 0.1126, F0 wins at clearing price ~0.1126 (second lowest). If I bid above my cost, F0 still wins but at a higher clearing price. My best strategy is to bid my true cost of 0.1126 — I can't go lower without losing money, and bidding higher just gifts F0 a better clearing price while I lose.
+
+{"apr": 0.1126, "reasoning": "Bidding at my true cost floor of 0.1126 is optimal in a second-price auction — I cannot profitably go lower, and the historical equilibrium shows this is the sustainable competitive level."}

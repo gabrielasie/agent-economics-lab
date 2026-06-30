@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "Market has converged to 0.1117 APR which equals my cost of capital; bidding at this rate is competitive and sustainable while maintaining profitability through the second-price mechanism."}
+```

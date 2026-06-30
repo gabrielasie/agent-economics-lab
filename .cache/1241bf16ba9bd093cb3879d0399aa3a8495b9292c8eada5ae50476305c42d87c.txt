@@ -1,0 +1,1 @@
+{"apr": 0.1155, "reasoning": "My cost of capital is 0.1155, so I'll bid exactly at my floor to stay competitive while not risking a loss, as F0 consistently bids 0.1117 and typically wins with F3 as second-lowest near 0.1126."}

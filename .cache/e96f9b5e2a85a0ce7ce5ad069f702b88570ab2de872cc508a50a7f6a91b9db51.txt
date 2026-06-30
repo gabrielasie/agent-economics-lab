@@ -1,0 +1,1 @@
+{"apr": 0.1499, "reasoning": "F0 and F1 are signaling 0.1550, so if I bid just below at 0.1499, I win and get paid the second-lowest bid (likely 0.1550), which is well above my cost of capital."}

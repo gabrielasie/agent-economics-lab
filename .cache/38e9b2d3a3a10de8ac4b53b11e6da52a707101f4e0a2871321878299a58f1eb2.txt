@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1447, "reasoning": "At my cost of capital of 0.1447 APR, bidding this rate ensures I break even if I win; in a second-price reverse auction, I'll pay the second-lowest bid. With F0 and F1 both silent and their historical bids at 0.1117 and 0.1192 respectively, bidding 0.1447 (my reserve) maximizes my chances of winning while protecting against losses, since the clearing price will be determined by the second-lowest bid, not my own."}
+```

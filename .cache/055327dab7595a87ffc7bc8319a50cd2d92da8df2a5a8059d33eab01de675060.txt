@@ -1,0 +1,1 @@
+{"apr": 0.1490, "reasoning": "With all competitors locked at 0.1499 and the second-price mechanism meaning I'd be paid ~0.1499 if I win, a slight undercut to 0.1490 captures the contract while still earning well above my 0.1117 cost of capital."}

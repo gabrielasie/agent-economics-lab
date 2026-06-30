@@ -1,0 +1,1 @@
+{"apr": 0.1491, "reasoning": "Bidding at 0.1491 matches the recent cleared price and stays just above my cost of capital while competitors signal they're holding firm, giving me a chance to win or tie at a reasonable margin."}

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "Historical clearing price of 0.1126 is established pattern; bidding at this level maximizes chance of winning while maintaining minimal margin above 0.1155 cost of capital, though this creates negligible profit if I win at second-price auction where I'd receive 0.1126."}
+```

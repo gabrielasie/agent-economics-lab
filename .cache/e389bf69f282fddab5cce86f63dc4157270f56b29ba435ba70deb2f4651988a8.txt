@@ -1,0 +1,1 @@
+{"apr": 0.1117, "reasoning": "Bidding at my cost of capital floor to win the auction and collect the second-price spread, which has consistently cleared at 0.1126-0.1127 based on F3's stable bidding pattern."}

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "Consistent clearing rate of 0.1126 APR across 14 rounds indicates this is the competitive equilibrium; bidding at this level balances winning probability against my cost of capital constraint of 0.1155 APR."}
+```

@@ -1,0 +1,1 @@
+{"apr": 0.1193, "reasoning": "Bid just above my cost of capital to win if F0 raises their bid, while the second-price mechanism means I'd be paid the second-lowest bid (likely F0's or the reserve), making it profitable if I win."}

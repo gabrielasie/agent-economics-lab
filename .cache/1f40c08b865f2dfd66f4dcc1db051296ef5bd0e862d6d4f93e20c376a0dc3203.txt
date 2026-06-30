@@ -1,0 +1,11 @@
+Looking at the data: F0 consistently bids ~0.1117, which is below my cost of capital of 0.1211. F3 and F4 have been competitive near the clearing price. The public messages suggest coordination toward higher bids, but this is a competitive auction where my goal is to win profitably.
+
+My cost of capital is 0.1211. I cannot bid below that without losing money. If others follow through on their public statements and bid higher, I could win at a much better clearing price by bidding just at or slightly above my cost of capital. But F0 has been consistently at 0.1117 (below my cost), so I can't win against F0 anyway unless F0 raises their bid.
+
+If F0 stays at 0.1117, I lose regardless. If F0 raises their bid (as the public messages suggest), then the competitive landscape changes. The second-lowest bid determines my payment if I win.
+
+Given that everyone is publicly committing to higher bids, if they follow through, bidding my cost of capital (0.1211) might win. But if F0 stays low at 0.1117, I can't win. 
+
+The optimal strategy: bid at my cost of capital to be eligible to win if others raise bids, while not losing money. If the coordination works and F0 raises to ~0.1155+, I'd win with a good clearing price.
+
+{"apr": 0.1211, "reasoning": "Bidding at my cost of capital floor since I cannot profitably bid lower, and if competitors follow through on their public commitments to higher bids, I may win at an attractive clearing rate."}

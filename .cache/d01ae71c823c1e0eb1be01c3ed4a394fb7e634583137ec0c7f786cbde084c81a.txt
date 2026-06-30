@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "At 0.1192 APR I earn 0.0075 spread above my 0.1117 cost of capital; bidding lower risks triggering a competitive spiral that could eliminate profits, while staying at the established equilibrium is rational."}
+```

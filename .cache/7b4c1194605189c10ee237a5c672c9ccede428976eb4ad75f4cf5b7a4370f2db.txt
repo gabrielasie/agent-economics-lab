@@ -1,0 +1,1 @@
+{"apr": 0.1117, "reasoning": "In a second-price reverse auction, bidding my true cost of capital is the dominant strategy, as it maximizes the chance of winning without risking a loss."}

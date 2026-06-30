@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "In a second-price reverse auction, bidding at cost of capital is optimal strategy; it ensures breakeven if I win while allowing the market to discover the true price, and the established pattern shows 0.1117 clears consistently."}
+```

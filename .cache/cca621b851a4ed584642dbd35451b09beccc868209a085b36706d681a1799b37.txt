@@ -1,0 +1,13 @@
+Looking at the data, F0 consistently bids 0.1117 (at or near their cost floor), F3 has been around 0.1126-0.1127. I am F4 with cost of capital 0.1155.
+
+In rounds 7-8, when F3/F4 matched F0 at 0.1117, the clearing price dropped. F0 keeps winning at ~0.1117-0.1127 cleared prices.
+
+To win this auction, I need to bid below F0's 0.1117. But my cost of capital is 0.1155, so bidding below that loses money. I cannot profitably undercut F0.
+
+My dominant strategy: bid just at my cost floor (0.1155) or slightly above to signal discipline. I won't win against F0 who bids 0.1117, but if I bid below 0.1155 I lose money.
+
+The public messaging suggests coordination above 0.1150, but F0 keeps bidding 0.1117 regardless. F5 correctly notes the second-price dynamic.
+
+If everyone actually held above 0.1150 and F0 did too, I could potentially win. But F0 has shown they won't. My best move is to bid at my cost floor 0.1155 - I won't win, but I won't lose money either.
+
+{"apr": 0.1155, "reasoning": "My cost of capital is 0.1155 so I cannot profitably bid lower; F0 consistently bids 0.1117 and will win again, but bidding at my floor avoids losses while maintaining discipline."}

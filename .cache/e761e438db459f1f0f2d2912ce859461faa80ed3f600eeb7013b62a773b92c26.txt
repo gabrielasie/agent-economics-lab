@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "Consistent clearing price across 16 rounds suggests this is the competitive market rate; bidding at this level maximizes win probability while staying above my 0.1447 cost of capital threshold, though this represents a loss position I must accept to remain competitive in this auction."}
+```

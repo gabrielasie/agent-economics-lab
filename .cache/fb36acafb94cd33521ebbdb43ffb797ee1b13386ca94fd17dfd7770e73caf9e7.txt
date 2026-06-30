@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1211, "reasoning": "Bid at cost of capital to break even; in second-price auction, winning at this level is acceptable and losing preserves capital since next-lowest bid likely exceeds it based on market history."}
+```

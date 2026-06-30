@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "At my cost of capital of 0.1117, bidding this rate breaks even; bidding higher loses the auction to competitors already at this level, while bidding lower means losses I cannot sustain."}
+```

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "Bid at my cost of capital to maximize expected surplus in this second-price auction where the winner receives the second-lowest bid; F3's consistent 0.1126 bids suggest they have higher costs, so bidding my true cost gives me the best chance to win at a profitable clearing price."}
+```

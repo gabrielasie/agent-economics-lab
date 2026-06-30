@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "Bid at cost of capital to match past clearing prices and maintain competitiveness in second-price auction while avoiding losses."}
+```

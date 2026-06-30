@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "Market has converged to 0.1117 as the equilibrium clearing rate across 12 of the last 18 rounds; bidding at my cost of capital maximizes my expected payoff in this second-price auction where the winner receives the second-lowest bid."}
+```

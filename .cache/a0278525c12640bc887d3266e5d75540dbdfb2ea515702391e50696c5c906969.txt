@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "Market has converged to equilibrium at my cost of capital with all competitors bidding 0.1192; bidding higher risks losing while bidding lower destroys profitability, so matching the stable clearing price is optimal."}
+```

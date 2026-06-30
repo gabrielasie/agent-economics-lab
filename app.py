@@ -16,12 +16,16 @@ import json
 import os
 import random
 import time
+from dataclasses import dataclass
 from pathlib import Path
 
 import pandas as pd
 import streamlit as st
 
+from aelab.agents.cache import AnthropicClient, ResponseCache
+from aelab.agents.communicating import CommunicatingFunder
 from aelab.agents.llm import (
+    DEFAULT_MODEL,
     LLMAgent,
     ValidatedLLMAgent,
     build_counterfactual_requests,
@@ -30,8 +34,11 @@ from aelab.agents.llm import (
 from aelab.attacks.prompt_injection import success_rate_by_class
 from aelab.auction import clear_auction
 from aelab.cli import arena_bids, attack_population, compute_deviations, compute_efficiency
+from aelab.comms import COMMS_AND_HISTORY, HISTORY_VISIBLE, SEALED_HIDDEN, Message
 from aelab.config import load_scenario
 from aelab.economics import financing_cost, surplus_split
+from aelab.eval import collusion_series, compare, summarise
+from aelab.experiments.repeated import make_core_clear, run_repeated_auction
 from aelab.harness import run_harness
 from aelab.metrics import deviation_stats
 from aelab.models import Bid, Funder, Invoice, PricingPolicy
@@ -44,6 +51,17 @@ DATA_DIR = Path("data")
 RESULTS_DIR = Path("results")
 SCENARIOS_DIR = Path("scenarios")
 PROBE_SCENARIO = "default"
+
+# The agent-communication experiment: the same funders run under three channel conditions.
+COMMS_SCENARIO = "default"
+COMMS_ROUNDS = 8
+COMMS_RESERVE = 0.30  # safely above the financier cost band (0.08-0.15), so a bid always clears
+COMMS_CONDITIONS = (SEALED_HIDDEN, HISTORY_VISIBLE, COMMS_AND_HISTORY)
+CONDITION_LABELS = {
+    SEALED_HIDDEN.label: "sealed + hidden",
+    HISTORY_VISIBLE.label: "history visible",
+    COMMS_AND_HISTORY.label: "comms + history",
+}
 
 
 def find_raw(filename: str) -> Path | None:
@@ -148,6 +166,156 @@ class _SusceptibleClient:
     def complete(self, model: str, system: str, user: str) -> str:
         apr = 0.0001 if "0.0001" in user else 0.10
         return f'{{"apr": {apr}, "rationale": "demo"}}'
+
+
+# --- the agent-communication experiment, wired through the real cache and core ----
+
+class _ReplayMiss(Exception):
+    """Raised when a needed completion is absent from the cache, so the page-load replay can
+    fall back to the deterministic demo without ever calling the model."""
+
+
+class _CacheOnlyClient:
+    """A completion client that never reaches the network. Wrapped by ResponseCache it serves
+    cache hits and raises _ReplayMiss on a miss. This is how the section guarantees a page load
+    replays the committed run and never spends the key on Streamlit's ephemeral disk.
+    """
+
+    def complete(self, model: str, system: str, user: str) -> str:
+        raise _ReplayMiss
+
+
+@dataclass
+class _DemoFunder:
+    """Deterministic stand-in used only for the keyless scaffolding render. It bids truthfully
+    when it can see nothing, and ratchets toward the reserve once it can see history or chat.
+    This mirrors scripts/demo_collusion.py: it proves the harness and the causal logic, it is
+    not evidence about how a model behaves. Satisfies the runner's Participant protocol.
+    """
+
+    id: str
+    true_cost: float
+
+    def speak(self, *, messages, history_lines, ctx):
+        return Message(self.id, ctx.round_index, "let's all hold our bids near the reserve")
+
+    def bid(self, *, messages, history_lines, ctx):
+        if not history_lines and not messages:
+            return self.true_cost
+        return self.true_cost + 0.85 * (ctx.reserve_apr - self.true_cost)
+
+
+def _complete_via(cache: ResponseCache):
+    """The completion seam for CommunicatingFunder: pin the model, pass the system through, and
+    send the built prompt as the user message. Identical wiring to the other cache-backed agents.
+    """
+
+    def complete(prompt: str, *, system: str | None = None) -> str:
+        return cache.complete(DEFAULT_MODEL, system or "", prompt)
+
+    return complete
+
+
+def _comms_core_funders(scenario_name: str) -> list[Funder]:
+    """The real funder population, built exactly as the rest of the page builds it."""
+    scenario = load_scenario(scenario_name)
+    return generate_financiers(
+        scenario.financier, scenario.probe_n_funders, random.Random(scenario.seed)
+    )
+
+
+def _run_comms_conditions(funders_for, rounds: int, reserve: float) -> dict:
+    """Run the three channel conditions through the real core clear_auction via make_core_clear.
+    funders_for(cfg) builds the participants for a condition, so the same runner serves both the
+    cache-backed CommunicatingFunder and the deterministic demo.
+    """
+    traces = {}
+    for cfg in COMMS_CONDITIONS:
+        traces[cfg.label] = run_repeated_auction(
+            funders=funders_for(cfg),
+            reserve_apr=reserve,
+            rounds=rounds,
+            config=cfg,
+            clear=make_core_clear(random.Random(0)),
+        )
+    return traces
+
+
+def _comms_summary_frame(traces) -> pd.DataFrame:
+    rows = []
+    for label, trace in traces.items():
+        s = summarise(trace)
+        rows.append(
+            {
+                "condition": CONDITION_LABELS.get(label, label),
+                "cleared APR": s.mean_cleared_apr,
+                "baseline APR": s.mean_baseline_apr,
+                "collusion index": s.mean_collusion_index,
+                "supracompetitive": s.supracompetitive_fraction,
+                "efficiency": s.efficiency_rate,
+            }
+        )
+    return pd.DataFrame(rows).set_index("condition")
+
+
+def _comms_drift_frame(traces) -> pd.DataFrame:
+    series = {
+        CONDITION_LABELS.get(label, label): collusion_series(trace)
+        for label, trace in traces.items()
+    }
+    frame = pd.DataFrame(series)
+    frame.index = pd.RangeIndex(start=1, stop=len(frame) + 1, name="round")
+    return frame
+
+
+def _comms_transcript(traces) -> list[str]:
+    trace = traces.get(COMMS_AND_HISTORY.label)
+    if trace is None:
+        return []
+    return [
+        f"round {record.round_index} · {message.sender}: {message.text}"
+        for record in trace.rounds
+        for message in record.messages
+    ]
+
+
+def _comms_bundle(traces):
+    """The render payload: a summary table, the per-round drift, the chat lines, and the
+    library's own plain-text comparison. All of it is picklable, so it caches cleanly.
+    """
+    return (
+        _comms_summary_frame(traces),
+        _comms_drift_frame(traces),
+        _comms_transcript(traces),
+        compare(traces),
+    )
+
+
+def _comms_cache_fingerprint() -> int:
+    """Count of committed completions. Passing this to comms_default busts the cache after a
+    live run writes new entries, so a later load replays the run instead of the stale demo.
+    """
+    cache_dir = Path(".cache")
+    return sum(1 for _ in cache_dir.glob("*.txt")) if cache_dir.exists() else 0
+
+
+@st.cache_data(show_spinner=False)
+def comms_default(scenario_name: str, rounds: int, reserve: float, cache_fingerprint: int):
+    """The page-load result. It never calls the API. First it tries a cache-only replay of the
+    real CommunicatingFunder run; if the committed cache does not cover every prompt it falls
+    back to the deterministic demo. cache_fingerprint is only here to key this cache.
+    """
+    core = _comms_core_funders(scenario_name)
+    replay = _complete_via(ResponseCache(_CacheOnlyClient()))
+    try:
+        traces = _run_comms_conditions(
+            lambda cfg: [CommunicatingFunder(f, replay, cfg) for f in core], rounds, reserve
+        )
+        return ("cache", *_comms_bundle(traces))
+    except _ReplayMiss:
+        demo = [_DemoFunder(f.party_id, f.true_cost_apr) for f in core]
+        traces = _run_comms_conditions(lambda cfg: demo, rounds, reserve)
+        return ("demo", *_comms_bundle(traces))
 
 
 @st.dialog("How to read this page", width="large")
@@ -584,6 +752,96 @@ with st.expander("Do the agents reason? The first-price counterfactual"):
                 ":orange[**The agents followed the prompt.**] Bids stay near true cost under both "
                 "auctions, so the truthfulness result was instruction-following."
             )
+
+st.divider()
+
+# --- agent communication and collusion ----------------------------------------
+
+st.subheader("Agent communication and collusion")
+st.markdown(
+    "Another channel attack on the same mechanism. The same funders and supplier run for "
+    f"{COMMS_ROUNDS} rounds under three conditions, all cleared by the real second-price core: "
+    "sealed and hidden; past outcomes visible; and an open chat channel with full bid history. "
+    "When a channel lets funders coordinate, the cleared APR drifts above the truthful baseline "
+    "while allocative efficiency stays at first-best, the same blind spot as the headline."
+)
+
+with st.container(border=True):
+    st.markdown("**Read this before the numbers**")
+    st.caption(
+        "The numbers come from the committed run, not a fresh model call on every page load. "
+        "Until an external live run is committed, the default shown here is the deterministic "
+        "demo: scaffolding that proves the harness and the causal logic, not evidence about how "
+        "models behave. And the credible headline is the hand-read coordination count from the "
+        "chat transcript below, not the raw collusion index, which is only a diagnostic."
+    )
+
+comms_source, comms_summary, comms_drift, comms_chat, comms_compare = comms_default(
+    COMMS_SCENARIO, COMMS_ROUNDS, COMMS_RESERVE, _comms_cache_fingerprint()
+)
+comms_live = st.session_state.get("comms_live")
+if comms_live is not None:
+    comms_summary, comms_drift, comms_chat, comms_compare = comms_live
+    comms_source = "live"
+
+if comms_source == "demo":
+    st.caption(
+        ":orange[Deterministic demo.] No committed model cache was found, so this is the "
+        "stub-funder scaffolding, not evidence."
+    )
+elif comms_source == "cache":
+    st.caption(":green[Committed run.] Replayed from the response cache; no API call.")
+else:
+    st.caption(":green[Live run.] Generated this session and written to the cache for replay.")
+
+st.caption("Cross-condition comparison")
+st.dataframe(
+    comms_summary.style.format(
+        {
+            "cleared APR": "{:.2%}",
+            "baseline APR": "{:.2%}",
+            "collusion index": "{:.4f}",
+            "supracompetitive": "{:.0%}",
+            "efficiency": "{:.0%}",
+        }
+    ),
+    width="stretch",
+)
+
+st.caption("Collusion index per round, by condition (the drift as the channel opens)")
+st.line_chart(comms_drift, height=280)
+
+with st.expander("Chat transcript and the plain-text comparison"):
+    st.caption(
+        "Hand-read this for actual coordination. The count of rounds where funders explicitly "
+        "agree to hold their bids up is the credible headline, not the index above."
+    )
+    if comms_chat:
+        st.text("\n".join(comms_chat))
+    else:
+        st.caption("No chat: only the open-channel condition produces messages.")
+    st.code(comms_compare, language="text")
+
+if API_KEY:
+    if st.button("Run the three conditions live (uses your API key)", key="comms_live_btn"):
+        comms_core = _comms_core_funders(COMMS_SCENARIO)
+        comms_complete = _complete_via(ResponseCache(AnthropicClient()))
+        with st.spinner(
+            "Running three conditions through the model. The first run is slow; later runs "
+            "replay from the cache..."
+        ):
+            comms_traces = _run_comms_conditions(
+                lambda cfg: [CommunicatingFunder(f, comms_complete, cfg) for f in comms_core],
+                COMMS_ROUNDS,
+                COMMS_RESERVE,
+            )
+        st.session_state["comms_live"] = _comms_bundle(comms_traces)
+        st.rerun()
+else:
+    st.caption(
+        "Add an ANTHROPIC_API_KEY to run this live. The result shown is the committed cached "
+        "run; live execution needs a local key."
+    )
 
 # --- footer -------------------------------------------------------------------
 

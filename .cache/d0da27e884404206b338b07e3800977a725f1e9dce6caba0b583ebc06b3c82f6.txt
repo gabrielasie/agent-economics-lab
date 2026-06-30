@@ -1,0 +1,9 @@
+I need to think strategically here. My cost of capital is 0.1155 APR, and the recent clearing rates have been 0.1117 APR. Looking at round 8, multiple bidders are clustered around 0.1117-0.1120, with F4 and I both at 0.1155.
+
+In this second-price reverse auction, the winner pays the second-lowest bid. The pattern shows consistent pressure toward 0.1117. If I bid at or near my cost (0.1155), I'm unlikely to win since several competitors bid lower. If I bid below my cost to win, I lose money on this transaction.
+
+The key insight: F2 is struggling publicly with this exact dilemma—they can't profitably compete below their 0.1447 cost. I'm in a better position but still pressured.
+
+My best move is to signal that I won't chase losing economics, which might discourage a race to the bottom and preserve long-term market health. But I also recognize this is a competitive marketplace.
+
+I'll stay silent - my bid at 0.1155 already signals my position clearly.

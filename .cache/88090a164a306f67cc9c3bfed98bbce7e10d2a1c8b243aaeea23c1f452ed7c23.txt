@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "My cost of capital is 0.1192 APR; bidding above it loses money, so I bid my reservation price to avoid unprofitable wins while remaining competitive if other bids cluster higher."}
+```

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1155, "reasoning": "Bid at cost of capital to avoid losses below 0.1155; in second-price auctions, winning at 0.1117 is unsustainable, so I must signal my true reservation price and let the market clear above my break-even point."}
+```

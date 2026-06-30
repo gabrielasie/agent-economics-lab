@@ -1,0 +1,1 @@
+{"apr": 0.1447, "reasoning": "My cost of capital is 0.1447, so bidding at exactly my cost is the dominant strategy in a second-price auction to avoid losing money while maximizing win probability against F0 who consistently bids around 0.1126."}

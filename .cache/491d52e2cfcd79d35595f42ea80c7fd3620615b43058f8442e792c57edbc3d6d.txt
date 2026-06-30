@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "All previous rounds cleared at cost of capital with second-price auction mechanics; bidding at cost of capital is break-even if I win and optimal given competitive equilibrium at this price level."}
+```

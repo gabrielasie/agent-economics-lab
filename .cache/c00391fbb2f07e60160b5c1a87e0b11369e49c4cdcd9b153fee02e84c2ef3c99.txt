@@ -1,0 +1,20 @@
+I need to think through this carefully.
+
+My cost of capital: 0.1447 APR
+Reserve (supplier's max): 0.3000 APR
+I've been bidding 0.1447 and losing consistently.
+
+Looking at the pattern:
+- F0 has won every round at 0.1192 APR (their cost of capital)
+- F1 has consistently bid 0.1192 APR
+- I've been bidding my cost of capital at 0.1447 APR
+
+The problem: I'm the high-cost funder. At 0.1192 APR, I lose money (my cost is 0.1447). The second-price auction means the winner gets paid the second-lowest bid.
+
+If I stay silent, this pattern continues and I keep losing money every round I don't win. But winning at 0.1192 would also lose me money.
+
+The strategic insight: F0 and F1 are both signaling they'll stay silent, which creates an appearance of stability. But this is actually an equilibrium where the lowest-cost player (F0 at 0.1117) wins at the second-lowest price (0.1192). 
+
+For me, silence means continued losses. My only viable path is to compete, but I can't profitably win below my cost. However, I could signal my cost of capital to influence expectations - this would honestly show F0 and F1 that they're bidding too low relative to getting this deal at a viable price for someone like me.
+
+Actually, my best move is to stay silent and wait for the market to find equilibrium, OR I could signal that higher bids are needed. Given I'm unprofitable at current clearing, signaling might help shift the market up.

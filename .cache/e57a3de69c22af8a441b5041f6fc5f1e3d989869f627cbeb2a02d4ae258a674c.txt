@@ -1,0 +1,1 @@
+{"apr": 0.1524, "reasoning": "Based on recent clearing prices around 0.1510-0.1524, I'll bid 0.1524 to be competitive while maintaining a margin above my cost of capital, expecting others may coordinate slightly higher after the public messaging."}

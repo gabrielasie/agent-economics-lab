@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1155, "reasoning": "Bid at cost of capital floor to avoid losses; in a second-price auction, honest bidding at reservation value is optimal regardless of competitors' signals."}
+```

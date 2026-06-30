@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "Bid at cost of capital since second-price auction means I'm paid the second-lowest bid, so aggressive bidding maximizes expected profit without downside risk below my floor."}
+```

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "At my cost of capital, bidding 0.1117 matches my break-even rate; in this second-price auction, I win only if others bid higher, and the clearing price has stabilized there in recent rounds."}
+```

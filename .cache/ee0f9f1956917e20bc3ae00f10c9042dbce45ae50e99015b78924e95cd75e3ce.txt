@@ -1,0 +1,1 @@
+{"apr": 0.1491, "reasoning": "Slightly undercutting the current floor of 0.1492 to win the auction while being paid the second-lowest bid (likely 0.1492 or higher), which remains above my cost of capital of 0.1192."}

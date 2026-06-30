@@ -1,0 +1,1 @@
+{"apr": 0.1447, "reasoning": "My cost of capital is 0.1447, so bidding at my true floor is the dominant strategy in a second-price auction—bidding lower would risk winning at a loss, and bidding higher gains nothing since F0 and F3 consistently clear well below my cost."}

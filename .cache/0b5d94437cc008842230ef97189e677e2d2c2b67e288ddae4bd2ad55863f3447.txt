@@ -1,0 +1,1 @@
+{"apr": 0.1118, "reasoning": "F0 consistently wins at 0.1126, suggesting their bid is just below that; I'll bid just above my cost of capital at 0.1118 to undercut F0 and win at the second-price (0.1126), earning a small spread."}

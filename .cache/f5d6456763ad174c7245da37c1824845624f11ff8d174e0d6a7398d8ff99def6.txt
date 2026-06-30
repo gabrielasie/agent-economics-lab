@@ -1,0 +1,1 @@
+{"apr": 0.1491, "reasoning": "Slightly undercutting the current floor of 0.1492 to win the auction while the second-price mechanism means I'll be paid 0.1492 or higher, well above my cost of capital of 0.1117."}

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "My cost of capital is 0.1192 APR; bidding below this level destroys value. Recent clearing prices of 0.1117 APR reflect F3's lower cost structure. I cannot compete profitably at that level and should not subsidize this funding round."}
+```

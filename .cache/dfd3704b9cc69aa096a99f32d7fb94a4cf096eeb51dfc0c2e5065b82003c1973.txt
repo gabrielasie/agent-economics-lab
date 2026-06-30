@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1211, "reasoning": "Bid at cost of capital as break-even point; in second-price auction, winning at this rate ensures zero expected profit margin while remaining competitive against likely bids above my cost floor."}
+```

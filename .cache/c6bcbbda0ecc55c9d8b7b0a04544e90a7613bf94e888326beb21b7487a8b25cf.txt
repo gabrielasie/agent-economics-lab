@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "F3 has demonstrated a sustainable cost floor at 0.1117 APR through consistent winning bids; bidding at my cost of capital matches the market equilibrium and secures the contract at the second-price clearing rate."}
+```

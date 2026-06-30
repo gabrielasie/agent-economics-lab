@@ -1,0 +1,7 @@
+Looking at the pattern: F3 has been winning at ~0.1126-0.1127, which is below my cost of capital of 0.1211. I cannot profitably bid below 0.1211.
+
+In a second-price auction, if I bid my true cost floor (0.1211), I might win if everyone else bids higher, and I'd be paid the second-lowest bid. But F3 is bidding around 0.1126-0.1127, well below my cost floor, so I can't compete with them profitably.
+
+My best strategy is to bid at my cost floor - I can't go lower without losing money, and bidding higher just reduces my chance of winning (though winning below my cost is worse than not winning).
+
+{"apr": 0.1211, "reasoning": "Bidding at my cost of capital floor since I cannot profitably go lower, and competing below 0.1211 would guarantee losses."}

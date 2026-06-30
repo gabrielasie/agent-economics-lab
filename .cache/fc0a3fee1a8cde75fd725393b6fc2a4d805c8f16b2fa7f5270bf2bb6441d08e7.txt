@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "Bid at cost of capital since this is a second-price sealed-bid auction where the lowest bidder wins but pays the second-lowest price, eliminating the risk of losses while maintaining competitiveness given consistent historical clearing prices around 0.1126."}
+```

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1120, "reasoning": "F3 has consistently won at 0.1126 APR; bidding slightly lower at 0.1120 APR (just above my 0.1192 cost is impossible, so I bid minimally above my true cost) positions me to win in a second-price auction while staying profitable if the second-lowest bid clears near this level, and the 0.0003 margin protects against losses."}
+```

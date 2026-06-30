@@ -1,0 +1,1 @@
+{"apr": 0.1448, "reasoning": "Bidding just above my cost of capital to be competitive while ensuring profitability, since F0 appears to consistently win at 0.1126 which is below my cost of capital of 0.1447, so I cannot profitably undercut them, but I'll bid at my floor to potentially capture any round where F0 is absent or raises their bid."}
