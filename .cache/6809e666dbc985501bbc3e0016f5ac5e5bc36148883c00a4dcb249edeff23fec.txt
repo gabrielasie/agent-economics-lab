@@ -1,0 +1,1 @@
+{"apr": 0.1192, "reasoning": "F0 has won every round at exactly the cost of capital, suggesting they bid at 0.1192; I should match this to compete, as bidding lower loses money and bidding higher loses the auction."}

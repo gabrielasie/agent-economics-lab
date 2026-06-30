@@ -1,0 +1,1 @@
+{"apr": 0.1126, "reasoning": "F0 consistently bids 0.1117 and wins, but the second price clears at 0.1126 most rounds, so bidding just at 0.1126 gives a chance to win at a margin above cost if F0 bids lower, while avoiding a loss."}

@@ -1,0 +1,1 @@
+{"apr": 0.1491, "reasoning": "Competitors are signaling they'll hold at 0.1499 or above 0.1491, so bidding 0.1491 matches the recent floor and should win or tie, getting paid the second-lowest rate which is at or above 0.1491—well above my cost of capital."}

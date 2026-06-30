@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "Bidding at cost of capital is optimal in a reverse sealed-bid second-price auction where the winner receives the second-lowest bid, as it maximizes expected profit while remaining competitive given the consistent clearing price history."}
+```

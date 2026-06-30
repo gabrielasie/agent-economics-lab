@@ -1,0 +1,1 @@
+{"apr": 0.1192, "reasoning": "My cost of capital is 0.1192, so I cannot bid below it without losing money; I'll bid exactly at my cost of capital as the minimum rational bid, hoping F0 and F3 follow through on their public commitment to step back from near-breakeven bids."}

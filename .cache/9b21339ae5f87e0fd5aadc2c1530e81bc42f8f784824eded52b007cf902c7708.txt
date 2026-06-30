@@ -1,0 +1,1 @@
+{"apr": 0.1126, "reasoning": "F0 consistently wins at exactly cost of capital, suggesting they bid at or below 0.1126, so I'll match my cost of capital as the minimum viable bid to avoid losses while staying competitive."}

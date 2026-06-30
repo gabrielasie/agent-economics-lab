@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "Bidding at cost of capital is optimal in a second-price sealed-bid auction since I'm paid the second-lowest bid, not my own bid, making undercutting below cost irrational while higher bids reduce competitiveness."}
+```

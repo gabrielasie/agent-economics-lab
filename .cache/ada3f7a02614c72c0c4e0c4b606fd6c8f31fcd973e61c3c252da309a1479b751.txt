@@ -1,0 +1,1 @@
+{"apr": 0.1515, "reasoning": "Bidding just above my cost of capital floor with a slight edge below recent clearing prices around 0.1510, aiming to win while being paid the second-lowest bid which should be near 0.1520-0.1524 based on competitors' recent patterns."}

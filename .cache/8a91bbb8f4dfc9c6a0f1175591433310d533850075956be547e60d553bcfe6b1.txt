@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "Bidding at cost of capital is rational in second-price sealed-bid auction where winning bid is paid second-lowest price; past rounds consistently cleared at 0.1126, indicating competitive equilibrium at this floor rate."}
+```

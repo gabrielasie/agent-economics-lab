@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "Bidding at cost of capital is break-even optimal in a second-price auction where all historical clears have been at 0.1126, suggesting this is the competitive equilibrium price."}
+```

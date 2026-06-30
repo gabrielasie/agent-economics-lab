@@ -1,0 +1,1 @@
+{"apr": 0.1535, "reasoning": "Bidding slightly below the recent cleared price of 0.1510 but above cost of capital, anticipating competitors may hold or raise slightly based on their public messaging, to win at a profitable second-price clearing rate."}

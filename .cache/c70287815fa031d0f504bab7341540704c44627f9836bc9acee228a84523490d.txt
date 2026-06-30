@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1211, "reasoning": "Bidding at cost of capital minimizes loss if I win while remaining competitive; in a reverse auction I'm paid the second-lowest bid, so aggressive bidding is rational."}
+```

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "At my cost of capital of 0.1192, bidding at this rate ensures I break even while remaining competitive; bidding lower risks losses, and in a second-price reverse auction, the winner pays the second-lowest bid, so I'm protected from winning at unsustainable rates."}
+```

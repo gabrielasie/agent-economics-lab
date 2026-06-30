@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1120, "reasoning": "Bid just above my 0.1155 cost but below F3's consistent 0.1126 winning bid to compete for the contract while remaining profitable on the second-price settlement."}
+```

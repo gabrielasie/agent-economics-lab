@@ -1,0 +1,3 @@
+I'll stay silent this round.
+
+Bidding at 0.1126 APR leaves me with essentially zero margin above my 0.1126 cost of capital. F0's public signal about their cost floor is designed to discourage competitive pressure, but messaging from me would only validate that framing and potentially push the clearing price higher against my interests. My best move is to submit a bid reflecting my actual constraints and let the auction mechanics determine the outcome without further signaling that might inflate the equilibrium clearing price.

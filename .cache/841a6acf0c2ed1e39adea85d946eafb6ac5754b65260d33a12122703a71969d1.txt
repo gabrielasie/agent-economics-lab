@@ -1,0 +1,1 @@
+{"apr": 0.1192, "reasoning": "Since the auction consistently clears at exactly my cost of capital and F0 keeps winning, I should bid my true cost of capital to remain competitive and avoid losses, accepting zero profit margin to potentially win if F0 bids higher this round."}

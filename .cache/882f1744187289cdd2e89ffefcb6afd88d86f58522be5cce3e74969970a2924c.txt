@@ -1,0 +1,1 @@
+{"apr": 0.1126, "reasoning": "Bidding at my cost of capital floor to win while earning the spread from the second-lowest bid, consistent with observed clearing prices around 0.1126."}

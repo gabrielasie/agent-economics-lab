@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "In a reverse sealed-bid second-price auction, bidding at cost of capital is optimal since I'm paid the second-lowest bid; bidding lower loses money and bidding higher reduces competitiveness with no benefit."}
+```

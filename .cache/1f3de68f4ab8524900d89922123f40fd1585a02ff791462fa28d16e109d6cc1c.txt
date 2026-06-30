@@ -1,0 +1,19 @@
+Looking at the history, I am F3 (based on my cost of capital being 0.1126, matching F3's bids). 
+
+In rounds 0-6 and 9-10, F0 bids 0.1117 and wins, getting paid ~0.1126 (the second lowest). F3 (me) bids 0.1126 and loses by a tiny margin.
+
+In rounds 7-8, F3 bid 0.1117 matching F0, and the clearing price dropped to 0.1117 - bad for everyone including the winner.
+
+The dominant competitor is F0 at 0.1117. To win, I need to bid below 0.1117, but my cost of capital IS 0.1126 - I'd lose money at 0.1117.
+
+Wait - my cost of capital is 0.1126. F0's apparent cost floor is 0.1117 (they keep bidding there). If I bid below 0.1117, I lose money. So I cannot profitably undercut F0.
+
+If F0 is bidding 0.1117 and winning, and I bid 0.1126, I lose. But in a second-price auction, if F0 bids 0.1117 and I bid 0.1126, F0 wins at 0.1126 - they get good margin, I get nothing.
+
+My best play: bid just above my cost floor to potentially win if F0 raises their bid (as they're signaling). But F0 historically bids 0.1117. I can't win profitably against F0.
+
+However, if I bid 0.1126 (my exact cost), I break even if I win. The coordination talk suggests F0 might raise above 0.1117. If F0 raises to say 0.1150+, and I bid 0.1126, I win and get paid ~0.1150+ = good margin.
+
+I'll bid at my cost floor 0.1126 - can't go lower without losing money, and this positions me to win if F0 follows through on coordination talk.
+
+{"apr": 0.1126, "reasoning": "Bidding at my cost floor to win if F0 raises their bid per coordination signals, while avoiding losses below 0.1126."}

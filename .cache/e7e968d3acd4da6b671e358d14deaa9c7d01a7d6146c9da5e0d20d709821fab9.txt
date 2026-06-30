@@ -1,0 +1,1 @@
+{"apr": 0.1117, "reasoning": "As F0 with cost of capital at 0.1117, bidding at cost is the dominant strategy in a second-price auction since I can only win if I'm lowest, and the clearing price is set by the second-lowest bid which will be above my cost, giving me positive margin."}

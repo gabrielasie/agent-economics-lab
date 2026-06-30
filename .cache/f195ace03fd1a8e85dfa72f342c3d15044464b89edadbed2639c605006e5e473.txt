@@ -1,0 +1,1 @@
+{"apr": 0.1550, "reasoning": "The clearing price has stabilized at 0.1550 in round 1, and with competitors signaling discipline, matching this price gives a good chance of winning at the second-price (potentially higher) rate while staying well above my cost of capital."}

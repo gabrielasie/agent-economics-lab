@@ -1,0 +1,1 @@
+{"apr": 0.1499, "reasoning": "In a second-price reverse auction, bidding at or near the lowest competitive level wins the contract and gets paid the second-lowest bid; given the compression toward 0.1499 and F2's signal of aggressive bidding, I'll match the floor to stay competitive while the second-price mechanism protects my margin."}

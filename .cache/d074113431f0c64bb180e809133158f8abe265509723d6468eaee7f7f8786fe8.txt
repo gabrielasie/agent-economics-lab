@@ -1,0 +1,1 @@
+{"apr": 0.1211, "reasoning": "My cost of capital is 0.1211, so I bid exactly at cost to avoid losing money, while the second-price mechanism means the winner (likely F0 or F3 at ~0.1117) gets paid the second-lowest bid around 0.1126, which doesn't affect my outcome since I won't win at this rate."}

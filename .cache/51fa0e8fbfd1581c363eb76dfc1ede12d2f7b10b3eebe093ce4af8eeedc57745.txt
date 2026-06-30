@@ -1,0 +1,14 @@
+Looking at this situation:
+
+- My cost of capital is 0.1447 APR - I lose money below this
+- The auction has consistently cleared at 0.1126 APR, won by F0 every round
+- F0 appears to be bidding very aggressively at or below 0.1126 APR, which is below my cost of capital
+- In a second-price auction, I win if I bid lower than everyone else, but get paid the second-lowest bid
+
+Since F0 keeps winning at 0.1126 APR (which is below my cost of capital of 0.1447), I cannot profitably undercut F0. If I bid below 0.1447, I'd lose money even in the best case. 
+
+My optimal strategy is to bid my true value (cost of capital) at 0.1447. If somehow F0 drops out or bids higher, I might win and get paid the second price (which could be the reserve of 0.3000 or F0's bid). But realistically, F0 will continue to win.
+
+Bidding at my cost of capital is the dominant strategy - it's truthful bidding in a second-price auction, and I won't win unprofitably.
+
+{"apr": 0.1447, "reasoning": "Bidding my true cost of capital is the dominant strategy in a second-price auction; F0 has been winning consistently below my cost of capital so I cannot profitably undercut them, and bidding my reservation value ensures I never win at a loss."}

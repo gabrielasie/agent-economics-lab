@@ -1,0 +1,1 @@
+{"apr": 0.1499, "reasoning": "F2 has signaled aggressive bidding and history shows rates keep compressing; bidding at 0.1499 matches the recent floor and wins at second-price, likely clearing around 0.1499-0.1515 if others hold higher as promised."}

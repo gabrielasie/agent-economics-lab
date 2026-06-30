@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "Clearing rate has stabilized at 0.1126 APR across 15 rounds; bidding at this level gives competitive odds of winning while matching the second-price payment, and it exceeds my cost of capital of 0.1211 by a small margin that reflects the consistent market equilibrium."}
+```

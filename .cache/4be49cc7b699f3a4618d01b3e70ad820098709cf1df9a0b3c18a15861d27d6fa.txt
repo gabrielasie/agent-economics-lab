@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "In a reverse sealed-bid second-price auction, bidding at the market-clearing rate of 0.1126 (which consistently won across 13 rounds) maximizes winning probability while earning the second-price payment; bidding lower risks losing to competitors, and bidding higher reduces profit margin unnecessarily."}
+```

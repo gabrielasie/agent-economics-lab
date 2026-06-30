@@ -1,0 +1,1 @@
+{"apr": 0.1192, "reasoning": "Bidding at my cost of capital floor since undercutting further destroys profit, and the second-price mechanism means the winner earns the spread between their bid and the second-lowest bid anyway."}

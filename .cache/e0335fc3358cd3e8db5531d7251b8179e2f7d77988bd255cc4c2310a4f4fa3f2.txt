@@ -1,0 +1,15 @@
+Looking at the pattern: I'm F0 with cost of capital 0.1117. In rounds 0 and 1, I bid 0.1117 (my floor) and lost to F3 who bid 0.1126 and 0.1127. The clearing prices were 0.1126 and 0.1127 (second lowest bids).
+
+F3 is winning by bidding just above my floor. If I bid 0.1117 again, F3 wins at ~0.1128. 
+
+If I bid 0.1118 (like last round pattern shows F0 did), I still lose to F3 at 0.1126.
+
+Wait - looking again: Round 0 F0 bid 0.1117, Round 1 F0 bid 0.1118. The clearing price is the second-lowest bid paid to the winner. F3 won in both rounds and was paid the second-lowest APR.
+
+To win this auction, I need to bid lower than F3 (~0.1126-0.1127). My cost floor is 0.1117. If I bid 0.1117, F3 bids ~0.1127, I win and get paid ~0.1127 (second lowest) - that's profitable! 
+
+Wait, I need to re-examine: in round 0, F0 bid 0.1117 and F3 bid 0.1126. The lowest bid was F0 at 0.1117, so F0 should have won... unless I'm misreading the firm numbering. Maybe I'm not F0.
+
+Given I'm the funding agent submitting a bid, I'll bid at my true cost floor to be competitive while ensuring profitability if second-price is above my cost.
+
+{"apr": 0.1117, "reasoning": "Bidding at my cost floor to win; in second-price auction, I'll be paid the second-lowest bid which has been ~0.1126-0.1127, ensuring profitability above my 0.1117 cost of capital."}

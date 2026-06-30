@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "Bid at the consistent clearing price from all previous rounds to compete for the win while staying above my 0.1155 cost of capital at the second-price settlement."}
+```

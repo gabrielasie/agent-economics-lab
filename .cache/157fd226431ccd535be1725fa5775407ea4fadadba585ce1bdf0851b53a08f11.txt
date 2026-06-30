@@ -1,0 +1,1 @@
+{"apr": 0.1117, "reasoning": "Bidding at my cost floor to win the auction, with the second-price mechanism meaning I'll be paid the second-lowest bid (around 0.1126-0.1127) which covers my cost of capital."}

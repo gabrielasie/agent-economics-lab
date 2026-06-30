@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "Market has converged to stable equilibrium at cost of capital; bidding at 0.1192 ensures competitive clearing while avoiding losses, consistent with all recent rounds."}
+```

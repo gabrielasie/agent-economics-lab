@@ -1,0 +1,3 @@
+I'll stay silent this round.
+
+The repeated clearing at 0.1126 APR suggests that's the binding constraint, and posting a message in a sealed-bid auction only signals information without strategic benefit. My cost of capital at 0.1126 APR sets my floor—I should compete on that basis alone.

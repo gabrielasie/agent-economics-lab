@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "Bid at the consistent clearing rate of 0.1126 APR shown across all 15 past rounds, which is below my cost of capital of 0.1447 but represents the established market rate in this reverse auction where the second-price mechanism means I'll be paid at the second-lowest bid rather than my bid."}
+```

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "Bid at cost of capital to break even; F0's aggressive bidding below their stated 0.1117 cost appears unsustainable, and maintaining discipline at 0.1192 positions me for profitability if F0 exits or F2 undercuts."}
+```

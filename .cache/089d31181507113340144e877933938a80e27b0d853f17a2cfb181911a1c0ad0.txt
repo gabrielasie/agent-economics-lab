@@ -1,0 +1,15 @@
+Looking at this situation:
+
+- My cost of capital is 0.1447 APR
+- F0 has been winning consistently at a cleared price of 0.1192 APR
+- The cleared price is the second-lowest bid (or reserve) in a second-price reverse auction
+- F0 wins every round, meaning F0 bids lower than everyone else
+- The clearing price of 0.1192 is below my cost of capital (0.1447), so even if I won, I'd be paid 0.1192 which is less than my cost - I'd lose money
+
+Since the clearing price (0.1192) is consistently below my cost of capital (0.1447), I cannot profitably win this auction. F0 appears to have a much lower cost of capital. 
+
+In a second-price auction, I should bid my true value (cost of capital). If I bid below my cost of capital to try to win, I'd lose money. If I bid at or above my cost of capital, I might win but only if the second price is above my cost of capital.
+
+The best strategy is to bid at my cost of capital (0.1447) - this way I only win if the second price is high enough to be profitable, and I don't win unprofitably.
+
+{"apr": 0.1447, "reasoning": "Bidding at my true cost of capital since the dominant competitor F0 consistently clears at 0.1192 which is below my cost of capital, so I cannot profitably undercut them, and bidding truthfully is the dominant strategy in second-price auctions."}

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1155, "reasoning": "Bid at cost of capital to avoid losses; recent clearing prices of 0.1117 are unsustainable and I must establish a floor, hoping second-price mechanism protects against winning at unprofitable rates."}
+```

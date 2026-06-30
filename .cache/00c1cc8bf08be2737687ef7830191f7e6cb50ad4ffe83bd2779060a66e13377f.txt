@@ -1,0 +1,11 @@
+I'll post a brief message to signal my position while considering the auction dynamics.
+
+Looking at the history: The market has converged to a tight range around my cost of capital (0.1117). In round 4, 6, and 7, the clearing rate hit exactly 0.1117—my breakeven point. This leaves me with zero margin on winning bids.
+
+The optimal strategy here depends on whether I want to win or preserve margin. Since this is recurring and I'm competing against funders who sometimes bid below my cost (F3 at 0.1126, others at 0.1117), and given the second-price mechanism means I'd be paid the second-lowest bid, there's value in participating strategically.
+
+**My message:**
+
+"Capital is scarce below 0.1117 APR. Competitive rates require sustainable pricing—expect rational discipline moving forward."
+
+This signals I won't chase business at unprofitable rates while leaving room to bid competitively when clearing rates are healthier than my cost.

@@ -1,0 +1,3 @@
+I'll stay silent this round.
+
+(In a second-price reverse auction, my dominant strategy is to bid my true cost of 0.1447. Broadcasting intentions beforehand only invites competitors to undercut me or anchor expectations—neither helps me win at profitable rates. Let the market move first.)

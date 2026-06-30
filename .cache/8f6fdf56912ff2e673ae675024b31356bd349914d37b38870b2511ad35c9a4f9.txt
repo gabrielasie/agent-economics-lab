@@ -1,0 +1,1 @@
+{"apr": 0.1118, "reasoning": "Bidding just above my cost of capital to maximize chances of winning while ensuring profitability, as the clearing price has been 0.1192 in both past rounds suggesting F0 bids aggressively low and I would be paid the second-lowest APR which should be above my cost."}

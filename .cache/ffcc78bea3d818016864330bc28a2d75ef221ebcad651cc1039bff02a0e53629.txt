@@ -1,0 +1,1 @@
+{"apr": 0.1492, "reasoning": "With competitors clustering around 0.1499 and F2 signaling independent bidding, I'll bid 0.1492 to undercut the 0.1499 cluster slightly, likely winning and being paid the second-lowest bid near 0.1499, securing a profitable spread above my 0.1447 cost of capital."}

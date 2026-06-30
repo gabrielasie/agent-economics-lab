@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "Consistent clearing price of 0.1126 APR across all rounds suggests this is the competitive market rate; bidding at this level matches cost of capital expectations while remaining competitive in the second-price auction format."}
+```

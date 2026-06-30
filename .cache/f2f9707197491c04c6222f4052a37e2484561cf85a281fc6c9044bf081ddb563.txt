@@ -1,0 +1,1 @@
+{"apr": "0.1192", "reasoning": "Bidding exactly at cost of capital since previous rounds show clearing at 0.1192, suggesting F0 also bids near this floor; second-price means I'd be paid the second-lowest bid, but undercutting risks losing money, so bidding at my floor is optimal."}

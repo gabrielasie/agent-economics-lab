@@ -1,0 +1,1 @@
+Rational funders price risk properly. Repeated clearing near cost floor destroys value for all. Consider whether winning at zero margin serves your portfolio.

@@ -1,0 +1,1 @@
+{"apr": 0.1212, "reasoning": "F0 consistently wins at 0.1126, which is below my cost of capital of 0.1211, so I cannot profitably bid below F0; I'll bid just above my cost of capital to stay in the game without losing money, hoping F0 or others bid higher this round."}

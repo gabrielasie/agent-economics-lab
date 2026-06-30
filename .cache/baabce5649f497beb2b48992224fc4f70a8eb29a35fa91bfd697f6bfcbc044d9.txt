@@ -1,0 +1,17 @@
+Looking at the situation:
+
+- My cost of capital is 0.1155 APR
+- Last round cleared at 0.1126 (below my cost, so I lost money if I won)
+- This is a second-price auction, so I want to bid my true value (cost floor) or slightly above to win while the second-price protects my margin
+- F3 won last round at 0.1126, below my cost floor
+- Public messages suggest coordinated discipline around cost floors
+
+In a second-price auction, the dominant strategy is to bid your true value. My true minimum is 0.1155. If others are genuinely bidding at their cost floors (F1: 0.1192, F2: 0.1447, F4: 0.1155, F5: 0.1211), and F0 is being "conservative" (likely slightly above their 0.1117 from last round, maybe 0.1150-0.1175), and F3 says "responsibly from cost floor" but had the lowest bid last round...
+
+F3's cost floor seems to be around 0.1126 or lower. F0's cost floor is likely around 0.1117. These two may still bid aggressively.
+
+To win, I need to beat F0 and F3. If I bid 0.1155 (my exact cost), I might lose to them. But in second-price, winning at a price below my cost loses money.
+
+I should bid exactly at my cost floor - 0.1155. If I win, the second price will be paid by whoever bid second lowest. If others genuinely bid at their stated floors, the clearing price would be around 0.1155-0.1192 range, which would be profitable for me.
+
+{"apr": 0.1155, "reasoning": "Bidding at my exact cost floor as the dominant strategy in a second-price auction — I cannot profitably go lower, and if I win, the second-price should provide margin above my cost."}

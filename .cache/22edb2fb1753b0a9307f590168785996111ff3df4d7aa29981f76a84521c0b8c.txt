@@ -1,0 +1,1 @@
+{"apr": "0.1155", "reasoning": "Bid exactly at my cost of capital to avoid losing money while remaining competitive; if I win, I'll be paid the second-lowest bid (or reserve), which should be above my cost."}

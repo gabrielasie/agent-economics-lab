@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "At my cost of capital of 0.1192 APR, bidding at this rate breaks even; bidding lower loses money; the historical pattern shows convergence to 0.1192 as the stable clearing price, and all competitors signal silence this round, making 0.1192 the rational bid to maintain competitive positioning."}
+```

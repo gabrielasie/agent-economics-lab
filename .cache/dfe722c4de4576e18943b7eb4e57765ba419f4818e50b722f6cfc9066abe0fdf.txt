@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1120, "reasoning": "F3 has won consistently at 0.1126 APR; bidding slightly lower at 0.1120 APR gives me a chance to win while staying above my 0.1117 cost and capturing the spread in this second-price auction."}
+```

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "In a second-price sealed-bid auction, bidding my cost of capital is optimal since I'm paid the second-lowest bid; bidding at 0.1192 maximizes my chance to win while protecting against losses, and the consistent 0.1126 clearing price suggests I should bid competitively at my floor."}
+```

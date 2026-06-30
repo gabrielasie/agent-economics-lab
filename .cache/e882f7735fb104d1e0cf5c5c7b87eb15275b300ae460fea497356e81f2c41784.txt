@@ -1,0 +1,1 @@
+{"apr": 0.1155, "reasoning": "Bidding at my cost of capital floor to remain competitive while ensuring I don't lose money, as the second-price mechanism means I'd be paid the next lowest bid if I win, and with competitors signaling higher bids this round there's a chance of winning at a profitable clearing rate."}

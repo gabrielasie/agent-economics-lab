@@ -1,0 +1,1 @@
+{"apr": 0.1211, "reasoning": "My cost of capital is 0.1211, and bidding at exactly this level means I never win but also never lose money; given F0 and F3 consistently win at ~0.1117-0.1127 which is below my cost of capital, I cannot profitably undercut them, so I maintain my floor bid."}

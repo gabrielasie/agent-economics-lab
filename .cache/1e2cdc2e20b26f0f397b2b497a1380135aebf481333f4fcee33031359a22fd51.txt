@@ -1,0 +1,1 @@
+{"apr": 0.1155, "reasoning": "Bidding exactly at my cost of capital to win if F0 drops out while ensuring I never lose money, since the second-price mechanism means I'd be paid the second-lowest bid (or reserve) which would be above my cost."}

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "All 15 prior auctions cleared at 0.1192 APR, establishing a stable market price well above my 0.1117 cost of capital, so bidding at this proven clearing price maximizes my probability of winning while maintaining profitability."}
+```

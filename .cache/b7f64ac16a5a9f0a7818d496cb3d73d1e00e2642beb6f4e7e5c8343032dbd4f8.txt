@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "In a second-price sealed-bid auction, bidding my true cost of 0.1117 APR is the dominant strategy—it maximizes expected profit regardless of others' bids while I cannot be exploited by overbidding, since I'm paid the second-lowest price."}
+```

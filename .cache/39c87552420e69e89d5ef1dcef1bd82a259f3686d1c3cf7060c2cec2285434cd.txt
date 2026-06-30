@@ -1,0 +1,1 @@
+{"apr": 0.1117, "reasoning": "As F0, I've been winning by bidding at my cost of capital and getting paid the second-lowest bid (F3's ~0.1126-0.1127), earning a small but positive margin; I should maintain this winning strategy since the cleared rate gives me profit above my cost."}

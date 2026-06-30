@@ -1,0 +1,1 @@
+{"apr": 0.1118, "reasoning": "Bid just above my cost of capital to win against F0's apparent pattern of bidding around 0.1126, since in a second-price auction I'll be paid the second-lowest bid (likely 0.1126), earning a small margin."}

@@ -1,0 +1,1 @@
+{"apr": 0.1155, "reasoning": "My cost of capital is 0.1155, so I bid exactly at my floor to avoid losses while remaining in the auction in case lower bidders make an error or withdraw."}

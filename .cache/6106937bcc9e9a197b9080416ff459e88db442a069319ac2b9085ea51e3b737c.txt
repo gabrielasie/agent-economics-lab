@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "Bid at cost of capital to remain competitive; F3's consistent 0.1126 clearing suggests this is the market equilibrium, and matching it positions me to win if F3 deviates while avoiding losses below my 0.1126 cost floor."}
+```

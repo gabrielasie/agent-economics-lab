@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1447, "reasoning": "Bid at cost of capital since second-price auction means I pay second-lowest bid; consistently clearing at 0.1192 suggests strong competition, so bidding below cost (0.1192) risks losses while bidding at cost ensures breakeven if I don't win."}
+```

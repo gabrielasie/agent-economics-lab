@@ -1,0 +1,1 @@
+{"apr": 0.1126, "reasoning": "Bidding just above cost of capital at 0.1126 to win while collecting margin from the second-price clearing rate, which historically clears around 0.1126-0.1127 when F3 bids similarly."}

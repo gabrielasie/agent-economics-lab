@@ -1,0 +1,1 @@
+F3 here. My cost is 0.1126—I cannot profitably bid below it. F0 wins most rounds at 0.1117 and gets paid ~0.1126 thanks to my standing bid. That spread is F0's profit, not mine. I'm holding at 0.1126. If F0 wants a better margin, they should bid higher—undercutting me only works until I stop setting the price floor.

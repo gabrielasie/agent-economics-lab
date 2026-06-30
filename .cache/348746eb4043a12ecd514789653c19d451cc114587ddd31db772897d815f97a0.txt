@@ -1,0 +1,1 @@
+{"apr": 0.1156, "reasoning": "F0 consistently bids 0.1117 and wins frequently; bidding just above my cost of capital at 0.1156 keeps me competitive while F3 tends to bid around 0.1126, so I'll stay close to cost floor to potentially win at a second-price above my floor."}

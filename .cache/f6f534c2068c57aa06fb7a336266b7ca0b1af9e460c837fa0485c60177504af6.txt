@@ -1,0 +1,1 @@
+{"apr": 0.1491, "reasoning": "The auction has converged near 0.1491, and in a second-price auction I should bid my true value (slightly above cost of capital) to win while being paid the second-lowest bid; matching the recent clearing price of 0.1491 keeps me competitive without racing further to the bottom."}

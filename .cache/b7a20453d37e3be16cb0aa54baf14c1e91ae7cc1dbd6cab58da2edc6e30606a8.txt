@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "At my cost of capital of 0.1192 APR, bidding at or above this rate ensures I break even at minimum; bidding below would be unprofitable, and all competitors have converged to 0.1192 in recent rounds, making this the competitive equilibrium."}
+```

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "All recent rounds cleared at 0.1126 which is above my cost of capital at 0.1155, but bidding at this level gives the best chance to win in a second-price auction while matching the consistent market rate."}
+```

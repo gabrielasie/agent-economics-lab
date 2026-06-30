@@ -1,0 +1,1 @@
+{"apr": 0.1126, "reasoning": "F0 consistently wins at the cost of capital floor, so bidding at 0.1126 is the dominant strategy to win while breaking even, since bidding lower loses money and bidding higher risks losing to F0."}

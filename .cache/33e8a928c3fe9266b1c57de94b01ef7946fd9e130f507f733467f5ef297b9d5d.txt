@@ -1,0 +1,1 @@
+{"apr": 0.1499, "reasoning": "Bidding just below recent clearing prices (~0.1510) to win while collecting the second-price premium, staying well above my cost of capital of 0.1447."}

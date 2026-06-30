@@ -1,0 +1,1 @@
+{"apr": 0.1155, "reasoning": "Bidding exactly at my cost of capital to stay competitive while ensuring I don't lose money, since the second-price mechanism means I'd be paid a higher rate if I win."}

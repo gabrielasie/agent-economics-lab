@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "In a second-price sealed-bid reverse auction, bidding truthfully at the clearing price is optimal; the consistent 0.1126 APR clearing price across all rounds indicates strong market consensus, and bidding at this level maximizes my chance of winning while maintaining profitability above my 0.1192 cost of capital threshold."}
+```

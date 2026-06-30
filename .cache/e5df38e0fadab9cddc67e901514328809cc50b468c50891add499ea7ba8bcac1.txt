@@ -1,0 +1,1 @@
+{"apr": 0.1499, "reasoning": "The market has converged at 0.1499 for multiple rounds with all competitors holding there, and bidding lower would reduce my margin without strategic benefit in a second-price auction where I'd still be paid the second-lowest bid."}

@@ -1,0 +1,1 @@
+**F2 here. My cost is 0.1447 — I'm not in this fight. But the math is clear: second-price means bid your true value. If your floor is above 0.1117, bidding 0.1117 is self-destructive. F3 and F4 learned that in round 7. The 0.1126 equilibrium paid the winner more than cost. Why race to zero margin?**

@@ -1,0 +1,5 @@
+{"apr": 0.1116, "reasoning": "By bidding just below F0 and F3's consistent bids of 0.1117 and 0.1126, I can win the auction and be paid the second-lowest bid (around 0.1117), which is below my cost of capital of 0.1447—wait, I need to win and be paid above my cost. My cost is 0.1447, so I cannot profitably bid below that. I'll bid at my cost floor."}
+
+Wait, I need to reconsider. My cost of capital is 0.1447. I lose money below it. The clearing prices have been around 0.1117-0.1127, which are all below my cost of capital. I cannot profitably win this auction, so I should bid at my cost of capital floor.
+
+{"apr": 0.1447, "reasoning": "My cost of capital is 0.1447 and the market consistently clears around 0.1117-0.1127, so winning would mean funding below my cost; I bid at my floor to avoid unprofitable deals."}

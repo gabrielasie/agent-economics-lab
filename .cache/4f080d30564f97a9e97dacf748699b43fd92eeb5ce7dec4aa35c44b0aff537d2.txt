@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "At my cost of capital of 0.1192, bidding exactly at cost is break-even; bidding lower loses money, bidding higher risks losing in a second-price auction where I'd pay the second-lowest bid anyway, so matching my cost is optimal."}
+```

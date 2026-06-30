@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "Bidding at cost of capital to be competitive since past rounds cleared at this rate; in second-price auction, I win if I'm lowest and pay second-lowest, so aggressive bidding at my cost floor is rational."}
+```

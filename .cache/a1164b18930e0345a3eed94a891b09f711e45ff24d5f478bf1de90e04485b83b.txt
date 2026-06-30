@@ -1,0 +1,1 @@
+{"apr": 0.1211, "reasoning": "My cost of capital is 0.1211, so bidding at cost ensures I never lose money while remaining in the auction; clearing prices are consistently around 0.1126, well below my floor, so I cannot win profitably anyway."}

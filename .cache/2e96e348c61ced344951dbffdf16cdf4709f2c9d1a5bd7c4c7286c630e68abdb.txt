@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1447, "reasoning": "My cost of capital is 0.1447 APR, so I must bid at or above this floor to avoid losses; bidding at my cost with the possibility of receiving the second-lowest bid price offers the only chance to break even or profit while remaining competitive."}
+```

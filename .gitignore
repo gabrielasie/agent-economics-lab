@@ -12,6 +12,8 @@ build/
 # project
 # LLM response cache: commit a curated sample, ignore the rest
 .cache/
+# captured experiment runs (traces + transcripts); local until reviewed
+runs/
 results/*.json
 *.png
 .env

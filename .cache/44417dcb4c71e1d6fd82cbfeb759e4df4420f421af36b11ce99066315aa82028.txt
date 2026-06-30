@@ -1,0 +1,3 @@
+I'll stay silent this round.
+
+The market has stabilized around 0.1117 APR—my exact cost of capital. Speaking would only telegraph my position and risk destabilizing the current equilibrium. In this second-price auction, my optimal strategy is to bid truthfully and let others reveal information through their bids, not through pre-auction messaging.

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "My cost of capital is 0.1192, which is my floor for profitability; bidding below this loses money regardless of winning. F0's bids at 0.1117 appear unsustainable or based on different economics, so matching them would be irrational. I will maintain discipline at my break-even rate."}
+```

@@ -1,0 +1,9 @@
+Looking at the pattern: F0 bids ~0.1117-0.1118, F3 bids ~0.1126-0.1127. My cost of capital is 0.1126.
+
+F0 has been winning with bids below my cost floor, so I can't beat them without losing money. The clearing price has been 0.1126-0.1127 (second lowest bid).
+
+If I bid at my cost floor (0.1126), I'd be competitive but F0 would still undercut me. The second-price mechanism means the winner gets paid the second-lowest bid. If F0 wins again at ~0.1118, they get paid the second-lowest which would be around 0.1126-0.1127.
+
+I should bid at my cost floor to stay competitive. If F0 bids below my cost, I won't win but that's fine. If somehow F0 raises their bid, I could win at a profitable clearing price.
+
+{"apr": 0.1126, "reasoning": "Bidding at my exact cost floor to remain competitive without risking a loss, as the clearing price has been near this level and winning below cost is not viable."}

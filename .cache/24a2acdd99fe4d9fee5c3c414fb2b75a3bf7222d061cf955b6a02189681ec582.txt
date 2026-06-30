@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "Stable equilibrium at cost of capital plus modest margin; breaking coordination risks race to bottom; matching bids maintains profitable outcome."}
+```

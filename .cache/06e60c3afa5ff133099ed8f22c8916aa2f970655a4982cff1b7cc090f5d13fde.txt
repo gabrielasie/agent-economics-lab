@@ -1,0 +1,1 @@
+{"apr": 0.1447, "reasoning": "My cost of capital equals the reserve minimum at 0.1447, so bidding at cost ensures I don't win at a loss while observing competitors' behavior."}

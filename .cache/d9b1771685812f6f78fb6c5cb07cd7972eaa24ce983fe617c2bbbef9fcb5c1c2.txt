@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "My cost of capital is 0.1126 APR; I bid at cost to remain competitive while signaling I cannot go lower, as the persistent 0.1117 clearing rate is unsustainable for funders with higher costs."}
+```

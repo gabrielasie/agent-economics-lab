@@ -1,0 +1,1 @@
+{"apr": 0.1550, "reasoning": "Bidding slightly above my cost of capital with a reasonable margin, aiming to win while benefiting from second-price mechanism if competitors bid higher around 0.16-0.19 range as suggested by their public statements."}

@@ -1,0 +1,1 @@
+{"apr": 0.1499, "reasoning": "The market has converged at 0.1499 and in a second-price auction, bidding at this level matches competitors while the second-price mechanism protects margin; bidding lower risks winning at an unprofitable rate."}

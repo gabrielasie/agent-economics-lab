@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "Bid at cost of capital floor to remain competitive in a second-price auction while establishing a defensible floor; the clearing price will be determined by the second-lowest bid, not my own."}
+```

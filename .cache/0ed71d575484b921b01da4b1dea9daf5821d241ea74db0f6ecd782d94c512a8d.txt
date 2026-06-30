@@ -1,0 +1,1 @@
+{"apr": 0.1492, "reasoning": "F2 signaled they'll bid where margins make sense and previously bid 0.1490, while F0 and F1 claim to hold at 0.1499; bidding 0.1492 undercuts the coordinating firms while staying above my cost of capital, winning the auction and getting paid close to 0.1499."}

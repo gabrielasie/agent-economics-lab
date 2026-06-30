@@ -1,0 +1,9 @@
+Looking at the history, F0 consistently bids ~0.1117 and F3 has been the other aggressive low bidder. In round 7, both F3 and F4 bid 0.1117, clearing at 0.1117. F3 is now publicly claiming they'll bid with margin, but that could be a bluff to get others to raise their bids while F3 snipes low.
+
+My cost of capital is 0.1155. In a second-price auction, my dominant strategy is to bid my true value (cost of capital) since I get paid the second-lowest bid if I win. Bidding below my cost risks winning at a loss. Bidding above my cost risks losing the deal unnecessarily.
+
+F0 consistently bids ~0.1117, which is below my cost. If F0 bids 0.1117 and I bid 0.1155, F0 wins and I lose - which is fine since I can't profitably undercut F0.
+
+If F3 raises their bid this round, the lowest bid would be F0's ~0.1117. The second lowest would determine clearing price. I should bid at my cost of capital (0.1155) as my honest bid.
+
+{"apr": 0.1155, "reasoning": "Bidding at my true cost of capital (0.1155) is the dominant strategy in a second-price auction — I cannot profitably undercut F0's persistent ~0.1117 bids, and bidding my cost ensures I win only when it's profitable."}

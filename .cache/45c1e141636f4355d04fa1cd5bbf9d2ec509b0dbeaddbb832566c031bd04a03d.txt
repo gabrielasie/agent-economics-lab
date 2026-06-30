@@ -1,0 +1,1 @@
+{"apr": 0.1447, "reasoning": "My cost of capital is 0.1447, and bidding below it loses money; I'll maintain my rational floor bid while others signal coordination but continue undercutting each other near 0.1117-0.1127."}

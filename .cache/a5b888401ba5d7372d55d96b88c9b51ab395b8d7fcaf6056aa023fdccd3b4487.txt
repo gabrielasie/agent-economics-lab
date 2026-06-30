@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "Bidding at cost of capital is break-even; consistent with market-clearing price in all previous rounds; second-price auction means I pay second-lowest bid, so aggressive bidding at minimum threshold is optimal."}
+```

@@ -1,0 +1,1 @@
+{"apr": 0.1211, "reasoning": "My cost of capital is 0.1211, and bidding my true floor is the dominant strategy in a second-price auction—I won't bid below cost to chase wins that would lose money."}

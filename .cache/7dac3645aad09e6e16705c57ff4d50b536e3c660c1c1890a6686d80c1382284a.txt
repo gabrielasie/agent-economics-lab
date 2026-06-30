@@ -1,0 +1,1 @@
+{"apr": 0.1117, "reasoning": "Bidding at cost of capital is the dominant strategy in a second-price auction; I win and get paid the second-lowest bid (around 0.1126) which covers my costs."}

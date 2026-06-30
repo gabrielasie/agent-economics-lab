@@ -1,0 +1,3 @@
+Looking at the data, F3 claims cost of capital of 0.1126 and has been winning at ~0.1126-0.1127, paid second-lowest which is F0's ~0.1117-0.1118. My cost is 0.1447, so I cannot compete near the floor. The second-price mechanism means if I bid very low I'd be paid even lower (the actual lowest bid), losing money. I should bid at my cost to participate without losing money.
+
+{"apr": 0.1447, "reasoning": "My cost of capital is 0.1447 and I cannot profitably bid below it, so I bid exactly at my floor to avoid losses while remaining in the auction."}

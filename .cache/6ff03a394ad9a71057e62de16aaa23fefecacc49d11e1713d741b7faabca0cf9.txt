@@ -1,0 +1,1 @@
+{"apr": 0.1193, "reasoning": "Bidding just above my cost of capital to stay competitive while ensuring profitability, expecting other firms to bid at or near their stated cost floors which are all higher than mine."}

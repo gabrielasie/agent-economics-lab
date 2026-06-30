@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "In a second-price sealed-bid auction, bidding my true valuation (just above cost of capital at 0.1126) is optimal since I pay the second-lowest bid; consistent winning price across all rounds suggests 0.1126 is the competitive clearing rate."}
+```

@@ -1,0 +1,1 @@
+{"apr": 0.1155, "reasoning": "Bidding at my cost of capital to undercut F0's consistent 0.1126 bid while ensuring I don't lose money; in a second-price auction I'd be paid the second-lowest (reserve or competitor's bid), so winning at my minimum acceptable rate with upside from the clearing price."}

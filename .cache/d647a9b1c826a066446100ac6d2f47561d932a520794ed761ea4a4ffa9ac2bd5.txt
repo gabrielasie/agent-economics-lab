@@ -1,0 +1,9 @@
+Looking at the history, F0 consistently bids 0.1117 (at or near cost floor), F3 bids around 0.1126, and F4 around 0.1155. The cleared price is typically 0.1126 (second lowest).
+
+My cost of capital is 0.1192. If I bid below 0.1192, I lose money. The public messages suggest coordination above 0.1150, but F0 keeps bidding 0.1117 and F3 keeps bidding ~0.1126, so they'll likely win regardless.
+
+In a second-price auction, I should bid my true value (or slightly above cost) to potentially win at the second-price. But if F0 bids 0.1117 and F3 bids 0.1126, the cleared price would be 0.1126 if I win (since I'd be lowest and second lowest would be 0.1126). But 0.1126 < 0.1192, so I'd lose money.
+
+I cannot profitably win this auction unless I bid very aggressively (below cost), which I won't do. The best strategy is to bid my true cost of capital or slightly above, accepting that I likely won't win but won't lose money if I do somehow win.
+
+{"apr": 0.1192, "reasoning": "Bidding at my cost of capital floor since I cannot profitably undercut F0/F3 who bid below my cost, and the second-price would be below my breakeven in any scenario where I win."}

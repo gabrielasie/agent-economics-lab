@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "In this second-price sealed-bid auction, bidding at the market-clearing rate of 0.1126 APR (consistently cleared for 18 rounds) is optimal since I'll be paid the second-lowest bid, and this rate exceeds my 0.1192 cost of capital threshold, but matching the established competitive rate maximizes my chance of winning while other bidders likely bid similarly."}
+```

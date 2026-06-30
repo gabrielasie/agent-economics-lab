@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "In a second-price sealed-bid reverse auction, bidding my cost of capital is optimal as it's the breakeven point; if I win, I'll be paid the second-lowest bid which should be at or above 0.1192 given the consistent clearing price history, and if I lose, I avoid losses below my cost of capital."}
+```

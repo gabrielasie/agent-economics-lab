@@ -1,0 +1,1 @@
+{"apr": 0.1183, "reasoning": "F0 has consistently won at 0.1192, suggesting they bid just below that cleared price; I'll bid slightly below 0.1192 to win while staying above my cost of capital, aiming to be paid the second-lowest APR (likely near 0.1192)."}

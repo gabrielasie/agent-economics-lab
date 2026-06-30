@@ -1,0 +1,1 @@
+{"apr": 0.1117, "reasoning": "As F0, my cost of capital is exactly 0.1117, so I bid at my floor to remain competitive for the win while the second-price rule should deliver a clearing price around 0.1126 based on historical patterns."}

@@ -1,0 +1,1 @@
+{"apr": 0.1548, "reasoning": "Bidding just below the previous clearing price of 0.1550 to win the auction while maximizing margin, as second-price means I'd be paid a higher rate if competitors bid near their prior levels."}

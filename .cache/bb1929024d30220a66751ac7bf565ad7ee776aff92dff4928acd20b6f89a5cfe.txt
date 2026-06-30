@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1155, "reasoning": "Bid at my cost of capital to maintain zero-margin breakeven while signaling I won't participate in value-destructive below-cost bidding; the second-price mechanism means I'll be paid whatever the next-lowest bid is, so competitive pressure is already incorporated."}
+```

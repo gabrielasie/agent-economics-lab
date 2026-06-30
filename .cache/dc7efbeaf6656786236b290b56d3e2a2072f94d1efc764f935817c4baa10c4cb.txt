@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1155, "reasoning": "My cost of capital is 0.1155 APR; bidding below this loses money, and F3's consistent 0.1126 wins show they have lower costs, so I bid my true floor and accept the second-price mechanics."}
+```

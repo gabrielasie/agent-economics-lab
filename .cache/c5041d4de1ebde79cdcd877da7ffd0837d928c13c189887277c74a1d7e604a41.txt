@@ -1,0 +1,1 @@
+{"apr": 0.1118, "reasoning": "Bid just above my cost of capital to win and collect the spread if F0 bids around 0.1126 as the second-price payment."}

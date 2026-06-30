@@ -1,0 +1,1 @@
+{"apr": 0.1118, "reasoning": "Bid just above my cost of capital to undercut F0's apparent bid of ~0.1126, winning the auction and getting paid the second-lowest price (F0's ~0.1126), yielding a small positive margin."}

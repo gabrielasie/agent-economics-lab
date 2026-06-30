@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "Bid at cost of capital since this is a second-price auction where winning at the clearing rate of 0.1126 would be unprofitable, so bidding truthfully at my reservation price maximizes expected value."}
+```

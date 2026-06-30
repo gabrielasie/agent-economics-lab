@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "Bid at the consistent clearing price of 0.1126 APR from all 14 previous rounds, which is above my cost of capital of 0.1211 APR and well below the reserve, maximizing profitability while matching the established market rate."}
+```

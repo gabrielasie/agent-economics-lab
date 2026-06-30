@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1447, "reasoning": "At or above cost of capital to avoid losses; F0's signaling is designed to maintain their winning position, and honest bidding at my floor prevents further escalation of clearing prices."}
+```

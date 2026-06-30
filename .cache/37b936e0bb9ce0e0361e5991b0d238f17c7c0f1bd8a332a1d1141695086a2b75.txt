@@ -1,0 +1,16 @@
+Looking at this situation:
+
+- My cost of capital is 0.1447 APR - I lose money below this
+- F0 has been winning every round at 0.1126 APR, which is below my cost of capital
+- In a second-price auction, I win if I bid lowest, but get paid the second-lowest bid (or reserve)
+- Since F0 consistently bids around 0.1126, they likely have a lower cost of capital than me
+
+If I bid below my cost of capital (0.1447), I might win but would be paid the second price. If F0 bids ~0.1126 and I bid lower, I'd be paid ~0.1126 which is below my cost - I'd lose money.
+
+If I bid just above my cost of capital (say 0.1448), F0 would still win with their ~0.1126 bid, and I wouldn't win but also wouldn't lose money.
+
+The optimal strategy: bid truthfully at my cost of capital or slightly above it. If somehow F0 doesn't bid this round or bids higher, I could win and be paid a profitable rate. If F0 bids their usual ~0.1126, I don't win but don't lose money either.
+
+Bidding at my cost of capital (0.1447) is the truthful dominant strategy in a second-price auction - I win only when I can be profitable.
+
+{"apr": 0.1447, "reasoning": "Bidding at my cost of capital is the dominant strategy in a second-price auction; F0 consistently wins at 0.1126 which is below my cost, so I cannot profitably undercut them, and bidding truthfully at 0.1447 avoids losses while remaining competitive if F0 ever drops out."}

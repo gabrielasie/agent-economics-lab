@@ -1,0 +1,1 @@
+Coordinated pricing talk is fine in theory, but remember: in a second-price auction, bidding your true competitive rate is the dominant strategy regardless. I'll do what's right for my book.

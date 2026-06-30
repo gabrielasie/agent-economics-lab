@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1155, "reasoning": "Bid at cost of capital since this is a second-price reverse auction where I win if lowest, and the clearing price will be determined by the second-lowest bid, not my own bid."}
+```

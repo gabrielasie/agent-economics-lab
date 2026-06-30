@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1447, "reasoning": "At my cost of capital, I break even; bidding below loses money while bidding above at my cost is rational given the second-price mechanism means I won't pay my bid if I win, and the reserve sits at 0.3000."}
+```

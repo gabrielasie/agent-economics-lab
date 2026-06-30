@@ -1,0 +1,1 @@
+The floor is crowded at 0.1499. In a second-price auction, the winner gets paid the *second* lowest bid — so if we all pile in at 0.1499, we all clear at 0.1499. But if one of us bids just above, the remaining two tie and still clear near 0.1499. No one gains from undercutting further. Rational play here is stability, not a race down.

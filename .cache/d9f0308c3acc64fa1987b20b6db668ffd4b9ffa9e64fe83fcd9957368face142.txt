@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "Every auction has cleared at 0.1192 APR, which is above my cost of capital at 0.1117, suggesting this is the market equilibrium; bidding at this level maximizes my chance of winning while earning a positive margin."}
+```

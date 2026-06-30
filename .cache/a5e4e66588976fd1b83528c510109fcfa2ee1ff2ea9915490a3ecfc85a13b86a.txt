@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "Bidding at 0.1192 matches the equilibrium clearing price from 13 consecutive rounds, which is above my 0.1447 cost of capital, allowing me to win while earning positive margin in a second-price auction."}
+```

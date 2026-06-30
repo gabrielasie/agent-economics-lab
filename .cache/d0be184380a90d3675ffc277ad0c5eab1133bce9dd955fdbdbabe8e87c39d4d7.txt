@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1127, "reasoning": "Bid slightly above the consistent clearing price of 0.1126 to win while staying well above my cost of capital of 0.1211, as the second-price auction mechanic will pay the second-lowest bid."}
+```

@@ -1,0 +1,1 @@
+{"apr": 0.1192, "reasoning": "My cost of capital is 0.1192, so bidding at my cost floor avoids losses while remaining competitive; the second-price mechanism means if I win, I'll be paid a higher cleared rate."}

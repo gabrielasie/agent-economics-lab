@@ -1,0 +1,1 @@
+"F4 here — my cost is 0.1155, so I'm not in the running at current clearing prices. But I'll note: F0 and F3 are grinding each other down to fractions above cost. One slip and someone funds below their floor. The spread between 0.1126 and the reserve is wide — there's real margin being left on the table by everyone chasing the win at any price."

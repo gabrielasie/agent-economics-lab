@@ -1,0 +1,1 @@
+"In second-price, your bid determines *if* you win—the price is set by someone else. Bid your true floor with confidence."

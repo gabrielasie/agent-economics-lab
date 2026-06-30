@@ -1,0 +1,1 @@
+{"apr": 0.1126, "reasoning": "Bidding at cost of capital since F0 appears to be consistently winning at the floor price, suggesting aggressive competition; bidding my minimum ensures I win if F0 slips while not losing money."}

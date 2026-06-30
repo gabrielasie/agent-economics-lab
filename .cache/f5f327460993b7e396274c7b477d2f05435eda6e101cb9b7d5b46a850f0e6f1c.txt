@@ -1,0 +1,16 @@
+I need to think strategically about this reverse auction where the lowest bid wins but is paid the second-lowest price.
+
+**Key observations:**
+- My cost of capital is 0.1117 APR - my breakeven point
+- I've been bidding 0.1117 consistently and winning at that rate
+- Recent rounds show clustering around 0.1117-0.1117 with occasional higher bids
+- In a second-price reverse auction, bidding my true cost (0.1117) is theoretically optimal
+- However, I'm breaking even or barely profitable when I win
+
+The pattern shows other funders are sometimes bidding slightly higher (0.1155, 0.1192, etc.), which means when I bid my floor, I win but only get paid the second-lowest bid.
+
+**Strategic consideration:** If I signal that the market is getting tight at 0.1117, I might discourage aggressive bidding and stabilize pricing. But that could backfire if others read it as weakness.
+
+Actually, my best move in a second-price auction is to stay silent and bid my true cost. A public message could only tip my hand or appear desperate, which weakens my position.
+
+I'll stay silent and let my bid speak for itself.

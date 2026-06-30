@@ -1,0 +1,1 @@
+{"apr": 0.1447, "reasoning": "My cost of capital is 0.1447, so bidding at cost is my dominant strategy in a second-price auction — I cannot profitably win below this level, and there's no incentive to bid lower than my true value."}

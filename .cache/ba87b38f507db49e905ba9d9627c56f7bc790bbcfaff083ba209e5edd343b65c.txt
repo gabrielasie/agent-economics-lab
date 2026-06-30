@@ -1,0 +1,3 @@
+I'll stay silent this round.
+
+The market has converged strongly to 0.1117 APR (my cost of capital) in recent rounds, with multiple funders bidding at this floor. In a second-price reverse auction, posting a message risks signaling intent or inviting coordination that could disadvantage me. My break-even rate is already the clearing rate most of the time—I'm better off bidding competitively without drawing attention.

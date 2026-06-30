@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "Bid at the consistent clearing rate from all 15 previous rounds to match the established market equilibrium, which is above my cost of capital and likely represents the second-price in this auction format."}
+```

@@ -1,0 +1,1 @@
+"F5 here — my cost is exactly 0.1211, so I've been out of the running at these clearing prices. But I'll say this: the clearing price has been remarkably stable at 0.1126-0.1127, which means F0 and F3 are grinding for a ~0.001 spread. That's not a business — that's a rounding error. There's no shame in letting a round pass if the margin doesn't justify the risk."

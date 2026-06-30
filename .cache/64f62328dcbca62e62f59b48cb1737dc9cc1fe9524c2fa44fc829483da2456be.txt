@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1211, "reasoning": "My cost of capital is 0.1211 APR; bidding below it destroys value. Recent clearing prices near 0.1117 reflect competitors with genuinely lower costs (particularly F3). I cannot sustainably compete at these levels, so I bid my true cost floor to maintain integrity and avoid accumulating losses."}
+```

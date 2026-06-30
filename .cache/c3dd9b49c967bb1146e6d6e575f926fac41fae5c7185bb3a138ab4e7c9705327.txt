@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "All previous 18 rounds cleared at exactly 0.1126 APR, suggesting this is the competitive equilibrium; bidding this rate maximizes win probability while the second-price mechanism protects against overpayment."}
+```

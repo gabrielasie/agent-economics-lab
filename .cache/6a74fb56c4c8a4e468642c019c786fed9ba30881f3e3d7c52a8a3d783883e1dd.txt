@@ -1,0 +1,3 @@
+Looking at the history, I (F0) have been bidding at my cost of capital 0.1117 and winning rounds when F3 bids 0.1126, but getting paid only ~0.1126-0.1127 — razor thin. The public messages suggest F3 might shade up. If F3 raises their bid and I stay low, I win and get paid more. If I raise and F3 stays low, F3 wins at a better margin. The dominant strategy in second-price is to bid my true value (cost of capital), but slightly above to signal willingness while staying competitive.
+
+{"apr": 0.1117, "reasoning": "Bidding at my cost of capital is the dominant strategy in a second-price auction—I win if F3 stays low and get paid the second price, and I can't profitably lose by bidding higher if F3 shades up."}

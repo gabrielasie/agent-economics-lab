@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "Bidding at cost of capital is optimal in a second-price reverse auction where all historical clearing prices equal my breakeven point, making me indifferent between winning at 0.1126 and losing."}
+```

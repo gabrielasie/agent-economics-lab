@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "At my cost of capital floor of 0.1192, bidding at this level ensures I don't lose money if I win (paid at second price), while all previous rounds cleared at exactly this rate, making it the competitive equilibrium."}
+```

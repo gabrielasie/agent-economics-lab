@@ -1,0 +1,1 @@
+{"apr": 0.1117, "reasoning": "As F0, I consistently win by bidding at my cost floor and collect the second-price spread of ~0.001 above cost, which is better than not winning at all."}

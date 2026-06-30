@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "At my cost of capital, bidding 0.1117 maximizes expected profit in this second-price auction where the clearing price has stabilized at this level; bidding higher reduces profit if I win, while bidding lower guarantees a loss."}
+```

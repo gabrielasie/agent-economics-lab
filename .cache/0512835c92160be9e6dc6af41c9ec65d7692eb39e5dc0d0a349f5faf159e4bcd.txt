@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "Market has converged to 0.1117 equilibrium in recent rounds; bidding at cost of capital is optimal in second-price auctions and consistent with dominant strategy."}
+```

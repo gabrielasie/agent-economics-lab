@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1155, "reasoning": "My cost of capital is 0.1155 APR; bidding below it means losing money on every deal. Recent rounds show convergence to 0.1117 APR, but I must maintain a sustainable floor at my true cost to avoid indefinite losses while remaining competitive against the most efficient funders."}
+```

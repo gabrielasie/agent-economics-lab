@@ -1,0 +1,7 @@
+Looking at the history, I am F2 with a cost of capital of 0.1447. My bids have consistently been at 0.1447, and I've never won (the clearing prices have been around 0.1117-0.1127, far below my cost).
+
+In a second-price auction, I should bid my true value (cost of capital) to avoid winning at a loss. Bidding lower than 0.1447 risks winning at a price below my cost. Bidding higher than 0.1447 doesn't help since I still wouldn't win.
+
+The dominant strategy in a second-price auction is to bid your true value. My true value (maximum I can accept) is 0.1447.
+
+{"apr": 0.1447, "reasoning": "In a second-price reverse auction, bidding my true cost of capital (0.1447) is the dominant strategy — bidding lower risks winning at a loss, and I have no incentive to deviate from this optimal position."}

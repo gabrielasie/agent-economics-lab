@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1447, "reasoning": "My cost of capital is 0.1447, so bidding below this causes losses; bidding at cost captures no margin but avoids losses, and in a second-price auction I only pay the second-lowest bid, so I bid my true cost of capital to remain competitive."}
+```

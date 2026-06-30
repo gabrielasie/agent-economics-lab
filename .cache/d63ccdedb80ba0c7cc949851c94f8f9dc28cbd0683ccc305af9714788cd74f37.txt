@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1211, "reasoning": "My cost of capital is 0.1211 APR; bidding above it guarantees losses, so I bid at cost to remain competitive while avoiding negative margins, accepting that the second-price mechanism will clear near 0.1117 APR based on established market patterns."}
+```

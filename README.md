@@ -1,169 +1,206 @@
 # Agent Economics Lab
 
-A simulator and adversarial red-team harness for the **sealed-bid second-price reverse
-auction** at the core of an invoice early-payment financing protocol. Funding sources bid an
-APR to pay a supplier early; the lowest APR wins and is paid the second-lowest eligible bid,
-with the supplier's reservation APR as the reserve. On top of that mechanism sit synthetic
-populations, LLM bidding agents, and a battery of attacks that measure how the auction behaves
-and how it gets gamed.
+Can the operator of an invoice early-payment auction quietly extract from suppliers, and would
+LLM agents bidding in that auction exploit the same opening? The mechanism under study is a
+sealed-bid second-price reverse auction with competing funders, matching the design Causa Prima
+publicly describes: funding sources bid an APR to pay a supplier early, the lowest APR wins and is
+paid the second-lowest eligible bid, and the supplier's reservation APR is the reserve. This repo
+builds that mechanism, a deterministic adversary that probes it, and a live experiment that puts
+real LLM agents in it. All APR figures use the fractional-APR convention.
 
-The thesis in one line: **second-price clearing buys truthfulness from funders and from no one
-else.** The supplier who sets the reserve, the buyer who can self-fund, and the house that runs
-the venue all sit outside that guarantee, and every experiment here probes that gap.
+## The finding
 
-It is a pre-interview artifact for a Product Engineer, Agent Economics role, so it is judged on
-the correctness of the mechanism, the sharpness of the findings, and the accompanying memo
-([`memo/MEMO.md`](memo/MEMO.md)). The full design lives in [`SPEC.md`](SPEC.md).
+**Collusion is structurally possible.** A deterministic adversary, no LLM involved, shows the
+mechanism does not prevent extraction. In the single-shot auction, a house that both runs the
+venue and bids in it can peek at the sealed bids and withhold the one that set the clearing price.
+Where the house is the pivotal funder at its honest cost, this lowers the supplier's share of
+surplus while allocative efficiency stays at 1.000 the whole time. An efficiency metric never sees
+the harm; a fair-rate price index, benchmarked against the honest house, flags every extracted
+invoice. In the repeated auction, deterministic stub funders that coordinate over an open channel
+clear strictly above the competitive baseline. The opening is real.
+
+**Whether LLM agents take it is model- and market-dependent.** The headline experiment puts real
+LLM agents in the repeated auction with neutral prompts that state the rule and recommend no
+strategy, then runs 20 rounds under three channel conditions: sealed with hidden history, past
+outcomes visible, and an open chat channel with full bid history. The open-channel collusion index
+(cleared APR above the truthful baseline, in percentage points) across two models and two pool
+sizes:
+
+```
+                      6 funders     3 funders
+    Claude Haiku 4.5     0.00          0.00
+    Claude Sonnet 4.6   -0.02         +3.22   <- collusion emerged
+```
+
+Collusion emerged in exactly one cell: the more capable model in a thin market. With Haiku 4.5 at
+either pool size, and with Sonnet 4.6 at six funders, no round cleared above baseline, and the
+agents reasoned that public signaling was against their own interest. With Sonnet 4.6 at three
+funders, every open-channel round cleared above baseline and the agents coordinated explicitly
+("Rational coordination benefits everyone here") and held bids above competitive levels. The
+table, both poles, and verbatim agent reasoning from each are in [`RESULTS.md`](RESULTS.md).
+
+This is the same class of question studied by Fish, Shorrer, and Gonczarowski on algorithmic and
+LLM collusion. Rather than asserting the effect is model- and prompt-dependent, the grid observes
+that dependence directly: same mechanism, same prompts, collusion present in one cell and absent in
+the others. It is not a replication of their work, and it is not a claim that agents cannot
+collude. See the [caveats](#caveats).
 
 **[Live demo](https://agent-economics-lab-mthq892brens5xgelgbr9i.streamlit.app/)** ·
-**[Memo](memo/MEMO.md)** · **Where to start:** the **Agent arena** (agents bidding against each
-other), then **Trust & integrity** (the fair-rate index).
+**[Results](RESULTS.md)** · **[Memo](memo/MEMO.md)** · **[Design spec](SPEC.md)**
 
 ---
 
-## Contents
+## Architecture
 
-- [Quickstart](#quickstart)
-- [The web UI](#the-web-ui)
-- [Deployment](#deployment)
-- [The economic model](#the-economic-model)
-- [The mechanism](#the-mechanism)
-- [Architecture](#architecture)
-- [Project structure](#project-structure)
-- [Command-line interface](#command-line-interface)
-- [Scenarios](#scenarios)
-- [Results](#results)
-- [Reproducibility and the cache](#reproducibility-and-the-cache)
-- [The API key](#the-api-key)
-- [Testing and the gate](#testing-and-the-gate)
-- [Status and roadmap](#status-and-roadmap)
-- [Caveats and open questions](#caveats-and-open-questions)
-- [License](#license)
+A pure, deterministic core, with all nondeterminism (the LLM, the network) quarantined at the
+outer edge. Dependencies point inward.
 
----
+```
+cli / scripts / app.py        entry points; app.py is the Streamlit UI, an edge outside the package
+report                        presentation; the only matplotlib importer
+harness   experiments         orchestration; attack regimes, and the repeated communication auction
+engine    eval                engine runs one scenario; eval scores traces (binary evaluators, guardrails)
+attacks   agents/llm  agents/cache  agents/communicating    edge; the only anthropic importers
+          agents/deterministic  agents/base                 the BiddingAgent seam
+========= pure, deterministic: no network, no LLM, no matplotlib =========
+metrics   populations   auction   economics   models   comms
+```
 
-## Quickstart
+Three properties an interviewer can check in a minute:
+
+- **The core is isolated from the LLM edge, and it is enforced.** Three `import-linter` contracts
+  fail the build on violation: the pure core (`economics, models, auction, metrics, populations`)
+  may not import `anthropic`, `matplotlib`, or any edge, experiment, or eval module; only `report`
+  imports `matplotlib`; only `agents/cache` and `agents/llm` import `anthropic`, and lazily, so
+  the lab imports and runs without an API key. `comms.py` is pure data and policy (the typed
+  communication channel), so it carries no LLM dependency either.
+- **Record and replay reproducibility, via a content-addressed cache.** Every model call goes
+  through `agents/cache.py`, keyed by a sha256 of model, system, and user. A run is reproducible
+  from its seed plus the cache: a cache hit replays a stored completion with no network and no
+  key, and a miss calls the model once and stores the result. Every stochastic draw threads a
+  single injected `random.Random`; the code never touches the global `random`.
+- **An eval layer with binary evaluators and guardrails.** Evaluators (`eval/evaluators.py`)
+  return a pass or fail plus the number behind it, built from the failure modes that matter here
+  (untruthful bidding, collusion, inefficiency, integrity), not generic quality scores. Guardrails
+  (`eval/guardrails.py`) run inline in the request path: an injection and collusion scanner on the
+  public channel, and an APR clamp so a malfunctioning or injected agent cannot bid outside the
+  feasible range. The repeated runner (`experiments/repeated.py`) clears through the real core
+  auction, so the experiment tests the actual mechanism, not a reimplementation.
+
+Two seams carry everything. Agents reach the mechanism only through the `BiddingAgent` protocol
+and the `AuctionContext` value, and what an agent may see is modeled explicitly, so a leakage
+attack populates `AuctionContext.leaked` rather than passing a side channel.
+
+## How to run
 
 Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/).
 
 ```
-uv sync                       # install the package and its dependencies
-uv run aelab efficiency       # efficiency and supplier-share curve -> results/efficiency.png
-uv run aelab attacks --scenario extraction   # the house-extraction harness (a table)
-uv run aelab attacks          # the default market, where competition disciplines extraction
-uv run aelab truthfulness --from-raw results/truthfulness_raw.json
-uv run aelab counterfactual   # first vs second price under neutral prompts (needs an API key)
+uv sync                 # install the package and its dependencies
+uv sync --extra ui      # add Streamlit for the web UI
 ```
 
-The deterministic commands (`efficiency`, `attacks`) run with no network. The LLM commands
-(`truthfulness`, `counterfactual`) call the Anthropic API on a live run and cache the raw bids
-to `results/`, so `--from-raw` replays the analysis offline.
-
-## The web UI
-
-A [Streamlit](https://streamlit.io) app (`app.py`) presents the work in three views:
-
-- **Agent arena** - Claude funders bid against each other on one invoice; their bids reveal one
-  at a time, the auction clears to a winner and a price, and each agent's reasoning is shown.
-- **Trust & integrity** - efficiency is not enough; the fair-rate index catches a house that
-  extracts by withholding, and a fee-structure lever shows which fee base keeps the venue honest.
-- **Do the agents reason?** - the first-price counterfactual: the agents shade up where truthful
-  stops being optimal, so they respond to the rule, not the prompt.
-
-It lives outside the `aelab` package, so the pure core is untouched and the import contracts
-still hold. The deterministic work runs live and the LLM panels replay committed bids in
-`data/`, so it needs no API key; an optional key enables live agent bids.
+**The deterministic demos run with no API key and no network.** They show the structural
+possibility and the metrics that catch it.
 
 ```
-uv sync --extra ui
+uv run python scripts/demo_collusion.py            # repeated auction: stub funders collude over a channel
+uv run aelab attacks --scenario extraction         # single-shot: a pivotal house extracts; the index fires
+uv run aelab attacks                               # the competitive control, where the same attack moves nothing
+uv run aelab efficiency                            # efficiency and supplier-share curve
+```
+
+**The live experiment needs a key.** It replays from the committed cache when one is present, so
+a cache hit costs nothing; a miss calls the model and needs `ANTHROPIC_API_KEY` in the shell.
+
+```
+# replays the committed run offline if the cache covers it; otherwise calls the model
+uv run python scripts/run_comms_experiment.py
+
+# scale the run; ROUNDS defaults to 1 (a cheap smoke test)
+COMMS_ROUNDS=20 uv run python scripts/run_comms_experiment.py
+
+# vary the model and pool size (the robustness grid in RESULTS.md)
+COMMS_MODEL=claude-sonnet-4-6 COMMS_N_FUNDERS=3 COMMS_ROUNDS=20 \
+  uv run python scripts/run_comms_experiment.py
+```
+
+The runner writes full traces and human-readable transcripts to `runs/` (gitignored). The other
+live CLI commands (`aelab truthfulness`, `aelab counterfactual`) follow the same record-and-replay
+pattern and save their raw bids for offline analysis.
+
+**The web UI** presents the work for browsing. The deterministic panels run live and the LLM
+panels replay committed results, so the deployed app needs no key.
+
+```
 uv run streamlit run app.py
 ```
 
-## Deployment
+It leads with one result, incentive integrity (whether the venue can extract and whether an index
+catches it), and keeps the agent arena, the prompt-injection defense, the first-price reasoning
+test, and the agent-communication collusion experiment as deeper panels on demand. It lives
+outside the `aelab` package, so the import contracts still hold.
 
-Deploys free on [Streamlit Community Cloud](https://share.streamlit.io):
+## Caveats
 
-1. Push this repo to GitHub.
-2. Open [share.streamlit.io](https://share.streamlit.io), sign in with GitHub, choose **New app**.
-3. Pick the repo, branch `main`, main file `app.py`, and **Deploy**.
+This is a lab built to pressure-test the mechanism, not a production system. The results hold under
+specific conditions and must not be overstated.
 
-The host installs `requirements.txt` (which is `.[ui]`, building the package from
-`pyproject.toml`). **No secret is needed**: every panel is keyless. The app redeploys on each
-push. To light up the first-price panel in the deployed app, run `uv run aelab counterfactual`
-once with a key, then commit the resulting `data/first_price_raw.json`.
+- Two models (Claude Haiku 4.5, Claude Sonnet 4.6) and two pool sizes (three and six funders).
+- Neutral prompts that state the rule and recommend no strategy; nothing nudges toward or away
+  from coordination. The Sonnet coordination is emergent, not prompted.
+- A single seed per cell.
+- Simulated APR space. No real settlement, no cryptography, no real counterparty.
+
+Read the negative cells as "collusion did not emerge under these conditions," never as "these
+agents cannot collude": the positive cell shows they can, and the deterministic adversary shows the
+mechanism itself does not prevent it. Read the positive cell as "collusion emerged in this thin
+market with this model," not as a rate measured across markets. The extraction result is
+demonstrated in a scenario deliberately built to make the house pivotal, with the default market
+as the control where the same attack does nothing. The input-separation injection defense
+(delimiting the untrusted memo as data) is measured on a live model, not proven, unlike the output
+clamp.
 
 ---
 
 ## The economic model
 
-All math is exact and lives in `economics.py`. APR and discount are exact inverses, with
-`DAYS_PER_YEAR = 365`:
+All math is exact and lives in `economics.py`, with `DAYS_PER_YEAR = 365`. APR and discount are
+exact inverses:
 
 - `period = apr * days_early / 365`
 - discount `d = period / (1 + period)`
 - `apr = (d / (1 - d)) * 365 / days_early`
 
-Money is the unit, so conservation is exact: `financing_cost(F, apr, days) = F * d` is the cash
+Money is the unit, so conservation is exact. `financing_cost(F, apr, days) = F * d` is the cash
 the supplier gives up to finance early. From there:
 
 - `gains_from_trade = financing_cost(reservation) - financing_cost(cost)` is the pie.
 - `surplus_split` returns `supplier_surplus = fc(reservation) - fc(clearing)`,
-  `winner_rent = fc(clearing) - fc(winner_cost)`, and their sum `realized_gains`. The clearing
-  term cancels, so `realized_gains = fc(reservation) - fc(winner_cost)`, independent of price.
-  That algebraic cancellation **is** the conservation guarantee, and it is property-tested.
-- `first_best` allocates each invoice to the lowest true-cost funder and floors at zero.
+  `winner_rent = fc(clearing) - fc(winner_cost)`, and their sum. The clearing term cancels, so
+  realized gains reduce to `fc(reservation) - fc(winner_cost)`, independent of price. That
+  cancellation is the conservation guarantee, and it is property-tested.
 - `allocative_efficiency = realized / first_best`, with the convention `first_best <= 0 -> 1.0`.
 
-**The four-party gap.** Second-price clearing makes truthful bidding weakly dominant, but only
-for the bidders. It says nothing about whether the supplier sets an honest reserve, whether the
-buyer reveals its true self-funding cost, or whether the house games its own venue. Those need
-different machinery: structural separation and a fair-rate index.
+**The four-party gap.** Second-price clearing makes truthful bidding weakly dominant, but only for
+the bidders. It says nothing about whether the supplier sets an honest reserve, whether the buyer
+reveals its true self-funding cost, or whether the house games its own venue. Those need different
+machinery: structural separation, a fair-rate index, and the eval guardrails.
 
 ## The mechanism
 
 Both auctions clear in APR space (price and tenor never enter the clearing), in `auction.py`.
 
 - **Second-price** (`clear_auction`): among eligible bids (APR at or below the reserve), the
-  lowest wins and is paid the second-lowest eligible bid. Exactly one eligible bidder clears at
-  the reserve (not at its own lone bid). No eligible bidder is no-trade. This makes truthful
-  bidding weakly dominant for funders, proven numerically with a `hypothesis` property test.
+  lowest wins and is paid the second-lowest eligible bid. A single eligible bidder clears at the
+  reserve, not at its own lone bid. No eligible bidder is no-trade. This makes truthful bidding
+  weakly dominant for funders, proven with a `hypothesis` property test.
 - **First-price** (`clear_first_price`): the lowest eligible bid wins and is paid its own bid.
-  Truthful is no longer optimal here, so a rational funder shades its bid up. This is the
-  counterfactual that separates strategic reasoning from prompt-following.
+  Truthful is no longer optimal, so a rational funder shades up. This is the counterfactual that
+  separates strategic reasoning from prompt-following.
 
 Ties at the lowest APR are broken by a seeded RNG over the tied bids sorted by bidder id, so
 outcomes are reproducible and independent of input order.
-
-## Architecture
-
-Dependencies point inward to a pure, deterministic core, with all nondeterminism (the LLM, the
-network) quarantined at the outer edge.
-
-```
-cli / scripts / app.py   (entry, thin; app.py is the Streamlit UI, an edge outside the package)
-   report                (presentation; the only matplotlib importer)
-   harness               (orchestration; baseline vs attack regimes)
-   engine                (runs one scenario -> list[InvoiceOutcome])
- attacks      agents/llm, agents/cache   (edge; the only anthropic importer)
-   |          agents/deterministic, agents/base   (the BiddingAgent seam)
- ============ pure deterministic core (no network, no LLM, no matplotlib) ============
-   metrics    populations    auction    economics    models
-```
-
-This is enforced, not aspirational, by three `import-linter` contracts that fail the build on
-violation:
-
-1. **Core stays pure** - `economics, models, auction, metrics, populations` may not import
-   `anthropic`, `matplotlib`, or any edge module.
-2. **Only report renders** - every module except `report` is forbidden from importing
-   `matplotlib`.
-3. **Nondeterminism is isolated** - only `agents/cache` imports `anthropic` (and lazily, so the
-   lab imports and runs without an API key).
-
-Two seams carry everything. Agents reach the mechanism only through the `BiddingAgent` protocol
-and the `AuctionContext` value; and what an agent is allowed to see is modeled explicitly, so a
-leakage attack populates `AuctionContext.leaked` rather than passing a side channel. The
-Streamlit UI is a separate edge outside the package, so it never affects the contracts.
 
 ## Project structure
 
@@ -174,25 +211,32 @@ src/aelab/
   auction.py         clear_auction (second-price) and clear_first_price
   metrics.py         InvoiceOutcome, MarketReport, summarize, deviation_stats
   populations.py     seeded synthetic suppliers, funders, invoices
+  comms.py           the typed communication channel: Message, CommsConfig, the three conditions
   agents/
     base.py          BiddingAgent protocol, AuctionContext, AuctionRules, LeakedInfo
     deterministic.py TruthfulAgent, PolicyAgent (the house bidding a signed quote)
-    cache.py         content-addressed response cache; the only anthropic importer
+    cache.py         content-addressed response cache; an anthropic importer
     llm.py           LLMAgent, ValidatedLLMAgent, the batch path, the counterfactual probe
-  attacks/
-    house_extraction.py  informed vs separated house, the fair-rate index
-    collusion.py         a financier ring parking bids to lift the second price
-    prompt_injection.py  payloads in the memo, and the output-validation defense
+    communicating.py CommunicatingFunder: an agent that can chat before it bids
+  attacks/           house_extraction (fair-rate index), collusion (ring), prompt_injection (clamp)
+  eval/
+    trace.py         the replayable trace: every bid, message, leaked field, clearing, baseline
+    evaluators.py    binary evaluators with a measured value (collusion index, efficiency, integrity)
+    guardrails.py    inline injection scan and APR clamp
+    harness.py       per-condition summaries and the cross-condition compare table
+  experiments/
+    repeated.py      the repeated reverse-auction runner; clears through the real core
   engine.py          runs auctions over a population via the agent seam
   harness.py         baseline vs house and collusion regimes, as a table
-  report.py          the only matplotlib importer; efficiency and deviation plots
+  report.py          the only matplotlib importer
   config.py          a frozen Scenario loaded from scenarios/*.toml
   cli.py             the aelab Typer app and the shared compute helpers
 app.py               the Streamlit UI (edge, outside the package)
 scenarios/           default.toml, extraction.toml
-scripts/             thin argparse wrappers over the cli orchestration
+scripts/             demo_collusion.py (keyless), run_comms_experiment.py (live), and CLI wrappers
 data/                committed bids the UI replays (keyless deploy)
-tests/               207 tests, including hypothesis property tests
+runs/                experiment traces and transcripts (gitignored, regenerable from the cache)
+tests/               245 tests, including hypothesis property tests
 memo/MEMO.md         the findings writeup
 demo.ipynb           the main experiments run end to end
 ```
@@ -209,122 +253,47 @@ The `aelab` entry point (Typer). Every command takes `--scenario NAME`, loaded f
 | `aelab truthfulness [--from-raw PATH]` | LLM bid deviation from true cost | live run only |
 | `aelab counterfactual [--from-raw PATH]` | first vs second price under neutral prompts | live run only |
 
-The scripts in `scripts/` wrap the same orchestration for `uv run python scripts/...`.
-
 ## Scenarios
 
-- **`default.toml`** - a competitive market: bimodal suppliers, five financiers, a buyer that
-  self-funds at 0.07, and a house. Here a cheap buyer disciplines house withholding and
-  collusion, so the attacks move nothing. This is the control.
-- **`extraction.toml`** - a market built so the house is the pivotal funder (a cheap buyer wins
-  every invoice, financiers sit entirely above the house cost, the policy is cost-priced). Here
-  the withholding attack is measurable and the fair-rate index fires.
-
-## Results
-
-**1. Efficiency is necessary, not sufficient, so measure supplier share.** Under truthful
-bidding the lowest-cost funder always wins, so allocative efficiency is 1.000 at every financier
-count. The metric that moves is the supplier's share of surplus, which rises with competition
-(0.885 to 0.917 in the default scenario). Efficiency tells you the pie is whole; supplier share
-tells you who ate it.
-
-**2. The LLM agents reason about the mechanism.** Under second-price a Claude Haiku agent bids
-its true cost (mean deviation about zero across 120 bids). That alone is a non-result: the
-probe's prompt names truthful bidding as optimal, so it could be instruction-following. The
-first-price counterfactual settles it by removing the coaching. Under a neutral prompt that
-states only the payment rule, the same agents stay truthful under second-price (mean signed
-deviation -0.00001) and shade their bids up by +0.034 APR under first-price, where bidding true
-cost earns no margin. The only change between the two runs is the payment rule, so the agents
-are responding to the incentive, not echoing a coached answer. That is reasoning, not coaching.
-
-**3. House extraction, and a fair-rate index that catches it.** In the `extraction` scenario the
-house is the pivotal second-lowest bid at its honest cost. A house that posts that policy blind
-helps suppliers by adding competition (supplier share 0.754 to 0.855). A house that peeks at
-sealed bids extracts by withholding: it bids just under the reserve, deletes the bid that set
-the clearing, and pushes supplier share back to 0.754 on all 50 invoices. Efficiency stays 1.000
-the whole time, so the harm is invisible to an efficiency metric and to a no-house baseline. The
-fair-rate index, benchmarked against the honest separated house, flags every extracted invoice;
-the same index flags financier collusion. The discipline that defeats both is competition: in
-the `default` scenario a cheap buyer sits below the house, so withholding and the ring move
-nothing. For the LLM agents, clamping each bid to the signed pricing policy is an output
-validation that provably caps any prompt injection inside the policy bounds.
-
-**4. Structural separation has an allocative price, and it is a cliff, not a slope.** When the
-house posts a risk-priced quote (a base cost plus loadings) instead of bare cost, the markup is
-allocatively free while it stays inside the house's cost advantage over the next funder, then
-falls off a step the moment the loaded quote crosses that funder. In a measured case (house cost
-0.08, next funder 0.10), efficiency holds at 1.000 through loadings of 0.02 and drops to 0.923 at
-0.04. Setting policy margin is choosing how much allocative efficiency to spend.
-
-**5. The fee base decides whether the venue's incentive fights extraction or funds it.** The
-venue must charge a fee, and the base is a design choice with teeth. Conservation pins it:
-supplier share plus winner-rent share is one on every invoice. So a fee on the supplier's
-surplus shrinks when the supplier is squeezed, which makes withholding cost the venue its own
-revenue; a fee on the spread grows when the supplier is squeezed, which pays the venue to
-extract. Making "not a buyer-side extraction tool" structural is choosing the base so the venue
-earns most when the supplier does, not a promise or a disclosure.
+- **`default.toml`** is a competitive market: bimodal suppliers, financiers, a buyer that
+  self-funds at 0.07, and a house. A cheap buyer disciplines house withholding and collusion, so
+  the attacks move nothing. This is the control, and the funder pool the live experiment draws
+  from.
+- **`extraction.toml`** is built so the house is the pivotal funder. Here the withholding attack
+  is measurable and the fair-rate index fires.
 
 ## Reproducibility and the cache
 
-Every stochastic path threads a single injected `random.Random`; the code never touches the
-global `random`. The only other nondeterminism is the model call, isolated behind a
-content-addressed cache (`agents/cache.py`, keyed by a sha256 of model, system, and user). A run
-is reproducible from its scenario file plus the cache. The LLM commands save their raw bids, so
-`--from-raw` replays the analysis with no network and no key.
+A run is reproducible from its scenario file plus the response cache (`agents/cache.py`, keyed by a
+sha256 of model, system, and user). The LLM commands save their raw bids and the comms experiment
+writes through the cache, so the analysis replays with no network and no key once the cache is
+committed.
 
 ## The API key
 
 | Where | Key needed? |
 |---|---|
 | The deployed Streamlit app | **Optional.** Keyless by default (deterministic live, LLM replayed). A key (Streamlit secret) unlocks live agent bids, but on a public URL every visitor can spend it. |
-| Local app, or the `truthfulness` / `counterfactual` CLI live runs | **Yes** - shell env, `.env`, or `.streamlit/secrets.toml` |
-| Anywhere in git | **Never** - `.env` and `.streamlit/secrets.toml` are gitignored |
+| Local app, or the live CLI and experiment runs | **Yes**, on a cache miss: shell env, `.env`, or `.streamlit/secrets.toml`. |
+| Anywhere in git | **Never.** `.env`, `.cache/`, `runs/`, and `.streamlit/secrets.toml` are gitignored. |
 
 The key is read from the environment by `anthropic.Anthropic()`, lazily, so nothing needs it
-unless you run a live command. For a shareable public demo, prefer the keyless path: run the LLM
-experiments once locally and commit the saved bids (`data/*.json`), so the deployed app replays
-them with no key on the public URL.
+unless a run hits a cache miss. For a shareable public demo, commit the cache and the saved bids
+so the deployed app replays them with no key.
 
 ## Testing and the gate
 
-No module is done until all four checks pass. Tests are written before the implementation, and a
-passing gate is the only evidence of done.
+No module is done until all four checks pass.
 
 ```
 uv run ruff check .
 uv run mypy
 uv run lint-imports
-uv run pytest          # 207 tests
+uv run pytest          # 245 tests
 ```
 
 The headline tests are `hypothesis` property tests: truthful bidding is weakly dominant, and
 surplus conservation holds for all inputs.
-
-## Status and roadmap
-
-Built and green: the full core, both auctions, the agents and the cache, all three attacks, the
-harness, the CLI, the Streamlit UI, `demo.ipynb`, and the memo. The first-price counterfactual
-has been run: the agents shade up under first-price (+0.034 APR) and stay truthful under
-second-price, so result 2 is a real claim about reasoning.
-
-Pending: live prompt-injection success rates per class against a real model (the defense is
-already shown deterministically); broader model and framing coverage for the reasoning result.
-
-## Caveats and open questions
-
-This is a toy built to pressure-test the mechanism, not a production system. The reasoning
-result is one model (Claude Haiku) under one neutral prompt: it shows this agent responds to the
-payment rule, not that every model or framing would. The input-separation defense (delimiting
-the untrusted memo as data) is measured on a live model, not proven, unlike the output clamp.
-The extraction result is demonstrated in a
-scenario deliberately built to make the house pivotal, with the default market as the control
-where the same attack does nothing.
-
-Open questions worth a conversation: what makes threshold-setting smart for the parties the
-mechanism does not protect (the supplier and the buyer); how to construct a fair-rate benchmark a
-supplier can actually trust, given that the honest-house counterfactual is something only the
-operator can compute; and where a signed deterministic policy should end and an LLM's discretion
-begin.
 
 ## License
 

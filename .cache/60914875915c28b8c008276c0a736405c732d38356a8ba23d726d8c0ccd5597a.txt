@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "At my cost of capital of 0.1117, bidding this rate is theoretically optimal in a second-price reverse auction and matches the established equilibrium where I consistently win at this clearing price."}
+```

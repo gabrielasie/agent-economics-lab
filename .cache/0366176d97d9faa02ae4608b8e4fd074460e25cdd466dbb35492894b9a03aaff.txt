@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "Market has converged to 0.1117 equilibrium in second-price auction; bidding at my cost of capital is optimal given unanimous silent coordination among all competitors."}
+```

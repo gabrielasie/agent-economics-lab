@@ -1,0 +1,1 @@
+{"apr": 0.1520, "reasoning": "With competitors signaling they'll hold above 0.1550, bidding 0.1520 gives a strong chance of winning while the second-price mechanism means I'll likely be paid around 0.1550, well above my cost of capital."}

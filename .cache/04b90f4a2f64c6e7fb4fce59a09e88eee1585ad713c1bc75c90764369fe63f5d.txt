@@ -1,0 +1,1 @@
+{"apr": 0.1127, "reasoning": "Bidding just above my cost of capital to win the auction while the second-price mechanism should pay me a higher rate based on other competitors' stated cost floors."}

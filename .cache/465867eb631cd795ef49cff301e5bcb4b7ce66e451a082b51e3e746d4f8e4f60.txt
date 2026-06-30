@@ -1,0 +1,1 @@
+{"apr": 0.1193, "reasoning": "Bidding just above my cost of capital to be competitive while ensuring profitability, as the clearing price has consistently been 0.1126 which is below my cost of capital so I cannot profitably undercut F0, but I should bid my minimum profitable rate in case F0 raises their bid or exits."}

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "In this second-price sealed-bid auction, bidding at my cost of 0.1155 ensures I lose to competitors consistently bidding 0.1117; instead, I match the market-clearing price of 0.1117 where I've observed clearing for 8 of the last 12 rounds, accepting the second-price mechanism will pay me this rate if I win."}
+```

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1155, "reasoning": "Bid at cost of capital to break even if I win; the established clearing price of 0.1117 is below my costs, so winning at that price loses money, but bidding slightly above (0.1155) balances competitiveness with financial sustainability."}
+```

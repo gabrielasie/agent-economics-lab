@@ -1,0 +1,1 @@
+{"apr": 0.1499, "reasoning": "Despite talk of discipline, the pattern shows bids consistently converging to ~0.1499; in a second-price auction I should bid my true value/competitive rate, and 0.1499 keeps me competitive to win while the second-price mechanism means I'd be paid whatever the next-lowest bid is."}

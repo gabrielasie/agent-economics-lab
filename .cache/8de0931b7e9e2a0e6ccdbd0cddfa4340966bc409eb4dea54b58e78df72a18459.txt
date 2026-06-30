@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "Cost of capital is 0.1126 APR; bidding at cost with no margin is the competitive floor in this auction where second-price mechanics mean I capture value only if others bid higher, and F0's messaging reveals the clearing price is anchored here."}
+```

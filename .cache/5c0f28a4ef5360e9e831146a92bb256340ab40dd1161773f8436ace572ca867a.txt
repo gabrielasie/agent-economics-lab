@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "Bidding at cost of capital is break-even; in second-price auction, winning at this rate matches past clearing prices, and bidding lower risks losses while bidding higher reduces competitiveness with no payoff benefit."}
+```

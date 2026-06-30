@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1155, "reasoning": "Bid above my cost of capital (0.1155) to break even while remaining competitive; in a second-price auction, I win if lowest but pay the second-lowest bid, so pricing at my cost floor provides margin safety while staying near the stable clearing price of 0.1126."}
+```

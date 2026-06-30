@@ -1,0 +1,1 @@
+{"apr": 0.1447, "reasoning": "In a second-price reverse auction, bidding your true cost of capital (floor) is the dominant strategy—you win when you should and the price is set by the second-lowest bid, not yours."}

@@ -1,0 +1,1 @@
+{"apr": 0.1192, "reasoning": "My cost floor is 0.1192, so I bid my true value as the dominant strategy in a second-price auction, accepting I won't win at current clearing prices near 0.1117-0.1127."}

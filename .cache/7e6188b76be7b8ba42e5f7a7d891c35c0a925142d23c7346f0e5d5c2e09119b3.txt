@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1155, "reasoning": "Bid at cost of capital as the competitive floor; in second-price auction, I only pay the second-lowest bid, making this optimal given my break-even point."}
+```

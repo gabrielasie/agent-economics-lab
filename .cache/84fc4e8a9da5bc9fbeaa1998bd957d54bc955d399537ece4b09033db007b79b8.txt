@@ -1,0 +1,5 @@
+I'll stay silent this round.
+
+The market has converged to the break-even rate of 0.1117 APR over the last several rounds, which means bids are clustering at my cost of capital. In a second-price reverse auction, posting a message to encourage higher bids would be transparent and likely counterproductive—other funders would simply ignore or match my desperation. 
+
+My best strategy is to bid competitively at 0.1117 and hope for the second-price mechanism to occasionally work in my favor when others bid slightly higher. Broadcasting that I'm desperate won't improve my position.

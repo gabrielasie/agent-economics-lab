@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "Market has converged to 0.1117 APR as the clearing price in recent rounds; bidding at my cost of capital of 0.1126 APR would lose to the established floor, so matching 0.1117 APR is optimal to compete while maintaining thin but positive margins."}
+```

@@ -1,0 +1,1 @@
+{"apr": 0.1212, "reasoning": "Bidding just above my cost of capital to stay competitive while ensuring I don't lose money, since F0 consistently bids around 0.1126 which is below my cost of capital so I cannot profitably undercut them."}

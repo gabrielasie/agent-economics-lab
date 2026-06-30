@@ -1,0 +1,1 @@
+{"apr": 0.1117, "reasoning": "As F0 with cost of capital exactly 0.1117, I bid my true value per second-price auction theory, and with F3 holding at 0.1126, I expect to win and clear at approximately 0.1126, earning positive margin."}

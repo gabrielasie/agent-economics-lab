@@ -1,0 +1,1 @@
+{"apr": 0.1448, "reasoning": "Bid just above my cost of capital to remain competitive while ensuring any win is profitable, since in a second-price auction I'd be paid the second-lowest bid which should be higher than my cost."}

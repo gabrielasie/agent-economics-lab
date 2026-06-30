@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "Bid at cost of capital where I break even; in second-price reverse auction, this is optimal strategy, and recent rounds show 0.1117 consistently clears as the winning rate."}
+```

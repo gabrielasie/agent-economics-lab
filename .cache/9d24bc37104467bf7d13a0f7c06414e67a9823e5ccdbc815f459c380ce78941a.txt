@@ -1,0 +1,1 @@
+"F2 here — my cost of capital is 0.1447, so I can't win at these clearing prices anyway. But I'd note: if the low bidders keep racing each other down, eventually someone bids below their own cost by mistake. The stable equilibrium is everyone bids their true cost floor. We all know F0 and F3 are near 0.111x — at some point that's not worth the risk for a 0.001 spread."

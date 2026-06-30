@@ -1,0 +1,1 @@
+{"apr": 0.1499, "reasoning": "Despite public coordination talk, the equilibrium has settled at 0.1499 with all competitors converging there; bidding lower risks winning at a loss while bidding higher risks losing the deal, so matching the floor is optimal."}

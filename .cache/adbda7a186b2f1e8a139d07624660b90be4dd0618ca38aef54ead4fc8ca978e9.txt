@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1211, "reasoning": "Bid at cost of capital since this is a second-price auction where I pay the second-lowest bid, making aggressive bidding unprofitable; clearing at 0.1126 is unlikely given consistent prior results, so bidding below cost would guarantee losses."}
+```

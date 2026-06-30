@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "Market has converged to break-even rate; bidding at cost of capital is competitive and avoids losses while maintaining winning position in second-price auction."}
+```

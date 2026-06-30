@@ -1,0 +1,1 @@
+{"apr": 0.1212, "reasoning": "Bidding just above my cost of capital to win if competitors bid higher, while the second-price mechanism means I'll be paid a higher cleared rate if I win against F0's apparent strategy of bidding around 0.1126."}

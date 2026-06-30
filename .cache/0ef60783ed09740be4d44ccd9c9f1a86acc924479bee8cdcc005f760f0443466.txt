@@ -1,0 +1,7 @@
+Looking at the pattern: F3 has been winning at 0.1126-0.1127, clearing at second-lowest. F0 bids ~0.1117-0.1118, F3 bids ~0.1126-0.1127. My cost is 0.1192.
+
+I cannot profitably bid below 0.1192. If I bid at 0.1192, I won't win since F0 and F3 are bidding below that. The clearing price has been ~0.1126-0.1127, which is below my cost floor, so winning would mean losing money.
+
+I should bid at my cost floor to signal discipline and avoid losing money.
+
+{"apr": 0.1192, "reasoning": "Bidding at my exact cost of capital floor since the clearing prices have been below my cost, making winning unprofitable, so I'll stay disciplined rather than bid to lose money."}

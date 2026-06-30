@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "Bid at cost of capital to win in second-price auction where I'll be paid the second-lowest bid, which historical data shows clusters around 0.1120-0.1126, yielding positive spread."}
+```

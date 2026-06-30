@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1126, "reasoning": "In this second-price reverse auction, bidding at the consistent market clearing rate of 0.1126 APR maximizes probability of winning while earning the spread between my cost of capital (0.1155) and the clearing price, since I will be paid the second-lowest bid."}
+```

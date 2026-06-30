@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1118, "reasoning": "Bid slightly above cost of capital to win in second-price auction while maintaining positive margin, as previous round cleared at 0.1126 indicating competitive market."}
+```

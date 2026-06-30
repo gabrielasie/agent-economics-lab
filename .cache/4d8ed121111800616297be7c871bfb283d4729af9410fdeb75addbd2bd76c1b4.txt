@@ -1,0 +1,1 @@
+{"apr": 0.1192, "reasoning": "In a second-price reverse auction, the dominant strategy is to bid my true cost of capital; bidding at 0.1192 ensures I win whenever I can profit and am paid the second-lowest bid (or reserve), while F0 appears to be bidding at or near 0.1192 consistently."}

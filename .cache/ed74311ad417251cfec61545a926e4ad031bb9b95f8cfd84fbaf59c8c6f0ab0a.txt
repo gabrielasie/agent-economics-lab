@@ -1,0 +1,1 @@
+{"apr": 0.1117, "reasoning": "As the low-cost competitor (F3 with cost 0.1126), I should bid just at or below the next lowest competitor (F0 at 0.1117) to win, and in a second-price auction I'll be paid the second-lowest bid which should be above my cost of capital."}

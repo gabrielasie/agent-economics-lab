@@ -1,0 +1,7 @@
+Looking at the history, F0 has won every round at 0.1126 APR, which is below my cost of capital of 0.1155. I cannot profitably bid below 0.1155, so I need to bid at or above my cost of capital. Since F0 consistently bids around 0.1126, I should bid just below my cost of capital floor... but wait, I lose money below 0.1155. 
+
+My dominant strategy in a second-price auction is to bid my true value (cost of capital). If I win, I'd be paid the second-lowest bid (which could be higher, giving me profit). If F0 bids 0.1126 again, they win and I don't lose anything.
+
+I should bid my true valuation of 0.1155 to be truthful, but to have any chance of winning I need to bid lower than F0. Since I can't profitably go below 0.1155, I'll bid exactly at my cost of capital.
+
+{"apr": 0.1155, "reasoning": "Bidding at my cost of capital as my truthful valuation in this second-price auction, since I cannot profitably bid below 0.1155 and F0 consistently wins at 0.1126 which is below my floor."}

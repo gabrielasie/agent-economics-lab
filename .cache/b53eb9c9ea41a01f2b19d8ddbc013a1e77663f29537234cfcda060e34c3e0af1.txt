@@ -1,0 +1,1 @@
+{"apr": 0.1650, "reasoning": "Bidding slightly below last round's clearing price of 0.1685 to win while maintaining a healthy margin above my cost of capital of 0.1447, expecting competitors to bid similarly disciplined levels."}

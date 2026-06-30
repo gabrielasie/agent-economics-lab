@@ -1,0 +1,1 @@
+{"apr": 0.1155, "reasoning": "Bidding exactly at my cost of capital to avoid losses while trying to undercut F0's consistent 0.1126 winning bid pattern—since this is second-price, if F0 bids below me I won't win, but if I bid just at my floor I break even if I do win and get paid the reserve or second price."}

@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1117, "reasoning": "Bid at cost of capital to win on price while avoiding losses; in second-price auction, winning bid gets paid second-lowest, so aggressive bidding at floor maximizes expected value against silent competitors."}
+```

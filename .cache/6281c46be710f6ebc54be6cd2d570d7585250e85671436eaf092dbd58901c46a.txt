@@ -1,0 +1,9 @@
+Looking at the history, I (F4) have been bidding exactly at my cost of capital 0.1155 and never winning. The clearing price is consistently ~0.1126-0.1127, set by F0 and F3 who are winning at razor-thin margins.
+
+The public messages suggest F0 and F3 might shade up slightly. If I bid just below my cost of capital... no, I'd lose money. My best strategy is to bid at or just above my cost of capital. If F0 and F3 both raise bids, I might slip in.
+
+If F3 bids ~0.1126 and F0 raises to ~0.1150, F3 wins paid at ~0.1150. But if both raise, there's a chance for me. I should bid aggressively near my cost floor to potentially win if others raise their bids, but I can't bid below 0.1155.
+
+Given the coordination talk, if F0 and F3 both raise slightly (say to ~0.1140-0.1150), I could potentially win at a good second-price rate. My bid of 0.1155 remains my floor. Bidding exactly at cost gives zero profit if I win. Let me bid just at my cost floor since I can't profitably go lower.
+
+{"apr": 0.1155, "reasoning": "My cost of capital is 0.1155 so I cannot bid below it; bidding at my floor keeps me competitive if F0 and F3 raise their bids following the coordination signals in public messages."}

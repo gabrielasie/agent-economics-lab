@@ -1,0 +1,3 @@
+```json
+{"apr": 0.1192, "reasoning": "Market equilibrium has stabilized at 0.1192 APR across 10 consecutive rounds with all three competitors converging to this rate; bidding at this level maximizes expected payoff in the second-price auction while maintaining the stable outcome."}
+```
