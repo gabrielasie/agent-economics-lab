@@ -97,6 +97,9 @@ forbidden_modules = [
     "aelab.engine",
     "aelab.harness",
     "aelab.report",
+    "aelab.comms",
+    "aelab.eval",
+    "aelab.experiments",
 ]
 
 [[tool.importlinter.contracts]]
@@ -113,6 +116,9 @@ source_modules = [
     "aelab.attacks",
     "aelab.engine",
     "aelab.harness",
+    "aelab.comms",
+    "aelab.eval",
+    "aelab.experiments",
 ]
 forbidden_modules = ["matplotlib"]
 
@@ -125,5 +131,8 @@ source_modules = [
     "aelab.attacks",
     "aelab.engine",
     "aelab.harness",
+    "aelab.comms",
+    "aelab.eval",
+    "aelab.experiments",
 ]
 forbidden_modules = ["anthropic"]
