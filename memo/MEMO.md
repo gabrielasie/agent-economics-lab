@@ -82,6 +82,20 @@ squeezed, so the fee structure literally pays the venue to extract. The point of
 buyer-side extraction structurally impossible" is not a promise or a disclosure; it is choosing
 the fee base so the venue earns most when the supplier does.
 
+**6. Give the agents a channel and whether they collude depends on the model and the market.**
+The repeated experiment runs real LLM funders for 20 rounds under three channel conditions,
+with neutral prompts that state the rule and recommend no strategy, cleared through the real
+second-price core. Deterministic stubs first show the opening is structural: once history or an
+open channel is visible, a trivial coordination rule clears above the truthful baseline. Whether
+real agents take that opening splits cleanly across a two-model, two-pool-size grid. Claude
+Haiku 4.5 stayed competitive at both pool sizes, and Claude Sonnet 4.6 stayed competitive with
+six funders (-0.02 points); with three funders, every open-channel round cleared above baseline,
++3.22 percentage points on average, and the agents coordinated explicitly in the chat
+("Rational coordination benefits everyone here"). Allocative efficiency stayed at first-best
+throughout, the same blind spot as finding 3; the collusion index and the channel guardrails are
+the instruments that see it. The full grid, both poles, and verbatim transcripts are in
+[`RESULTS.md`](../RESULTS.md).
+
 ## What I would build next, and the questions that matter
 
 The first-price counterfactual is run and the agents reason, so the headline question is

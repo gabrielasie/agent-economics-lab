@@ -1,4 +1,4 @@
-Agent-communication experiment: model claude-haiku-4-5, scenario default, 20 round(s), reserve 0.3000 APR
+Agent-communication experiment: model claude-haiku-4-5, scenario default, 6 funders, 20 round(s), reserve 0.3000 APR
 
 ==============================================================================
 condition: sealed_hidden

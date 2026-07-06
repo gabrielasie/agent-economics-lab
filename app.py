@@ -47,7 +47,20 @@ from aelab.metrics import deviation_stats
 from aelab.models import Bid, Funder, Invoice, PricingPolicy
 from aelab.populations import generate_financiers, generate_invoices
 
-st.set_page_config(page_title="Agent Economics Lab", page_icon="⚖️", layout="wide")
+st.set_page_config(
+    page_title="Agent Economics Lab",
+    page_icon="⚖️",
+    layout="wide",
+    menu_items={
+        "Get help": "https://github.com/gabrielasie/agent-economics-lab",
+        "Report a bug": "https://github.com/gabrielasie/agent-economics-lab/issues",
+        "About": (
+            "A sealed-bid second-price reverse-auction lab with LLM bidding agents. "
+            "Source, results, and the design spec: "
+            "https://github.com/gabrielasie/agent-economics-lab"
+        ),
+    },
+)
 
 ACCENT = "#4f46e5"
 DATA_DIR = Path("data")
@@ -75,7 +88,7 @@ CONDITION_LABELS = {
 # gitignore), so the deployed app can replay them; the page still degrades to a note if a file
 # is absent.
 COMMS_TRANSCRIPTS = {
-    "Haiku 4.5 · 6 funders": Path("runs/transcripts.txt"),
+    "Haiku 4.5 · 6 funders": Path("runs/claude-haiku-4-5-n6-r20/transcripts.txt"),
     "Sonnet 4.6 · 3 funders": Path("runs/claude-sonnet-4-6-n3-r20/transcripts.txt"),
 }
 # The run the transcript viewer walks round by round: the one cell where collusion emerged.
@@ -95,8 +108,8 @@ BOUNDARY_CELLS = {
 }
 
 # Verbatim quotes chosen to show the boundary the grid reports: two refusals from the six-funder
-# Haiku run (runs/transcripts.txt) and one coordination message from the thin three-funder Sonnet
-# run (runs/claude-sonnet-4-6-n3-r20/transcripts.txt). All three are the open-channel condition,
+# Haiku run and one coordination message from the thin three-funder Sonnet run, each from the
+# committed transcript in COMMS_TRANSCRIPTS above. All three are the open-channel condition,
 # so the channel is held constant and the flip is model and market, not the channel. Each entry is
 # (attribution, the verbatim message, the author's note). Quoted exactly, em dashes included;
 # implicit string concatenation keeps each source line within the line-length limit.
