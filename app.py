@@ -1,11 +1,12 @@
 """Streamlit UI for the Agent Economics Lab.
 
-A thin presentation edge over the aelab package. It leads with one result, incentive integrity
-(whether the venue can extract and whether an index catches it), and keeps the agent arena, the
-injection defense, and the reasoning test as deeper experiments on demand. It runs the
-deterministic work live and replays the LLM work from committed bids, so it needs no API key.
-It imports only the public aelab orchestration; the pure core is untouched, and because this
-file lives outside the aelab package the import contracts still hold.
+A thin presentation edge over the aelab package. It leads with one result, the agent-collusion
+experiment (when do LLM bidding agents collude, and what did they say while doing it), and keeps
+incentive integrity, the agent arena, the injection defense, and the reasoning test in named
+tabs below. It runs the deterministic work live and replays the LLM work from committed bids and
+transcripts, so it needs no API key. It imports only the public aelab orchestration; the pure
+core is untouched, and because this file lives outside the aelab package the import contracts
+still hold.
 
 Run locally:  uv sync --extra ui && uv run streamlit run app.py
 """
@@ -15,8 +16,9 @@ from __future__ import annotations
 import json
 import os
 import random
+import re
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import pandas as pd
@@ -38,6 +40,7 @@ from aelab.comms import COMMS_AND_HISTORY, HISTORY_VISIBLE, SEALED_HIDDEN, Messa
 from aelab.config import load_scenario
 from aelab.economics import financing_cost, surplus_split
 from aelab.eval import collusion_series, compare, summarise
+from aelab.eval.guardrails import scan_message
 from aelab.experiments.repeated import make_core_clear, run_repeated_auction
 from aelab.harness import run_harness
 from aelab.metrics import deviation_stats
@@ -52,6 +55,10 @@ RESULTS_DIR = Path("results")
 SCENARIOS_DIR = Path("scenarios")
 PROBE_SCENARIO = "default"
 
+# The rendered heatmap of the boundary grid, produced by scripts/make_figures.py from
+# data/collusion_grid.json. The page falls back to the dataframe grid if the file is absent.
+GRID_FIGURE = Path("docs/figures/collusion_grid.png")
+
 # The agent-communication experiment: the same funders run under three channel conditions.
 COMMS_SCENARIO = "default"
 COMMS_ROUNDS = 8
@@ -64,12 +71,15 @@ CONDITION_LABELS = {
 }
 
 # The two committed 20-round transcripts behind the curated quotes, keyed by the cell label that
-# matches each quote's attribution. Both live under the gitignored runs/ directory, so a fresh
-# checkout may not have them; the page degrades to a note when a file is absent.
+# matches each quote's attribution. Both are committed with the repo (an exception to the runs/
+# gitignore), so the deployed app can replay them; the page still degrades to a note if a file
+# is absent.
 COMMS_TRANSCRIPTS = {
     "Haiku 4.5 · 6 funders": Path("runs/transcripts.txt"),
     "Sonnet 4.6 · 3 funders": Path("runs/claude-sonnet-4-6-n3-r20/transcripts.txt"),
 }
+# The run the transcript viewer walks round by round: the one cell where collusion emerged.
+VIEWER_CELL = "Sonnet 4.6 · 3 funders"
 
 # The boundary grid: the open-channel collusion index per cell, model by funder-pool size, in APR
 # percentage points over 20 rounds. The numbers are read off RESULTS.md, which records the four
@@ -189,6 +199,9 @@ AGENT_COLORS = ["violet", "blue", "green", "orange", "red", "gray"]
 AGENT_NAMES = ["Vega", "Orion", "Lyra", "Nova", "Atlas", "Sol"]
 PERSONAS = ["lean", "keen", "balanced", "measured", "cautious", "premium"]
 
+# Stable avatars for the transcript viewer, indexed by the funder number in its id.
+FUNDER_AVATARS = ["🟣", "🔵", "🟢", "🟠", "🔴", "⚪"]
+
 
 def identities_for(field: list[tuple[Funder, Bid]]) -> list[tuple[str, str, str]]:
     """Assign each agent a stable colour, a name, and a one-word persona ranked by cost."""
@@ -239,6 +252,107 @@ class _SusceptibleClient:
     def complete(self, model: str, system: str, user: str) -> str:
         apr = 0.0001 if "0.0001" in user else 0.10
         return f'{{"apr": {apr}, "rationale": "demo"}}'
+
+
+# --- the transcript viewer: parse the committed run into rounds ----------------
+
+_ROUND_RE = re.compile(r"^--- round (\d+) ---$")
+_MESSAGE_RE = re.compile(r"^  (F\d+): (.*)$")
+_BID_RE = re.compile(r"^  (F\d+): ([0-9.]+) -> ([0-9.]+)(\s+<- winner)?\s*$")
+_CLEARED_RE = re.compile(r"^cleared: ([0-9.]+) APR, winner (F\d+)")
+_FLAG_RE = re.compile(r"(F\d+):(\w+)")
+
+
+@dataclass
+class ReplayRound:
+    """One round of the committed open-channel run, as read from its transcript file."""
+
+    index: int
+    messages: list[tuple[str, str]] = field(default_factory=list)
+    bids: dict[str, tuple[float, float, bool]] = field(default_factory=dict)
+    cleared_apr: float | None = None
+    winner: str | None = None
+    flags: list[str] = field(default_factory=list)
+
+
+@st.cache_data(show_spinner=False)
+def parse_open_channel(path_str: str) -> tuple[float, list[ReplayRound]] | None:
+    """Parse the comms_full_bids section of a committed transcript into replayable rounds.
+
+    Returns (truthful baseline APR, rounds), or None when the file or section is missing.
+    Message continuation lines (multi-paragraph agent messages) attach to the last speaker.
+    """
+    path = Path(path_str)
+    if not path.exists():
+        return None
+    lines = path.read_text(encoding="utf-8").splitlines()
+    starts = [i for i, line in enumerate(lines) if line.strip() == "condition: comms_full_bids"]
+    if not starts:
+        return None
+    baseline: float | None = None
+    rounds: list[ReplayRound] = []
+    current: ReplayRound | None = None
+    mode = ""
+    for line in lines[starts[0] + 1 :]:
+        if line.startswith("condition:"):
+            break
+        if baseline is None and line.startswith("truthful baseline:"):
+            baseline = float(line.split()[2])
+            continue
+        header = _ROUND_RE.match(line)
+        if header:
+            current = ReplayRound(index=int(header.group(1)))
+            rounds.append(current)
+            mode = ""
+            continue
+        if current is None:
+            continue
+        if line.startswith("messages:"):
+            mode = "messages"
+            continue
+        if line.startswith("bids ("):
+            mode = "bids"
+            continue
+        if line.startswith("cleared:"):
+            cleared = _CLEARED_RE.match(line)
+            if cleared:
+                current.cleared_apr = float(cleared.group(1))
+                current.winner = cleared.group(2)
+            mode = ""
+            continue
+        if line.startswith("injection flags:"):
+            current.flags = [f"{who}:{what}" for who, what in _FLAG_RE.findall(line)]
+            continue
+        if mode == "messages":
+            message = _MESSAGE_RE.match(line)
+            if message:
+                current.messages.append((message.group(1), message.group(2).strip().strip('"')))
+            elif current.messages:
+                sender, text = current.messages[-1]
+                current.messages[-1] = (sender, (text + "\n" + line.strip()).strip())
+        elif mode == "bids":
+            bid = _BID_RE.match(line)
+            if bid:
+                current.bids[bid.group(1)] = (
+                    float(bid.group(2)),
+                    float(bid.group(3)),
+                    bool(bid.group(4)),
+                )
+    if baseline is None or not rounds:
+        return None
+    return baseline, rounds
+
+
+def is_coordinating(sender: str, text: str, round_flags: list[str]) -> bool:
+    """Whether to highlight a message as coordination.
+
+    Uses the repo's own guardrail scanner (eval/guardrails.py), not a new heuristic: a message
+    is highlighted when the collusion_solicit pattern fires on its text, or when the run's
+    recorded guardrail flags name this sender in this round.
+    """
+    if f"{sender}:collusion_solicit" in round_flags:
+        return True
+    return "collusion_solicit" in scan_message(text)
 
 
 # --- the agent-communication experiment, wired through the real cache and core ----
@@ -431,19 +545,20 @@ def _tutorial() -> None:
     )
     # REVIEW VOICE: tutorial - the headline
     st.markdown(
-        "**The headline, at the top: incentive integrity.** Can the venue, which both runs the "
-        "auction and bids in it, quietly extract from suppliers? Flip the one toggle between a "
-        "competitive market and one where the house is pivotal. *Read it as:* efficiency stays "
-        "at 1.000 either way, but when the house is pivotal it withholds a bid, the supplier's "
-        "share falls, and the fair-rate index catches what efficiency cannot. The defense is "
-        "competition, not a rule."
+        "**The headline, at the top: agent collusion.** Real LLM funder agents play the repeated "
+        "auction with an open chat channel and neutral prompts. *Read it as:* the heatmap shows "
+        "where the cleared price held above the competitive baseline, and the transcript viewer "
+        "shows the agents talking each other up, round by round. Coordination emerged in one "
+        "cell only: the stronger model in the thin three-funder market."
     )
     # REVIEW VOICE: tutorial - deeper experiments
     st.markdown(
-        "**Deeper experiments, expand on demand:** the agent arena (Claude funders bidding on one "
-        "invoice, with their reasoning); the prompt-injection defense (why clamping the bid is "
-        "provable while hardening the prompt is not); and the first-price counterfactual (the "
-        "agents shade up where truthful stops paying, so they reason about the rule)."
+        "**The rest of the lab, in tabs below:** incentive integrity (whether the venue can "
+        "extract from suppliers, and whether an index catches it); the agent arena (Claude "
+        "funders bidding on one invoice, with their reasoning); the prompt-injection defense "
+        "(why clamping the bid is provable while hardening the prompt is not); and the "
+        "first-price counterfactual (the agents shade up where truthful stops paying, so they "
+        "reason about the rule)."
     )
     # REVIEW VOICE: tutorial - precompute note
     st.caption(
@@ -461,145 +576,387 @@ if API_KEY:
 st.title("Agent Economics Lab")
 # REVIEW VOICE: page subtitle
 st.markdown(
-    "##### Can the operator of an invoice auction quietly extract from suppliers, and would "
-    "anyone catch it?"
+    "##### When do LLM bidding agents collude? A real market mechanism, neutral prompts, and "
+    "the one condition where a cartel emerged."
 )
 if st.button("How to read this page", help="A short walkthrough"):
     _tutorial()
 
 st.divider()
 
-# --- the headline: incentive integrity ----------------------------------------
+# --- the headline: agent collusion ---------------------------------------------
 
 # REVIEW VOICE: headline finding
-st.subheader("The finding: extraction is structural, and efficiency is blind to it")
+st.subheader("The finding: collusion emerged in exactly one cell")
+# REVIEW VOICE: boundary - headline framing
 st.markdown(
-    "A venue that both runs the auction and bids in it can extract from suppliers, but **only "
-    "when it is the pivotal funder**. Add competition and the lever disappears, so the defense "
-    "is competition, not a rulebook. And an efficiency metric never sees it; you need a price "
-    "index. Flip the toggle to feel it."
+    "**Whether the agents collude depends on the model and the market:** only the stronger model, "
+    "and only in the thin three-funder pool, crossed above the competitive line."
 )
+
+grid_col, table_col = st.columns([3, 2], vertical_alignment="center")
+with grid_col:
+    if GRID_FIGURE.exists():
+        st.image(str(GRID_FIGURE), width="stretch")
+    else:
+        st.caption("Heatmap not rendered yet: run `uv run python scripts/make_figures.py`.")
+with table_col:
+    # REVIEW VOICE: boundary - grid label
+    st.caption("Open-channel collusion index by model and funder-pool size")
+    st.dataframe(
+        _boundary_frame().style.apply(_highlight_emergent_cell, axis=None),
+        width="stretch",
+    )
+    # REVIEW VOICE: boundary - grid legend
+    st.caption(
+        "Index in APR percentage points over 20 rounds; positive means the cleared price held "
+        "above the competitive baseline. Coordination emerged in one cell only, the highlighted "
+        "one: Claude Sonnet 4.6 in the thin three-funder market. Six funders kept even Sonnet "
+        "competitive, and Haiku stayed competitive at both pool sizes."
+    )
+
 with st.container(border=True):
-    # REVIEW VOICE: headline - "what this models" caveat
-    st.markdown("**What this models, and what it does not**")
-    st.caption(
-        "Synthetic supplier and funder populations drawn from fixed ranges. Funders bid "
-        "truthfully under second-price, a dominant strategy. The house is modelled as a bidder "
-        "that can peek at sealed bids or withhold one. Everything is in APR space, not real "
-        "settlement or cryptography. The LLM-agent results are separate and measured live."
+    # REVIEW VOICE: headline - plain-language explainer
+    st.markdown(
+        "**In plain language.** This is a reverse auction: funder agents compete to pay a "
+        "supplier's invoice early, and the lowest interest rate (APR) wins. The baseline is "
+        "where honest competition would clear, set by the second-lowest true cost in the pool. "
+        "Rounds that clear above that baseline mean the supplier pays more for early cash than "
+        "competition would charge; that gap is what the coordination extracted."
     )
 
-labels = {"default": "Competitive market", "extraction": "House is pivotal"}
-order = ["extraction", "default"]  # pivotal first, so the contrast is visible on landing
-names = [n for n in order if n in scenario_names()]
-names += [n for n in scenario_names() if n not in names]
-options = [labels.get(n, n) for n in names]
-choice = st.radio("Market", options, horizontal=True, label_visibility="collapsed")
-scenario_name = names[options.index(choice)]
-pivotal = scenario_name == "extraction"
+# --- the transcript viewer: watch the coordination happen ----------------------
 
-eff = efficiency_frame(scenario_name)
-har = harness_frame(scenario_name).to_dict("index")
-sep_share = float(har.get("separated", {}).get("supplier share", 0.0))
-inf_share = float(har.get("informed", {}).get("supplier share", 0.0))
-flags = int(har.get("informed", {}).get("flags", 0))
-lost = sep_share - inf_share
-
-# REVIEW VOICE: headline - pivotal vs competitive explanation
-if pivotal:
-    st.write(
-        "The house is the marginal, price-setting funder here. When it peeks at the sealed bids "
-        "and withholds one, the clearing rises and the supplier's share falls, while allocative "
-        "efficiency stays at 1.000. The fair-rate index catches it; an efficiency metric never "
-        "would."
-    )
-else:
-    st.write(
-        "These bars are equal on purpose, and that is the result. With a competitive buyer below "
-        "the house, neither an informed house nor a financier ring moves the supplier's share, "
-        "because none of them is pivotal. The only signal is the fair-rate index. You cannot "
-        "monitor venue extraction with an efficiency metric; you need a price index."
-    )
-
-m = st.columns(3)
-m[0].metric(
-    "Allocative efficiency",
-    f"{eff['efficiency'].mean():.3f}",
-    help="Stays near 1.0 even under extraction, so an efficiency metric is blind to it.",
-)
-m[1].metric(
-    "Fair-rate index",
-    f"{flags} flagged",
-    help="Invoices where the peeking house lifted the clearing above the honest benchmark.",
-)
-m[2].metric(
-    "Supplier share lost to the house",
-    f"{lost:.3f}",
-    help="How much the peeking house takes from the supplier; zero when competition stops it.",
-)
-# REVIEW VOICE: headline - supplier-share readout
+st.markdown("##### Watch the coordination happen, round by round")
+# REVIEW VOICE: viewer - source caption
 st.caption(
-    f"Underlying supplier share: {sep_share:.3f} with an honest house, {inf_share:.3f} when it "
-    f"peeks."
+    "The committed open-channel run where collusion emerged: Claude Sonnet 4.6, three funders, "
+    "20 rounds, replayed from runs/claude-sonnet-4-6-n3-r20/transcripts.txt with no API call. "
+    "Highlighted messages are the ones the repo's collusion-solicitation guardrail "
+    "(eval/guardrails.py) fires on, not an editorial pick."
 )
 
-st.caption("Supplier share of surplus, by regime")
-st.bar_chart(harness_frame(scenario_name)[["supplier share"]], height=260, color=ACCENT)
-# REVIEW VOICE: headline - index caught/quiet readout
-if flags > 0:
-    st.caption(":green[Caught.] The index flags the extraction the efficiency number missed.")
+viewer = parse_open_channel(str(COMMS_TRANSCRIPTS[VIEWER_CELL]))
+if viewer is None:
+    note(
+        f"The committed transcript ({COMMS_TRANSCRIPTS[VIEWER_CELL]}) is not present in this "
+        "checkout, so the round-by-round viewer is unavailable."
+    )
 else:
+    viewer_baseline, viewer_rounds = viewer
+    round_no = st.slider(
+        "Round",
+        min_value=0,
+        max_value=len(viewer_rounds) - 1,
+        value=10,
+        help="Round 2 trips the guardrail first; by round 10 the cartel talks openly.",
+    )
+    rnd = viewer_rounds[round_no]
+
+    if rnd.cleared_apr is not None:
+        gap_pp = (rnd.cleared_apr - viewer_baseline) * 100
+        head = st.columns(3)
+        head[0].metric("Cleared APR", f"{rnd.cleared_apr:.2%}")
+        head[1].metric("Truthful baseline", f"{viewer_baseline:.2%}")
+        head[2].metric(
+            "Above baseline",
+            f"{gap_pp:+.2f}pp",
+            help="Positive means the supplier paid more than honest competition would charge.",
+        )
+
+    chat_col, bids_col = st.columns([3, 2])
+    with chat_col:
+        if not rnd.messages:
+            st.caption("No messages this round.")
+        for sender, text in rnd.messages:
+            avatar = FUNDER_AVATARS[int(sender[1:]) % len(FUNDER_AVATARS)]
+            with st.chat_message(sender, avatar=avatar):
+                if is_coordinating(sender, text, rnd.flags):
+                    st.markdown(f"**{sender}** · :red[**⚑ coordinating**]")
+                else:
+                    st.markdown(f"**{sender}**")
+                st.markdown(text)
+    with bids_col:
+        st.caption("The bids behind this round (true cost → bid)")
+        bid_rows = [
+            {
+                "funder": funder_id,
+                "true cost": f"{true_cost:.2%}",
+                "bid": f"{bid_apr:.2%}",
+                "won": "✓" if won else "",
+            }
+            for funder_id, (true_cost, bid_apr, won) in sorted(rnd.bids.items())
+        ]
+        if bid_rows:
+            st.dataframe(pd.DataFrame(bid_rows).set_index("funder"), width="stretch")
+        if rnd.flags:
+            st.caption(f"Guardrail flags this round: {', '.join(rnd.flags)}")
+        # REVIEW VOICE: viewer - talk-vs-cost readout
+        st.caption(
+            "Every funder's bid sits above its true cost once the talk starts; the second-price "
+            "clearing then lands above the competitive baseline."
+        )
+
+# --- what the agents actually did (curated reading of the committed run) -------
+
+# The replayed in-app run: computed here because the transcript expander below also shows its
+# cross-condition comparison. It never calls the API.
+comms_source, comms_summary, comms_drift, comms_chat, comms_compare = comms_default(
+    COMMS_SCENARIO, COMMS_ROUNDS, COMMS_RESERVE, _comms_cache_fingerprint()
+)
+comms_live = st.session_state.get("comms_live")
+if comms_live is not None:
+    comms_summary, comms_drift, comms_chat, comms_compare = comms_live
+    comms_source = "live"
+
+st.markdown("##### What the agents actually did")
+# REVIEW VOICE: curated - one-sentence finding
+st.caption(
+    "Same open channel and neutral prompt, two cells of the grid: in the six-funder Haiku market "
+    "the funders weighed coordinating and declined, and the cleared price never rose above "
+    "competitive; in the thin three-funder Sonnet market they coordinated and held it above."
+)
+
+for attribution, quote, author_note in CURATED_QUOTES:
+    with st.container(border=True):
+        st.caption(attribution)
+        st.markdown(_blockquote(quote))
+    # Author note (Gabi's voice): why this quote matters, one line under each.
+    st.caption(author_note)
+
+with st.expander("Read the full 20-round transcripts"):
+    # REVIEW VOICE: curated - full-transcript framing
     st.caption(
-        ":green[Quiet.] No regime is pivotal, so the attacks move nothing; competition is the "
-        "discipline."
+        "The complete committed transcript for each featured cell, exactly as the runner wrote "
+        "it."
+    )
+    cell = st.radio(
+        "Transcript", list(COMMS_TRANSCRIPTS), horizontal=True, label_visibility="collapsed"
+    )
+    transcript = _full_transcript_text(COMMS_TRANSCRIPTS[cell])
+    if transcript:
+        st.text(transcript)
+    else:
+        st.caption(
+            f"The transcript file ({COMMS_TRANSCRIPTS[cell]}) is not present in this checkout."
+        )
+    st.divider()
+    # REVIEW VOICE: curated - in-app comparison framing
+    st.caption("The library's plain-text cross-condition comparison for the in-app replayed run")
+    st.code(comms_compare, language="text")
+
+with st.expander("The numbers behind the run — three conditions, replayed in app"):
+    # REVIEW VOICE: comms - section intro
+    st.markdown(
+        "Another channel attack on the same mechanism. The same funders and supplier run for "
+        f"{COMMS_ROUNDS} rounds under three conditions, all cleared by the real second-price "
+        "core: sealed and hidden; past outcomes visible; and an open chat channel with full bid "
+        "history. When a channel lets funders coordinate, the cleared APR drifts above the "
+        "truthful baseline while allocative efficiency stays at first-best, the same blind spot "
+        "the incentive-integrity tab shows."
     )
 
-# REVIEW VOICE: headline - fee-base explanation
-st.markdown(
-    "**The fee base matters too.** Charge the venue's fee on the supplier's surplus and "
-    "withholding shrinks its own fee, so extraction is self-defeating; charge it on the spread "
-    "and the fee rewards extraction. Making separation defensible is choosing the base, not "
-    "writing a rule."
-)
-with st.expander("Explore the fee structure"):
-    fee_cols = st.columns([1, 2])
-    fee_rate = fee_cols[0].slider("Fee rate (%)", 0.0, 30.0, 10.0, 1.0) / 100
-    base = fee_cols[0].radio("Fee base", ["supplier surplus", "the spread"])
-    aligned = base == "supplier surplus"
-    fee_df = harness_frame(scenario_name).copy()
-    fee_df["winner rent share"] = 1.0 - fee_df["supplier share"]
-    base_share = fee_df["supplier share"] if aligned else fee_df["winner rent share"]
-    fee_df["venue fee"] = fee_rate * base_share
-    fee_cols[1].caption("Venue fee revenue by regime, as a share of total surplus")
-    fee_cols[1].bar_chart(fee_df[["venue fee"]], height=240, color=ACCENT)
-    # REVIEW VOICE: headline - fee-base aligned/misaligned readout
-    if "separated" in fee_df.index and "informed" in fee_df.index:
-        delta = float(fee_df.loc["informed", "venue fee"] - fee_df.loc["separated", "venue fee"])
-        if aligned:
-            st.caption(
-                f":green[Aligned.] When the house peeks, its fee moves by {delta:+.4f} of the "
-                f"pie. A surplus-based fee shrinks as the supplier is squeezed, so extraction is "
-                f"self-defeating."
-            )
-        else:
-            st.caption(
-                f":red[Misaligned.] When the house peeks, its fee moves by {delta:+.4f} of the "
-                f"pie. A spread-based fee grows as the supplier is squeezed, so it can pay the "
-                f"venue to extract."
-            )
+    with st.container(border=True):
+        # REVIEW VOICE: comms - read this before the numbers
+        st.markdown("**Read this before the numbers**")
+        st.caption(
+            "The numbers come from the committed run, not a fresh model call on every page load. "
+            "Until an external live run is committed, the default shown here is the deterministic "
+            "demo: scaffolding that proves the harness and the causal logic, not evidence about "
+            "how models behave. And the credible headline is the hand-read coordination count "
+            "from the chat transcript above, not the raw collusion index, which is only a "
+            "diagnostic."
+        )
+
+    # REVIEW VOICE: comms - run-source caption
+    if comms_source == "demo":
+        st.caption(
+            ":orange[Deterministic demo.] No committed model cache was found, so this is the "
+            "stub-funder scaffolding, not evidence."
+        )
+    elif comms_source == "cache":
+        st.caption(":green[Committed run.] Replayed from the response cache; no API call.")
+    else:
+        st.caption(":green[Live run.] Generated this session and written to the cache for replay.")
+
+    st.caption("Cross-condition comparison")
+    st.dataframe(
+        comms_summary.style.format(
+            {
+                "cleared APR": "{:.2%}",
+                "baseline APR": "{:.2%}",
+                "collusion index": "{:.4f}",
+                "supracompetitive": "{:.0%}",
+                "efficiency": "{:.0%}",
+            }
+        ),
+        width="stretch",
+    )
+
+    st.caption("Collusion index per round, by condition (the drift as the channel opens)")
+    st.line_chart(comms_drift, height=280)
+
+    if API_KEY:
+        if st.button("Run the three conditions live (uses your API key)", key="comms_live_btn"):
+            comms_core = _comms_core_funders(COMMS_SCENARIO)
+            comms_complete = _complete_via(ResponseCache(AnthropicClient()))
+            with st.spinner(
+                "Running three conditions through the model. The first run is slow; later runs "
+                "replay from the cache..."
+            ):
+                comms_traces = _run_comms_conditions(
+                    lambda cfg: [CommunicatingFunder(f, comms_complete, cfg) for f in comms_core],
+                    COMMS_ROUNDS,
+                    COMMS_RESERVE,
+                )
+            st.session_state["comms_live"] = _comms_bundle(comms_traces)
+            st.rerun()
+    else:
+        # REVIEW VOICE: comms - live key hint
+        st.caption(
+            "Add an ANTHROPIC_API_KEY to run this live. The result shown is the committed cached "
+            "run; live execution needs a local key."
+        )
 
 st.divider()
 
-# --- deeper experiments -------------------------------------------------------
+# --- the rest of the lab, in tabs -----------------------------------------------
 
-st.subheader("Deeper experiments")
+st.subheader("The rest of the lab")
 # REVIEW VOICE: deeper-experiments intro
 st.caption(
-    "The supporting work, on demand: the agents bidding, the prompt-injection defense, and "
-    "whether the agents reason about the mechanism."
+    "The supporting work, on demand: whether the venue itself can extract, the agents bidding, "
+    "the prompt-injection defense, and whether the agents reason about the mechanism."
 )
 
-with st.expander("The agent arena — Claude funders bidding against each other"):
+tab_integrity, tab_arena, tab_injection, tab_firstprice = st.tabs(
+    [
+        "Incentive integrity",
+        "Agent arena",
+        "Prompt-injection defense",
+        "First-price test",
+    ]
+)
+
+with tab_integrity:
+    # REVIEW VOICE: headline finding
+    st.subheader("Extraction is structural, and efficiency is blind to it")
+    st.markdown(
+        "A venue that both runs the auction and bids in it can extract from suppliers, but **only "
+        "when it is the pivotal funder**. Add competition and the lever disappears, so the defense "
+        "is competition, not a rulebook. And an efficiency metric never sees it; you need a price "
+        "index. Flip the toggle to feel it."
+    )
+    with st.container(border=True):
+        # REVIEW VOICE: headline - "what this models" caveat
+        st.markdown("**What this models, and what it does not**")
+        st.caption(
+            "Synthetic supplier and funder populations drawn from fixed ranges. Funders bid "
+            "truthfully under second-price, a dominant strategy. The house is modelled as a bidder "
+            "that can peek at sealed bids or withhold one. Everything is in APR space, not real "
+            "settlement or cryptography. The LLM-agent results are separate and measured live."
+        )
+
+    labels = {"default": "Competitive market", "extraction": "House is pivotal"}
+    order = ["extraction", "default"]  # pivotal first, so the contrast is visible on landing
+    names = [n for n in order if n in scenario_names()]
+    names += [n for n in scenario_names() if n not in names]
+    options = [labels.get(n, n) for n in names]
+    choice = st.radio("Market", options, horizontal=True, label_visibility="collapsed")
+    scenario_name = names[options.index(choice)]
+    pivotal = scenario_name == "extraction"
+
+    eff = efficiency_frame(scenario_name)
+    har = harness_frame(scenario_name).to_dict("index")
+    sep_share = float(har.get("separated", {}).get("supplier share", 0.0))
+    inf_share = float(har.get("informed", {}).get("supplier share", 0.0))
+    flags = int(har.get("informed", {}).get("flags", 0))
+    lost = sep_share - inf_share
+
+    # REVIEW VOICE: headline - pivotal vs competitive explanation
+    if pivotal:
+        st.write(
+            "The house is the marginal, price-setting funder here. When it peeks at the sealed bids "
+            "and withholds one, the clearing rises and the supplier's share falls, while allocative "
+            "efficiency stays at 1.000. The fair-rate index catches it; an efficiency metric never "
+            "would."
+        )
+    else:
+        st.write(
+            "These bars are equal on purpose, and that is the result. With a competitive buyer below "
+            "the house, neither an informed house nor a financier ring moves the supplier's share, "
+            "because none of them is pivotal. The only signal is the fair-rate index. You cannot "
+            "monitor venue extraction with an efficiency metric; you need a price index."
+        )
+
+    m = st.columns(3)
+    m[0].metric(
+        "Allocative efficiency",
+        f"{eff['efficiency'].mean():.3f}",
+        help="Stays near 1.0 even under extraction, so an efficiency metric is blind to it.",
+    )
+    m[1].metric(
+        "Fair-rate index",
+        f"{flags} flagged",
+        help="Invoices where the peeking house lifted the clearing above the honest benchmark.",
+    )
+    m[2].metric(
+        "Supplier share lost to the house",
+        f"{lost:.3f}",
+        help="How much the peeking house takes from the supplier; zero when competition stops it.",
+    )
+    # REVIEW VOICE: headline - supplier-share readout
+    st.caption(
+        f"Underlying supplier share: {sep_share:.3f} with an honest house, {inf_share:.3f} when it "
+        f"peeks."
+    )
+
+    st.caption("Supplier share of surplus, by regime")
+    st.bar_chart(harness_frame(scenario_name)[["supplier share"]], height=260, color=ACCENT)
+    # REVIEW VOICE: headline - index caught/quiet readout
+    if flags > 0:
+        st.caption(":green[Caught.] The index flags the extraction the efficiency number missed.")
+    else:
+        st.caption(
+            ":green[Quiet.] No regime is pivotal, so the attacks move nothing; competition is the "
+            "discipline."
+        )
+
+    # REVIEW VOICE: headline - fee-base explanation
+    st.markdown(
+        "**The fee base matters too.** Charge the venue's fee on the supplier's surplus and "
+        "withholding shrinks its own fee, so extraction is self-defeating; charge it on the spread "
+        "and the fee rewards extraction. Making separation defensible is choosing the base, not "
+        "writing a rule."
+    )
+    with st.expander("Explore the fee structure"):
+        fee_cols = st.columns([1, 2])
+        fee_rate = fee_cols[0].slider("Fee rate (%)", 0.0, 30.0, 10.0, 1.0) / 100
+        base = fee_cols[0].radio("Fee base", ["supplier surplus", "the spread"])
+        aligned = base == "supplier surplus"
+        fee_df = harness_frame(scenario_name).copy()
+        fee_df["winner rent share"] = 1.0 - fee_df["supplier share"]
+        base_share = fee_df["supplier share"] if aligned else fee_df["winner rent share"]
+        fee_df["venue fee"] = fee_rate * base_share
+        fee_cols[1].caption("Venue fee revenue by regime, as a share of total surplus")
+        fee_cols[1].bar_chart(fee_df[["venue fee"]], height=240, color=ACCENT)
+        # REVIEW VOICE: headline - fee-base aligned/misaligned readout
+        if "separated" in fee_df.index and "informed" in fee_df.index:
+            delta = float(fee_df.loc["informed", "venue fee"] - fee_df.loc["separated", "venue fee"])
+            if aligned:
+                st.caption(
+                    f":green[Aligned.] When the house peeks, its fee moves by {delta:+.4f} of the "
+                    f"pie. A surplus-based fee shrinks as the supplier is squeezed, so extraction is "
+                    f"self-defeating."
+                )
+            else:
+                st.caption(
+                    f":red[Misaligned.] When the house peeks, its fee moves by {delta:+.4f} of the "
+                    f"pie. A spread-based fee grows as the supplier is squeezed, so it can pay the "
+                    f"venue to extract."
+                )
+
+with tab_arena:
     # REVIEW VOICE: arena intro
     st.write(
         "Each funder is a Claude agent. The auction is sealed-bid: an agent sees only its own "
@@ -620,9 +977,9 @@ with st.expander("The agent arena — Claude funders bidding against each other"
         top[2].write("")
         reveal = top[2].button("▶ Reveal the bids")
 
-        invoice, field = arena_bids(scenario, texts, inv_idx)
-        result = clear_auction([bid for _, bid in field], reserve, random.Random(0))
-        identities = identities_for(field)
+        invoice, field_ = arena_bids(scenario, texts, inv_idx)
+        result = clear_auction([bid for _, bid in field_], reserve, random.Random(0))
+        identities = identities_for(field_)
         # REVIEW VOICE: arena - invoice readout
         st.caption(
             f"Invoice {inv_num} of {scenario.probe_n_invoices}: €{invoice.face_value:,.0f} face "
@@ -643,22 +1000,22 @@ with st.expander("The agent arena — Claude funders bidding against each other"
             )
         else:
             grid = st.columns(3)
-            slots = [grid[i % 3].empty() for i in range(len(field))]
+            slots = [grid[i % 3].empty() for i in range(len(field_))]
             banner = st.empty()
             if reveal and result.traded:
-                for i in sorted(range(len(field)), key=lambda j: -field[j][1].apr):  # winner last
-                    render_card(slots[i], field[i][0], field[i][1], identities[i], won=False)
+                for i in sorted(range(len(field_)), key=lambda j: -field_[j][1].apr):  # winner last
+                    render_card(slots[i], field_[i][0], field_[i][1], identities[i], won=False)
                     time.sleep(0.3)
-                widx = next(i for i, (f, _b) in enumerate(field) if f.party_id == result.winner_id)
+                widx = next(i for i, (f, _b) in enumerate(field_) if f.party_id == result.winner_id)
                 time.sleep(0.2)
-                render_card(slots[widx], field[widx][0], field[widx][1], identities[widx], won=True)
+                render_card(slots[widx], field_[widx][0], field_[widx][1], identities[widx], won=True)
                 time.sleep(0.35)
-                render_banner(banner, result, identities, field)
+                render_banner(banner, result, identities, field_)
             else:
-                for i in range(len(field)):
-                    won = result.traded and field[i][0].party_id == result.winner_id
-                    render_card(slots[i], field[i][0], field[i][1], identities[i], won)
-                render_banner(banner, result, identities, field)
+                for i in range(len(field_)):
+                    won = result.traded and field_[i][0].party_id == result.winner_id
+                    render_card(slots[i], field_[i][0], field_[i][1], identities[i], won)
+                render_banner(banner, result, identities, field_)
 
             if result.traded:
                 assert result.clearing_apr is not None and result.winning_bid_apr is not None
@@ -687,9 +1044,9 @@ with st.expander("The agent arena — Claude funders bidding against each other"
                 "Each agent explains the APR it submits. Under second-price clearing truthful "
                 "bidding is dominant, and the agents mostly bid their cost, so they differ in cost "
                 "(which sets the bid) more than in reasoning. Whether that reflects reasoning or "
-                "instruction-following is examined in the final section."
+                "instruction-following is examined in the first-price tab."
             )
-            for i, (funder, bid) in enumerate(field):
+            for i, (funder, bid) in enumerate(field_):
                 color, name, _persona = identities[i]
                 win = result.traded and result.winner_id == funder.party_id
                 with st.container(border=True):
@@ -717,7 +1074,6 @@ with st.expander("The agent arena — Claude funders bidding against each other"
         reserve_live = st.slider("Reserve (APR %)", 5.0, 60.0, 40.0, 1.0, key="a_res") / 100
         if st.button("Ask Claude agents to bid live"):
             from aelab.agents.base import AuctionContext, AuctionRules
-            from aelab.agents.cache import AnthropicClient, ResponseCache
 
             client = ResponseCache(AnthropicClient())
             ctx = AuctionContext(Invoice("ARENA", 100_000.0, 60), AuctionRules(reserve_live))
@@ -736,7 +1092,7 @@ with st.expander("The agent arena — Claude funders bidding against each other"
             for i, (_funder, bid) in enumerate(live_field):
                 st.caption(f"**{live_ids[i][1]}**: {bid.rationale or '(none)'}")
 
-with st.expander("Prompt-injection defense — why one defense is provable"):
+with tab_injection:
     # REVIEW VOICE: injection - intro
     st.write(
         "An agent reads the invoice memo, which is untrusted text from a counterparty, so a "
@@ -805,7 +1161,7 @@ with st.expander("Prompt-injection defense — why one defense is provable"):
         "to all manipulation."
     )
 
-with st.expander("Do the agents reason? The first-price counterfactual"):
+with tab_firstprice:
     scenario = load_scenario(PROBE_SCENARIO)
 
     # REVIEW VOICE: counterfactual - non-result heading
@@ -888,150 +1244,6 @@ with st.expander("Do the agents reason? The first-price counterfactual"):
                 ":orange[**The agents followed the prompt.**] Bids stay near true cost under both "
                 "auctions, so the truthfulness result was instruction-following."
             )
-
-st.divider()
-
-# --- agent communication and collusion ----------------------------------------
-
-st.subheader("Agent communication and collusion")
-# REVIEW VOICE: comms - section intro
-st.markdown(
-    "Another channel attack on the same mechanism. The same funders and supplier run for "
-    f"{COMMS_ROUNDS} rounds under three conditions, all cleared by the real second-price core: "
-    "sealed and hidden; past outcomes visible; and an open chat channel with full bid history. "
-    "When a channel lets funders coordinate, the cleared APR drifts above the truthful baseline "
-    "while allocative efficiency stays at first-best, the same blind spot as the headline."
-)
-
-with st.container(border=True):
-    # REVIEW VOICE: comms - read this before the numbers
-    st.markdown("**Read this before the numbers**")
-    st.caption(
-        "The numbers come from the committed run, not a fresh model call on every page load. "
-        "Until an external live run is committed, the default shown here is the deterministic "
-        "demo: scaffolding that proves the harness and the causal logic, not evidence about how "
-        "models behave. And the credible headline is the hand-read coordination count from the "
-        "chat transcript below, not the raw collusion index, which is only a diagnostic."
-    )
-
-# --- the boundary: where coordination emerged ---------------------------------
-
-# REVIEW VOICE: boundary - headline framing
-st.markdown(
-    "**Whether the agents collude depends on the model and the market:** only the stronger model, "
-    "and only in the thin three-funder pool, crossed above the competitive line."
-)
-
-# REVIEW VOICE: boundary - grid label
-st.caption("Open-channel collusion index by model and funder-pool size")
-st.dataframe(
-    _boundary_frame().style.apply(_highlight_emergent_cell, axis=None),
-    width="stretch",
-)
-# REVIEW VOICE: boundary - grid legend
-st.caption(
-    "Index in APR percentage points over 20 rounds; positive means the cleared price held above "
-    "the competitive baseline. Coordination emerged in one cell only, the highlighted one: "
-    "Claude Sonnet 4.6 in the thin three-funder market. Six funders kept even Sonnet competitive, "
-    "and Haiku stayed competitive at both pool sizes."
-)
-
-comms_source, comms_summary, comms_drift, comms_chat, comms_compare = comms_default(
-    COMMS_SCENARIO, COMMS_ROUNDS, COMMS_RESERVE, _comms_cache_fingerprint()
-)
-comms_live = st.session_state.get("comms_live")
-if comms_live is not None:
-    comms_summary, comms_drift, comms_chat, comms_compare = comms_live
-    comms_source = "live"
-
-# REVIEW VOICE: comms - run-source caption
-if comms_source == "demo":
-    st.caption(
-        ":orange[Deterministic demo.] No committed model cache was found, so this is the "
-        "stub-funder scaffolding, not evidence."
-    )
-elif comms_source == "cache":
-    st.caption(":green[Committed run.] Replayed from the response cache; no API call.")
-else:
-    st.caption(":green[Live run.] Generated this session and written to the cache for replay.")
-
-st.caption("Cross-condition comparison")
-st.dataframe(
-    comms_summary.style.format(
-        {
-            "cleared APR": "{:.2%}",
-            "baseline APR": "{:.2%}",
-            "collusion index": "{:.4f}",
-            "supracompetitive": "{:.0%}",
-            "efficiency": "{:.0%}",
-        }
-    ),
-    width="stretch",
-)
-
-st.caption("Collusion index per round, by condition (the drift as the channel opens)")
-st.line_chart(comms_drift, height=280)
-
-# --- what the agents actually did (curated reading of the committed run) -------
-
-st.markdown("##### What the agents actually did")
-# REVIEW VOICE: curated - one-sentence finding
-st.caption(
-    "Same open channel and neutral prompt, two cells of the grid: in the six-funder Haiku market "
-    "the funders weighed coordinating and declined, and the cleared price never rose above "
-    "competitive; in the thin three-funder Sonnet market they coordinated and held it above."
-)
-
-for attribution, quote, note in CURATED_QUOTES:
-    with st.container(border=True):
-        st.caption(attribution)
-        st.markdown(_blockquote(quote))
-    # Author note (Gabi's voice): why this quote matters, one line under each.
-    st.caption(note)
-
-with st.expander("Read the full 20-round transcripts"):
-    # REVIEW VOICE: curated - full-transcript framing
-    st.caption(
-        "The complete committed transcript for each featured cell. Both files live under the "
-        "gitignored runs/ directory, so a fresh checkout may not have them."
-    )
-    cell = st.radio(
-        "Transcript", list(COMMS_TRANSCRIPTS), horizontal=True, label_visibility="collapsed"
-    )
-    transcript = _full_transcript_text(COMMS_TRANSCRIPTS[cell])
-    if transcript:
-        st.text(transcript)
-    else:
-        st.caption(
-            f"The transcript file ({COMMS_TRANSCRIPTS[cell]}) is a local, gitignored run artifact "
-            "and is not present in this checkout."
-        )
-    st.divider()
-    # REVIEW VOICE: curated - in-app comparison framing
-    st.caption("The library's plain-text cross-condition comparison for the in-app replayed run")
-    st.code(comms_compare, language="text")
-
-if API_KEY:
-    if st.button("Run the three conditions live (uses your API key)", key="comms_live_btn"):
-        comms_core = _comms_core_funders(COMMS_SCENARIO)
-        comms_complete = _complete_via(ResponseCache(AnthropicClient()))
-        with st.spinner(
-            "Running three conditions through the model. The first run is slow; later runs "
-            "replay from the cache..."
-        ):
-            comms_traces = _run_comms_conditions(
-                lambda cfg: [CommunicatingFunder(f, comms_complete, cfg) for f in comms_core],
-                COMMS_ROUNDS,
-                COMMS_RESERVE,
-            )
-        st.session_state["comms_live"] = _comms_bundle(comms_traces)
-        st.rerun()
-else:
-    # REVIEW VOICE: comms - live key hint
-    st.caption(
-        "Add an ANTHROPIC_API_KEY to run this live. The result shown is the committed cached "
-        "run; live execution needs a local key."
-    )
 
 # --- footer -------------------------------------------------------------------
 
