@@ -16,6 +16,8 @@ build/
 runs/
 results/*.json
 *.png
+# presentation figures rendered by scripts/make_figures.py; committed so README links resolve
+!docs/figures/*.png
 .env
 # the real Streamlit key; commit .streamlit/secrets.toml.example instead
 .streamlit/secrets.toml
