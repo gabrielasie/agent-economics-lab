@@ -1,5 +1,49 @@
 # Agent Economics Lab
 
+**Let LLM agents bid in a real market mechanism and, in exactly one condition, they start a
+cartel: the more capable model, in a thin market, over an open chat channel, unprompted.**
+
+![When do LLM bidding agents collude?](docs/figures/collusion_grid.png)
+
+- **Collusion emerged only with the more capable model in the thin market.** Claude Sonnet 4.6
+  with three funders cleared +3.22 percentage points above the truthful baseline over 20 rounds;
+  Claude Haiku 4.5 at either pool size, and Sonnet 4.6 at six funders, stayed competitive.
+- **The agents coordinated explicitly and unprompted.** The prompts state the auction rule and
+  recommend no strategy; the coordination is emergent ("Rational coordination benefits everyone
+  here"), and the bids followed the talk.
+- **The mechanism itself does not prevent it.** A deterministic adversary, no LLM involved,
+  clears strictly above the competitive baseline once a channel lets it coordinate, and
+  allocative efficiency never sees the harm.
+
+**[Live demo](https://agent-economics-lab-mthq892brens5xgelgbr9i.streamlit.app/)** ·
+**[Read the agent transcripts](runs/claude-sonnet-4-6-n3-r20/transcripts.txt)** ·
+**[Reproduce it in one command](#try-it-in-3-minutes)**
+
+## Try it in 3 minutes
+
+No API key, no network. Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/); run
+`uv sync` once, then:
+
+```
+uv run python scripts/demo_collusion.py
+```
+
+Stub funders play the repeated auction under three channel conditions; watch the cleared APR sit
+at the truthful baseline while bids are sealed and rise above it the moment history or an open
+channel lets them coordinate.
+
+```
+uv run aelab attacks --scenario extraction
+```
+
+A house that runs the venue and bids in it withholds the price-setting bid; watch the supplier's
+share fall while allocative efficiency stays at 1.000 and the fair-rate index flags every
+extracted invoice.
+
+---
+
+## The setting
+
 Can the operator of an invoice early-payment auction quietly extract from suppliers, and would
 LLM agents bidding in that auction exploit the same opening? The mechanism under study is a
 sealed-bid second-price reverse auction with competing funders, matching the design Causa Prima
@@ -45,7 +89,6 @@ that dependence directly: same mechanism, same prompts, collusion present in one
 the others. It is not a replication of their work, and it is not a claim that agents cannot
 collude. See the [caveats](#caveats).
 
-**[Live demo](https://agent-economics-lab-mthq892brens5xgelgbr9i.streamlit.app/)** ·
 **[Results](RESULTS.md)** · **[Memo](memo/MEMO.md)** · **[Design spec](SPEC.md)**
 
 ---
@@ -93,19 +136,14 @@ attack populates `AuctionContext.leaked` rather than passing a side channel.
 
 ## How to run
 
-Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/).
-
-```
-uv sync                 # install the package and its dependencies
-uv sync --extra ui      # add Streamlit for the web UI
-```
+Setup is the `uv sync` from [Try it in 3 minutes](#try-it-in-3-minutes); add the UI with
+`uv sync --extra ui`.
 
 **The deterministic demos run with no API key and no network.** They show the structural
-possibility and the metrics that catch it.
+possibility and the metrics that catch it. The two headline demos are in
+[Try it in 3 minutes](#try-it-in-3-minutes); the control and the curve:
 
 ```
-uv run python scripts/demo_collusion.py            # repeated auction: stub funders collude over a channel
-uv run aelab attacks --scenario extraction         # single-shot: a pivotal house extracts; the index fires
 uv run aelab attacks                               # the competitive control, where the same attack moves nothing
 uv run aelab efficiency                            # efficiency and supplier-share curve
 ```
@@ -136,10 +174,11 @@ panels replay committed results, so the deployed app needs no key.
 uv run streamlit run app.py
 ```
 
-It leads with one result, incentive integrity (whether the venue can extract and whether an index
-catches it), and keeps the agent arena, the prompt-injection defense, the first-price reasoning
-test, and the agent-communication collusion experiment as deeper panels on demand. It lives
-outside the `aelab` package, so the import contracts still hold.
+It leads with the collusion result: the heatmap, the boundary grid, and a round-by-round
+transcript viewer for the run where coordination emerged. Incentive integrity (whether the venue
+can extract and whether an index catches it), the agent arena, the prompt-injection defense, and
+the first-price reasoning test sit in named tabs below. It lives outside the `aelab` package, so
+the import contracts still hold.
 
 ## Caveats
 
@@ -233,9 +272,10 @@ src/aelab/
   cli.py             the aelab Typer app and the shared compute helpers
 app.py               the Streamlit UI (edge, outside the package)
 scenarios/           default.toml, extraction.toml
-scripts/             demo_collusion.py (keyless), run_comms_experiment.py (live), and CLI wrappers
-data/                committed bids the UI replays (keyless deploy)
-runs/                experiment traces and transcripts (gitignored, regenerable from the cache)
+scripts/             demo_collusion.py (keyless), run_comms_experiment.py (live), make_figures.py, CLI wrappers
+data/                committed bids and the collusion grid the UI and figures replay (keyless deploy)
+docs/                the rendered figures and the 90-second demo script
+runs/                experiment traces and transcripts (gitignored except the two featured 20-round transcripts)
 tests/               245 tests, including hypothesis property tests
 memo/MEMO.md         the findings writeup
 demo.ipynb           the main experiments run end to end
