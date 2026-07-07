@@ -36,3 +36,16 @@ One line per change, with the rationale. Newest phase last.
   non-researcher; no code or tests behind the panels changed.
 - Added `.github/workflows/ci.yml` running the exact local gate (ruff, mypy, lint-imports,
   pytest). Rationale: the repo had no CI; "the gate passes" should be checkable on GitHub.
+
+## Phase 3: multi-seed robustness runner
+
+- Added `aelab/experiments/robustness.py` (pure seed-loop and aggregation, no anthropic
+  import, so the import contracts hold) and `scripts/robustness.py` (the live edge entry
+  with a cost estimate and y/n confirmation before any API call). Rationale: the collusion
+  grid has one seed per cell; the runner turns "one seed" from a caveat into a to-do.
+- Seed 0 with the default scenario draws the same funder population as the committed runs,
+  so the first seed of a live pass replays from the committed cache at zero cost.
+- Added `tests/test_robustness.py`: a stub-agent dry run covering the aggregation, emergence
+  detection on both sides of the threshold, and the output formats (5 tests, no network).
+- Added a `## Robustness` section to RESULTS.md with the runner command, the table template,
+  honest wording for both possible outcomes, and a clear pending marker.

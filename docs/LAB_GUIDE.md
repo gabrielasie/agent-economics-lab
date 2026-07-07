@@ -93,7 +93,7 @@ COMMS_MODEL=claude-sonnet-4-6 COMMS_N_FUNDERS=3 COMMS_ROUNDS=20 \
   uv run python scripts/run_comms_experiment.py
 
 # multi-seed robustness for one cell; prints a cost estimate and asks before any live call
-uv run python -m aelab.experiments.robustness --model claude-sonnet-4-6 --funders 3 --seeds 5 --rounds 20
+uv run python scripts/robustness.py --model claude-sonnet-4-6 --funders 3 --seeds 5 --rounds 20
 ```
 
 The runner writes full traces and human-readable transcripts to `runs/` (gitignored except the
@@ -179,7 +179,7 @@ src/aelab/
   cli.py             the aelab Typer app and the shared compute helpers
 app.py               the Streamlit UI (edge, outside the package)
 scenarios/           default.toml, extraction.toml
-scripts/             demo_collusion.py (keyless), run_comms_experiment.py (live), make_figures.py
+scripts/             demo_collusion.py (keyless), run_comms_experiment.py (live), robustness.py, make_figures.py
 data/                committed bids and the collusion grid the UI and figures replay (keyless deploy)
 docs/                this guide, the rendered figures, and the 90-second demo script
 runs/                experiment traces and transcripts (gitignored except the two featured transcripts)
