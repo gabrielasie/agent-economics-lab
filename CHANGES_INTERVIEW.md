@@ -63,3 +63,25 @@ One line per change, with the rationale. Newest phase last.
   committed Claude arena bids, because the arena's probe pool clears at ~11% while the
   default market's honest band is 8.3-9.3%; mixing the two would have shown every quote as
   "above the typical range", which would be misleading.
+
+## Phase 5: final QA
+
+- Fresh-clone simulation from a temp directory: every README quickstart command ran
+  verbatim and produced the documented output (extraction table matches RESULTS.md exactly).
+- Full gate green: ruff, mypy --strict, 3 import contracts kept, 250 tests (was 245; the 5
+  new ones cover the robustness runner).
+- Walked every app view keyless with Streamlit's AppTest in the fresh clone: all four tabs,
+  both market states, the transcript viewer slider, the supplier reservation slider through
+  fill, single-bidder, and no-fill, the accept button, and the arena reveal. Zero exceptions.
+  `streamlit run` boots clean and serves HTTP 200.
+- The memo is untouched: no numbers changed anywhere.
+
+## Left for Gabriela
+
+1. Merge `interview-polish` into `main` (the live app deploys from `main`), or repoint
+   Streamlit Cloud at the branch.
+2. The live robustness pass (needs `ANTHROPIC_API_KEY`):
+   `uv run python scripts/robustness.py --model claude-sonnet-4-6 --funders 3 --seeds 5 --rounds 20`
+   Estimated worst-case cost ~$3.50 (600 calls at Sonnet 4.6 list price); seed 0 replays
+   from the committed cache, so the real cost is closer to ~$2.80. Paste the printed
+   `summary.md` into the Robustness section of RESULTS.md and remove the pending note.
