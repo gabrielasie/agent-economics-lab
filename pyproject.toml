@@ -29,8 +29,6 @@ dev = [
     "mypy",
     "pytest-cov",
     "import-linter",
-    "nbconvert",
-    "ipykernel",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -42,7 +40,6 @@ packages = ["src/aelab"]
 [tool.ruff]
 line-length = 110
 target-version = "py311"
-extend-exclude = ["*.ipynb"]  # the demo notebook is a presentation artifact, not a module
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]  # pyflakes, pycodestyle, isort, pyupgrade, bugbear

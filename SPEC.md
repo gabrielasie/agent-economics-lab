@@ -144,9 +144,8 @@ ValidatedLLMAgent, and the batch path with index-based custom_ids). attacks/hous
 attacks/prompt_injection (payloads, success-rate measurement, output-validation defense).
 harness (baseline plus house regimes plus a collusion row, formatted as a table). config
 (Scenario loaded from scenarios/*.toml) and cli (the aelab Typer app: efficiency,
-truthfulness, attacks). scripts run_efficiency.py and run_truthfulness_probe.py, both
-scenario-driven, the probe with --from-raw. README and demo.ipynb (the three results run in
-sequence). scenarios/extraction.toml: a population built so the house is the pivotal funder,
+truthfulness, attacks, counterfactual; every command scenario-driven, the LLM commands with
+--from-raw). scenarios/extraction.toml: a population built so the house is the pivotal funder,
 where the withholding attack is measurable, with an honest cost-priced policy (zero loadings).
 app.py: a Streamlit UI over the orchestration, sharing one compute path with the CLI via
 compute_efficiency and compute_deviations. It runs the deterministic experiments live and
@@ -160,8 +159,8 @@ invoices are generated once and only the financier pool grows, so the supplier-s
 a clean controlled comparison.
 
 The first-price counterfactual is built and run: clear_first_price in auction.py, the NEUTRAL
-prompt variants in agents/llm.py, build_counterfactual_requests, the CLI command, and
-scripts/run_first_price_counterfactual.py. Under the neutral prompt the agents stay truthful
+prompt variants in agents/llm.py, build_counterfactual_requests, and the CLI command
+(aelab counterfactual). Under the neutral prompt the agents stay truthful
 under second-price (mean signed deviation -0.00001) and shade up under first-price (+0.034 APR),
 so they respond to the payment rule, not the prompt. That resolves the coaching caveat: the
 truthfulness probe alone is a non-result, but the counterfactual distinguishes reasoning from

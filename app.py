@@ -2,8 +2,9 @@
 
 A thin presentation edge over the aelab package. It leads with one result, the agent-collusion
 experiment (when do LLM bidding agents collude, and what did they say while doing it), and keeps
-incentive integrity, the agent arena, the injection defense, and the reasoning test in named
-tabs below. It runs the deterministic work live and replays the LLM work from committed bids and
+three tabs below: whether the venue can cheat, an auction you can run yourself, and whether the
+agents can be trusted (injection defense plus the first-price reasoning test).
+It runs the deterministic work live and replays the LLM work from committed bids and
 transcripts, so it needs no API key. It imports only the public aelab orchestration; the pure
 core is untouched, and because this file lives outside the aelab package the import contracts
 still hold.
@@ -566,12 +567,11 @@ def _tutorial() -> None:
     )
     # REVIEW VOICE: tutorial - deeper experiments
     st.markdown(
-        "**The rest of the lab, in tabs below:** incentive integrity (whether the venue can "
-        "extract from suppliers, and whether an index catches it); the agent arena (Claude "
-        "funders bidding on one invoice, with their reasoning); the prompt-injection defense "
-        "(why clamping the bid is provable while hardening the prompt is not); and the "
-        "first-price counterfactual (the agents shade up where truthful stops paying, so they "
-        "reason about the rule)."
+        "**The rest of the lab, in tabs below:** whether the venue itself can cheat (extraction "
+        "the efficiency metric never sees, and the fair-rate index that catches it); running an "
+        "auction yourself (Claude funders bidding on one invoice, with their reasoning); and "
+        "whether the agents can be trusted (a malicious memo cannot move the bid past the "
+        "clamp, and the agents shade up under first price, so they reason about the rule)."
     )
     # REVIEW VOICE: tutorial - precompute note
     st.caption(
@@ -766,7 +766,7 @@ with st.expander("The numbers behind the run — three conditions, replayed in a
         "core: sealed and hidden; past outcomes visible; and an open chat channel with full bid "
         "history. When a channel lets funders coordinate, the cleared APR drifts above the "
         "truthful baseline while allocative efficiency stays at first-best, the same blind spot "
-        "the incentive-integrity tab shows."
+        "the 'Can the venue cheat?' tab shows."
     )
 
     with st.container(border=True):
@@ -838,20 +838,19 @@ st.divider()
 st.subheader("The rest of the lab")
 # REVIEW VOICE: deeper-experiments intro
 st.caption(
-    "The supporting work, on demand: whether the venue itself can extract, the agents bidding, "
-    "the prompt-injection defense, and whether the agents reason about the mechanism."
+    "The supporting work, on demand: whether the venue itself can cheat, an auction you can "
+    "run yourself, and whether the agents can be trusted."
 )
 
-tab_integrity, tab_arena, tab_injection, tab_firstprice = st.tabs(
+tab_venue, tab_arena, tab_trust = st.tabs(
     [
-        "Incentive integrity",
-        "Agent arena",
-        "Prompt-injection defense",
-        "First-price test",
+        "Can the venue cheat?",
+        "Run an auction",
+        "Can the agents be trusted?",
     ]
 )
 
-with tab_integrity:
+with tab_venue:
     # REVIEW VOICE: headline finding
     st.subheader("Extraction is structural, and efficiency is blind to it")
     st.markdown(
@@ -1057,7 +1056,7 @@ with tab_arena:
                 "Each agent explains the APR it submits. Under second-price clearing truthful "
                 "bidding is dominant, and the agents mostly bid their cost, so they differ in cost "
                 "(which sets the bid) more than in reasoning. Whether that reflects reasoning or "
-                "instruction-following is examined in the first-price tab."
+                "instruction-following is examined in the 'Can the agents be trusted?' tab."
             )
             for i, (funder, bid) in enumerate(field_):
                 color, name, _persona = identities[i]
@@ -1105,7 +1104,8 @@ with tab_arena:
             for i, (_funder, bid) in enumerate(live_field):
                 st.caption(f"**{live_ids[i][1]}**: {bid.rationale or '(none)'}")
 
-with tab_injection:
+with tab_trust:
+    st.markdown("##### Can a malicious memo move the bid?")
     # REVIEW VOICE: injection - intro
     st.write(
         "An agent reads the invoice memo, which is untrusted text from a counterparty, so a "
@@ -1174,7 +1174,9 @@ with tab_injection:
         "to all manipulation."
     )
 
-with tab_firstprice:
+with tab_trust:
+    st.divider()
+    st.markdown("##### Do the agents reason about the rule, or follow the prompt?")
     scenario = load_scenario(PROBE_SCENARIO)
 
     # REVIEW VOICE: counterfactual - non-result heading
