@@ -2,8 +2,9 @@
 
 A thin presentation edge over the aelab package. It leads with one result, the agent-collusion
 experiment (when do LLM bidding agents collude, and what did they say while doing it), and keeps
-three tabs below: whether the venue can cheat, an auction you can run yourself, and whether the
-agents can be trusted (injection defense plus the first-price reasoning test).
+four tabs below: whether the venue can cheat, an auction you can run yourself, whether the
+agents can be trusted (injection defense plus the first-price reasoning test), and what the
+supplier sees (one cleared auction in money terms, with a reservation-APR override).
 It runs the deterministic work live and replays the LLM work from committed bids and
 transcripts, so it needs no API key. It imports only the public aelab orchestration; the pure
 core is untouched, and because this file lives outside the aelab package the import contracts
@@ -20,13 +21,16 @@ import random
 import re
 import time
 from dataclasses import dataclass, field
+from datetime import date, timedelta
 from pathlib import Path
 
 import pandas as pd
 import streamlit as st
 
+from aelab.agents.base import AuctionContext, AuctionRules
 from aelab.agents.cache import AnthropicClient, ResponseCache
 from aelab.agents.communicating import CommunicatingFunder
+from aelab.agents.deterministic import PolicyAgent, TruthfulAgent
 from aelab.agents.llm import (
     DEFAULT_MODEL,
     LLMAgent,
@@ -34,6 +38,7 @@ from aelab.agents.llm import (
     build_counterfactual_requests,
     counterfactual_deviations,
 )
+from aelab.attacks.house_extraction import run_separated
 from aelab.attacks.prompt_injection import success_rate_by_class
 from aelab.auction import clear_auction
 from aelab.cli import arena_bids, attack_population, compute_deviations, compute_efficiency
@@ -45,7 +50,7 @@ from aelab.eval.guardrails import scan_message
 from aelab.experiments.repeated import make_core_clear, run_repeated_auction
 from aelab.harness import run_harness
 from aelab.metrics import deviation_stats
-from aelab.models import Bid, Funder, Invoice, PricingPolicy
+from aelab.models import Bid, Funder, FunderKind, Invoice, PricingPolicy
 from aelab.populations import generate_financiers, generate_invoices
 
 st.set_page_config(
@@ -206,6 +211,40 @@ def harness_frame(name: str) -> pd.DataFrame:
             for r in rows
         ]
     ).set_index("regime")
+
+
+@st.cache_data(show_spinner=False)
+def fair_rate_band(name: str) -> tuple[float, float] | None:
+    """The 10th to 90th percentile of honest-competition clearing APRs over the scenario's
+    invoices. run_separated is the honest-house benchmark the fair-rate index compares
+    against, so this band is what invoices like this clear at when nobody games the venue.
+    """
+    scenario = load_scenario(name)
+    outcomes = run_separated(
+        attack_population(scenario), scenario.policy, random.Random(scenario.seed)
+    )
+    cleared = sorted(o.result.clearing_apr for o in outcomes if o.result.clearing_apr is not None)
+    if len(cleared) < 10:
+        return None
+    return cleared[int(0.1 * len(cleared))], cleared[int(0.9 * len(cleared)) - 1]
+
+
+@st.cache_data(show_spinner=False)
+def supplier_case(name: str) -> tuple[Invoice, float, list[Bid]]:
+    """One invoice from the scenario's market and the honest bids for it: truthful funders,
+    the house on its signed policy. This is the same market fair_rate_band benchmarks, so
+    the quote and the band are comparable. The bids do not depend on the reserve, so the
+    reservation-APR slider re-clears the same bids live through the real core.
+    """
+    scenario = load_scenario(name)
+    pop = attack_population(scenario)
+    invoice, supplier = pop.invoices[0], pop.suppliers[0]
+    ctx = AuctionContext(invoice=invoice, rules=AuctionRules(reserve_apr=supplier.reservation_apr))
+    bids = [
+        (PolicyAgent(f, scenario.policy) if f.kind is FunderKind.HOUSE else TruthfulAgent(f)).bid(ctx)
+        for f in pop.funders
+    ]
+    return invoice, supplier.reservation_apr, bids
 
 
 # Each agent gets a stable identity so the field reads as characters, not table rows.
@@ -569,9 +608,11 @@ def _tutorial() -> None:
     st.markdown(
         "**The rest of the lab, in tabs below:** whether the venue itself can cheat (extraction "
         "the efficiency metric never sees, and the fair-rate index that catches it); running an "
-        "auction yourself (Claude funders bidding on one invoice, with their reasoning); and "
+        "auction yourself (Claude funders bidding on one invoice, with their reasoning); "
         "whether the agents can be trusted (a malicious memo cannot move the bid past the "
-        "clamp, and the agents shade up under first price, so they reason about the rule)."
+        "clamp, and the agents shade up under first price, so they reason about the rule); and "
+        "what the supplier sees (one cleared auction in money terms, with a reservation-APR "
+        "override you can move)."
     )
     # REVIEW VOICE: tutorial - precompute note
     st.caption(
@@ -839,14 +880,15 @@ st.subheader("The rest of the lab")
 # REVIEW VOICE: deeper-experiments intro
 st.caption(
     "The supporting work, on demand: whether the venue itself can cheat, an auction you can "
-    "run yourself, and whether the agents can be trusted."
+    "run yourself, whether the agents can be trusted, and what the supplier sees."
 )
 
-tab_venue, tab_arena, tab_trust = st.tabs(
+tab_venue, tab_arena, tab_trust, tab_supplier = st.tabs(
     [
         "Can the venue cheat?",
         "Run an auction",
         "Can the agents be trusted?",
+        "What the supplier sees",
     ]
 )
 
@@ -1259,6 +1301,81 @@ with tab_trust:
                 ":orange[**The agents followed the prompt.**] Bids stay near true cost under both "
                 "auctions, so the truthfulness result was instruction-following."
             )
+
+with tab_supplier:
+    # REVIEW VOICE: supplier - intro
+    st.write(
+        "One cleared auction, shown the way a supplier would see it: the money first, the "
+        "rate second, and a typical range so the quote can be judged without trusting the "
+        "venue. Fully deterministic, no API call; the funders bid honestly and only your "
+        "reservation APR moves."
+    )
+    sup_invoice, sup_default_reserve, sup_bids = supplier_case(PROBE_SCENARIO)
+    sup_reserve = (
+        st.slider(
+            "Your reservation APR (%) — the most you will pay for early cash, annualized",
+            1.0,
+            60.0,
+            round(sup_default_reserve * 200) / 2,  # the supplier's own reserve, on the step grid
+            0.5,
+            key="supplier_reserve",
+            help=(
+                "The starting value is this supplier's own reservation APR, the platform "
+                "default. Override it downward and watch the fill and the price react."
+            ),
+        )
+        / 100
+    )
+    # The same bids, re-cleared live at the chosen reserve through the real second-price
+    # core. The slider demonstrates defaults, override, and reserve mechanics: a lower
+    # reserve can shave the clearing or lose the fill entirely.
+    sup_result = clear_auction(sup_bids, sup_reserve, random.Random(0))
+    sup_due = date.today() + timedelta(days=sup_invoice.days_early)
+
+    if not sup_result.traded:
+        note(
+            f"**No fill.** Every bid is above your {sup_reserve:.1%} reservation APR, so "
+            f"the invoice is not funded early. You receive €{sup_invoice.face_value:,.0f} "
+            f"on {sup_due:%d %b %Y} as originally scheduled."
+        )
+    else:
+        assert sup_result.clearing_apr is not None
+        sup_cost = financing_cost(
+            sup_invoice.face_value, sup_result.clearing_apr, sup_invoice.days_early
+        )
+        st.markdown(
+            f"### You receive **€{sup_invoice.face_value - sup_cost:,.0f} today** instead "
+            f"of €{sup_invoice.face_value:,.0f} on {sup_due:%d %b %Y}. "
+            f"Cost: **€{sup_cost:,.0f}**."
+        )
+        # REVIEW VOICE: supplier - APR translation
+        st.caption(
+            f"Annualized, that cost is **{sup_result.clearing_apr:.1%} APR**. The price is "
+            "set by competition (the second-lowest bid, or your reservation APR when only "
+            "one funder qualifies), not by the winning funder's ask."
+        )
+        band = fair_rate_band(PROBE_SCENARIO)
+        if band is not None:
+            lo, hi = band
+            # REVIEW VOICE: supplier - fair-rate band
+            st.caption(
+                f"Typical range for invoices like this: **{lo:.1%} to {hi:.1%} APR**, "
+                "computed from honest competition over this market, the same benchmark the "
+                "fair-rate index checks the venue against."
+            )
+            if sup_result.clearing_apr > hi:
+                st.caption(
+                    ":orange[Above the typical range.] On a real venue an unexplained gap "
+                    "like this is what the fair-rate index flags."
+                )
+            else:
+                st.caption(":green[Within the typical range.]")
+        if st.button("Accept early payment", key="supplier_accept"):
+            st.success(
+                "Accepted. Nothing settles in this demo; the button completes the flow a "
+                "supplier would see."
+            )
+
 
 # --- footer -------------------------------------------------------------------
 

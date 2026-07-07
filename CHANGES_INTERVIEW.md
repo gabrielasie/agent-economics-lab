@@ -49,3 +49,17 @@ One line per change, with the rationale. Newest phase last.
   detection on both sides of the threshold, and the output formats (5 tests, no network).
 - Added a `## Robustness` section to RESULTS.md with the runner command, the table template,
   honest wording for both possible outcomes, and a clear pending marker.
+
+## Phase 4: supplier-view panel
+
+- Added a fifth app view, "What the supplier sees": one cleared auction in money terms
+  ("You receive EUR X today instead of EUR Y on <date>. Cost: EUR Z"), the APR as the
+  annualized translation, a typical-range band computed from honest competition over the
+  same market (the fair-rate benchmark), a reservation-APR slider that re-clears the same
+  bids live through the real core (fill/no-fill and price react), and an accept button that
+  only confirms. Fully deterministic, no API call, ~90 lines, all reuse (clear_auction,
+  financing_cost, run_separated, attack_population).
+- Deliberate choice: the view uses the default market's honest deterministic bids, not the
+  committed Claude arena bids, because the arena's probe pool clears at ~11% while the
+  default market's honest band is 8.3-9.3%; mixing the two would have shown every quote as
+  "above the typical range", which would be misleading.
